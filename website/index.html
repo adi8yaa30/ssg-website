@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SSG | Solar Street Lights &amp; Public Infrastructure, Guwahati</title>
+  <meta name="description" content="Shree Shyam Group supplies and installs solar street lights, high masts, flag poles and public infrastructure across the Northeast. ISO 9001:2015 certified.">
+  <meta name="theme-color" content="#2744DF">
+  <link rel="icon" href="assets/logo-new.webp" type="image/webp">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&family=Unbounded:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+
+  <link rel="stylesheet" href="css/reset.css?v=34">
+  <link rel="stylesheet" href="css/tokens.css?v=34">
+  <link rel="stylesheet" href="css/main.css?v=34">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script>
+    document.documentElement.classList.add('js');
+    // Warm up the GLB on desktop when served over http(s) (file:// uses an embedded copy instead)
+    if (location.protocol !== 'file:' && matchMedia('(min-width: 768px)').matches) {
+      var l = document.createElement('link');
+      l.rel = 'preload'; l.as = 'fetch'; l.crossOrigin = 'anonymous';
+      l.href = 'assets/01-hero/model/ssg-streetlight.web.glb';
+      document.head.appendChild(l);
+    }
+  </script>
+</head>
+<body>
+
+<!-- SVG sprite: small reusable icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-arrow" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arrow-circle" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 10h7.5M10.5 7l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-sun-outline" viewBox="0 0 26 26">
+      <circle cx="13" cy="13" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <path d="M13 1.6v3.2M13 21.2v3.2M1.6 13h3.2M21.2 13h3.2M4.9 4.9l2.3 2.3M18.8 18.8l2.3 2.3M4.9 21.1l2.3-2.3M18.8 7.2l2.3-2.3"/>
+      </g>
+    </symbol>
+    <symbol id="i-sun-solid" viewBox="0 0 26 26">
+      <circle cx="13" cy="13" r="4.6" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M13 1.8v3.4M13 20.8v3.4M1.8 13h3.4M20.8 13h3.4M5.1 5.1l2.4 2.4M18.5 18.5l2.4 2.4M5.1 20.9l2.4-2.4M18.5 7.5l2.4-2.4"/>
+      </g>
+    </symbol>
+    <symbol id="i-pole" viewBox="0 0 9 17"><path d="M5.06125 0.191255L4.31874 0.183417L4.1531 15.8748L0.19302 15.8329L0.183594 16.726L8.76376 16.8165L8.77319 15.9235L4.81311 15.8817L5.06125 0.191255Z" fill="currentColor" stroke="currentColor" stroke-width="0.363044"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 16"><g fill="currentColor"><circle cx="3" cy="12" r="2.6"/><circle cx="11" cy="12" r="2.6"/><circle cx="19" cy="12" r="2.6"/><circle cx="11" cy="4" r="2.6"/><circle cx="19" cy="4" r="2.6"/></g></symbol>
+    <symbol id="i-battery" viewBox="0 0 103 33">
+      <path d="M100.753 11.0808C101.18 11.0808 101.526 11.4264 101.526 11.8533V20.615C101.526 21.0418 101.18 21.3875 100.753 21.3875H96.373V11.0808H100.753Z" fill="#fff" stroke="#2744DF" stroke-width="1.54609"/>
+      <path d="M33.7559 6.18435C33.7559 2.76883 36.5247 0 39.9402 0H89.415C93.969 0 97.6608 3.69177 97.6608 8.2458V24.7374C97.6608 29.2914 93.969 32.9832 89.415 32.9832H39.9402C36.5247 32.9832 33.7559 30.2144 33.7559 26.7988V6.18435Z" fill="#2744DF"/>
+      <rect x="36.5897" y="2.31896" width="9.79189" height="27.8296" rx="2.83449" fill="#fff" stroke="#2744DF" stroke-width="0.515363"/>
+      <rect x="48.7012" y="2.06128" width="10.3073" height="28.3449" rx="3.09218" fill="#fff"/>
+      <rect x="61.8436" y="2.31896" width="9.79189" height="27.8296" rx="2.83449" fill="#fff" stroke="#2744DF" stroke-width="0.515363"/>
+      <path d="M73.9531 5.15346C73.9531 3.4457 75.3375 2.06128 77.0453 2.06128H90.9601C93.2371 2.06128 95.083 3.90716 95.083 6.18418V26.2833C95.083 28.5603 93.2371 30.4062 90.9601 30.4062H77.0453C75.3375 30.4062 73.9531 29.0218 73.9531 27.314V5.15346Z" fill="#fff"/>
+      <circle cx="84.7747" cy="16.4913" r="5.15363" fill="#2744DF"/>
+      <path d="M33.7564 16.7494V14.4302H2.06158V2.06152H0.257812V28.8604H2.06158V16.4917L33.7564 16.7494Z" fill="#2744DF" stroke="#2744DF" stroke-width="0.515363"/>
+    </symbol>
+    <symbol id="i-layers" viewBox="0 0 157 92">
+      <g fill="#2744DF" stroke="#fff" stroke-width="2.9">
+        <path transform="translate(0 28)" d="M86.7 1.57L3.82 32.29L68.66 62.03L152.76 29.12Z"/>
+        <path transform="translate(0 14)" d="M86.7 1.57L3.82 32.29L68.66 62.03L152.76 29.12Z"/>
+        <path d="M86.7 1.57L3.82 32.29L68.66 62.03L152.76 29.12Z"/>
+      </g>
+      <path d="M25.43 42.2L108.72 10.75M47.05 52.12L130.74 19.93M31.45 22.05L96.69 51.06M59.07 11.81L124.73 40.09" stroke="#fff" stroke-width="1.8"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============ PRELOADER ============ -->
+<div class="preloader" id="preloader" role="status" aria-live="polite">
+  <div class="preloader__inner">
+    <img class="preloader__logo" src="assets/logo-new.webp" width="210" height="211" alt="Shree Shyam Group logo">
+    <div class="preloader__battery" aria-hidden="true">
+      <div class="preloader__shell">
+        <div class="preloader__half preloader__half--l"><span class="preloader__fill"></span></div>
+        <div class="preloader__half preloader__half--r"><span class="preloader__fill"></span></div>
+      </div>
+      <span class="preloader__cap"></span>
+    </div>
+    <p class="preloader__pct mono"><span id="preloader-pct">0</span>%</p>
+    <span class="sr-only">Loading the SSG website</span>
+  </div>
+</div>
+
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <svg class="nav__bar" viewBox="0 0 1728 36" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M106.25 0H799V35.75H155L141.75 12.5Z" fill="#2744DF"/>
+    <path d="M939 0H1621.75L1586.25 12.5L1573 35.75H939Z" fill="#2744DF"/>
+  </svg>
+  <nav class="nav__inner" aria-label="Primary">
+    <ul class="nav__list nav__list--l">
+      <li><a class="nav__link" href="#home">Home</a></li>
+      <li><a class="nav__link" href="#about">About Us</a></li>
+      <li><a class="nav__link" href="#ssg">SSG</a></li>
+    </ul>
+    <a class="nav__logo" href="#home" aria-label="SSG home">
+      <img src="assets/logo-new.webp" width="84" height="84" alt="Shree Shyam Group">
+    </a>
+    <ul class="nav__list nav__list--r">
+      <li><a class="nav__link" href="#divisions">Divisions</a></li>
+      <li><a class="nav__link" href="#products">Products</a></li>
+      <li><a class="nav__link" href="#contact">Contact Us</a></li>
+    </ul>
+  </nav>
+  <button class="nav__burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><span></span><span></span></button>
+  <div class="nav__mobile" id="mobile-menu" hidden>
+    <a href="#home">Home</a><a href="#about">About Us</a><a href="#ssg">SSG</a>
+    <a href="#divisions">Divisions</a><a href="#products">Products</a><a href="#contact">Contact Us</a>
+  </div>
+</header>
+
+<!-- ============ 3D CANVAS (fixed, above hero/why/sun content, below opaque sections) ============ -->
+<canvas id="scene" class="scene" aria-hidden="true"></canvas>
+<p class="sr-only" id="scene-alt">A 3D model of an SSG solar street light: a dark steel pole on a small grass island, an LED lamp head on an angled arm and a monocrystalline solar panel on top. As you scroll, the solar panel detaches and moves into the next sections.</p>
+
+<main id="main">
+
+  <!-- ====== HERO + WHY SSG: one continuous gradient wrapper ====== -->
+  <div class="gradient-wrap">
+
+    <section class="hero" id="home" aria-labelledby="hero-title">
+      <h1 class="hero__title display" id="hero-title" data-hero-title>
+        <span class="hero__line">Powering</span>
+        <span class="hero__line">India's</span>
+        <span class="hero__line">streets.</span>
+      </h1>
+
+      <div class="hero__aside">
+        <svg class="hero__sun" viewBox="0 0 488 182" aria-hidden="true"><path d="M0 182A255 255 0 0 1 488 182Z" fill="#F5DB68"/></svg>
+        <p class="hero__sub">Solar street lights, high masts and public infrastructure, engineered in Guwahati since&nbsp;2021.</p>
+        <div class="hero__ctas">
+          <a class="btn btn--outline" href="#products" data-scroll-to="#products"><span class="btn__label">Explore Products</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="btn btn--outline" href="#contact" data-scroll-to="#contact"><span class="btn__label">Partner With Us</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        </div>
+      </div>
+
+      <!-- DOM anchor for the 3D street light (static image is the no-WebGL / mobile fallback) -->
+      <div class="anchor anchor--streetlight" id="anchor-streetlight">
+        <img class="anchor__fallback" src="assets/01-hero/streetlight-fallback.webp" width="800" height="1375" alt="SSG solar street light with an LED head and a solar panel, standing on a grass island" fetchpriority="high">
+      </div>
+
+      <!-- Callouts: leader lines are drawn in JS from the model's projected points -->
+      <svg class="hero__leaders" aria-hidden="true">
+        <path class="leader leader--pole" d=""/>
+        <path class="leader leader--led" d=""/>
+        <circle class="leader__node leader__node--pole" r="3"/>
+        <circle class="leader__node leader__node--led" r="3"/>
+      </svg>
+
+      <aside class="callout callout--pole" aria-label="Pole specification">
+        <svg class="callout__frame" viewBox="0 0 202 123" preserveAspectRatio="none" aria-hidden="true">
+          <path class="callout__outline" d="M1.25 1.25H181.5L200.75 20.5V28L198.25 34L200.75 40V121.75H31.5L1.25 101.25Z"/>
+          <path class="callout__corner" d="M0 104.5L27 123H0Z"/>
+        </svg>
+        <div class="callout__head">
+          <span class="callout__label" data-type>// POLE</span>
+          <svg class="callout__icon" width="9" height="17" aria-hidden="true"><use href="#i-pole"/></svg>
+        </div>
+        <p class="callout__text"><span data-type>5M – 30M Hot-<br>dip galvanised<br>steel</span></p>
+      </aside>
+
+      <aside class="callout callout--led" aria-label="LED head specification">
+        <svg class="callout__frame" viewBox="0 0 202 123" preserveAspectRatio="none" aria-hidden="true">
+          <path class="callout__outline" d="M200.75 1.25H20.5L1.25 20.5V27L3.75 33L1.25 39V121.75H170.5L200.75 101.25Z"/>
+          <path class="callout__corner" d="M202 104.5L175 123H202Z"/>
+        </svg>
+        <div class="callout__head">
+          <span class="callout__label" data-type>// LED HEAD</span>
+        </div>
+        <p class="callout__text"><span data-type>9W – 150W</span><span data-type>Auto dusk-<br>to-dawn</span></p>
+      </aside>
+    </section>
+
+    <section class="why" id="why" aria-labelledby="why-title">
+      <div class="why__stage">
+        <h2 class="why__title" id="why-title">
+          <span class="why__rule why__rule--l" aria-hidden="true"></span>
+          <span class="why__title-text display" data-split>Why SSG?</span>
+          <span class="why__rule why__rule--r" aria-hidden="true"></span>
+        </h2>
+
+        <!-- Grid lines, diamonds and circuit lines (solar-lines-icon) behind the 3D panel -->
+        <svg class="why__grid solar-grid" viewBox="0 0 1728 934" preserveAspectRatio="none" aria-hidden="true">
+          <g class="solar-grid__lines">
+            <path d="M613 245V707"/><path d="M745 240V712"/><path d="M876 232V722"/><path d="M1007 240V712"/><path d="M1139 245V707"/>
+            <path d="M483 313H1270"/><path d="M483 447H1270"/><path d="M483 578H1270"/>
+          </g>
+          <g class="solar-grid__diamonds"></g>
+          <g class="circuit">
+            <path class="circuit__line" data-card="0" d="M876 447V313H483L400 258"/>
+            <path class="circuit__line" data-card="1" d="M876 447V313H1270L1352 261"/>
+            <path class="circuit__line" data-card="2" d="M876 447V578H483L400 644"/>
+            <path class="circuit__line" data-card="3" d="M876 447V578H1270L1352 644"/>
+            <path class="circuit__pulse" data-card="0" d="M876 447V313H483L400 258"/>
+            <path class="circuit__pulse" data-card="1" d="M876 447V313H1270L1352 261"/>
+            <path class="circuit__pulse" data-card="2" d="M876 447V578H483L400 644"/>
+            <path class="circuit__pulse" data-card="3" d="M876 447V578H1270L1352 644"/>
+          </g>
+        </svg>
+
+        <div class="anchor anchor--panel anchor--panel-why" id="anchor-panel-why">
+          <img class="anchor__fallback" src="assets/01-hero/panel-static.webp" width="1030 626" height="" alt="" loading="lazy">
+        </div>
+
+        <ul class="why__cards" role="list">
+          <li class="card card--tl" data-card="0">
+            <article>
+              <header class="card__head">
+                <h3 class="card__kicker">CERTIFIED</h3>
+                <svg class="card__icon" viewBox="0 0 28 25" aria-hidden="true"><g transform="translate(6.75 10.5)"><path d="M16.9041 0.00255261L15.3249 2.82513L18.159 7.88842L15.9882 11.7625H9.85458L8.2927 8.9705L6.71349 6.14792H3.73824L4.64418 4.53246H1.48329L0.183787 6.85484C-0.0612624 7.29124 -0.0612624 7.82972 0.183787 8.26613C0.428837 8.70253 0.879332 8.9705 1.36943 8.9705H5.13428L5.91894 10.3716L8.27785 14.5825H17.5699L21.3199 7.88587L16.9041 0V0.00255261Z"/></g><g transform="translate(0 6)"><path d="M5.32921 16.2413L3.15842 12.3673L6.22525 6.89056H7.79455H12.5099L13.9975 4.23387L14.9035 5.84932L16.4827 3.02674L15.1832 0.704369C14.9381 0.267966 14.4876 0 13.9975 0C13.5074 0 13.0569 0.267966 12.8119 0.704369L10.9307 4.06543H4.64356L4.25 4.7698L0 12.3647L3.75 19.0613H12.5817L11.0025 16.2388H5.33168L5.32921 16.2413Z"/></g><g transform="translate(5.75 0)"><path d="M5.99505 2.82258H10.3342L13.401 8.2993L13.0371 8.94753L11.8366 11.0887L10.2574 13.9113L11.745 16.568H9.93564L11.5149 19.3906H14.1139C14.604 19.3906 15.0545 19.1226 15.2995 18.6862C15.5446 18.2498 15.5446 17.7113 15.2995 17.2749L13.4183 13.9138L13.8391 13.161L14.9802 11.1219L16.5594 8.2993L11.9158 0H4.41584L0 7.88587H3.16089L5.99505 2.82258Z"/></g></svg>
+              </header>
+              <p class="card__title">ISO 9001:2015</p>
+              <p class="card__text">Certified quality, RoHS compliant, MSME regd.</p>
+              <span class="card__status" aria-hidden="true"></span>
+            </article>
+          </li>
+          <li class="card card--tr" data-card="1">
+            <article>
+              <header class="card__head">
+                <h3 class="card__kicker">TRUSTED</h3>
+                <svg class="card__icon" viewBox="0 0 28 25" aria-hidden="true"><path d="M23.3338 8.33245L18.6693 0H9.33506L4.66797 8.33245H14.0022H23.3338Z"/><path d="M23.3336 8.3324L18.669 16.6675L14.002 24.9999H23.3336L28.0007 16.6675L23.3336 8.3324Z"/><path d="M4.66709 8.3324L0 16.6675L4.66709 24.9999H14.0013L9.33419 16.6675L4.66709 8.3324Z"/></svg>
+              </header>
+              <p class="card__title">Government-ready</p>
+              <p class="card__text">Associated with GeM, NRL and Rural Development.</p>
+              <span class="card__status" aria-hidden="true"></span>
+            </article>
+          </li>
+          <li class="card card--bl" data-card="2">
+            <article>
+              <header class="card__head">
+                <h3 class="card__kicker">END-TO-END</h3>
+                <svg class="card__icon" viewBox="0 0 28 25" aria-hidden="true"><path d="M0.0258715 13.6778L3.85963 24.5944C4.00346 25.0045 4.62062 25.1361 4.98151 24.8335L11.2055 19.6142C11.5664 19.3116 11.4095 18.7984 10.923 18.6756L5.00766 17.1844C4.52125 17.0615 4.36696 16.5462 4.72523 16.2458L9.76978 12.0155C9.94499 11.8686 10.0104 11.6537 9.93976 11.4563L8.48053 7.35102C8.33408 6.94094 7.71953 6.81155 7.36126 7.11418L0.195854 13.1208C0.0206413 13.2677 -0.0421214 13.4804 0.0258715 13.68V13.6778Z"/><path d="M14.0032 3.2303L1.06101 0.0241576C0.548449 -0.103035 0.072499 0.29828 0.226791 0.728105L2.89682 8.14916C3.04327 8.55705 3.65782 8.68644 4.01609 8.38381L8.09828 4.95398C8.45655 4.65135 9.0711 4.78074 9.21754 5.18863L11.4142 11.2939C11.4796 11.4759 11.6522 11.6185 11.8693 11.6733L16.6968 12.8553C17.2093 12.9803 17.6827 12.579 17.5284 12.1514L14.4556 3.60968C14.3902 3.42767 14.2203 3.28512 14.0032 3.23249V3.2303Z"/><path d="M18.703 19.1009L27.8009 11.4803C28.1618 11.1777 28.0049 10.6623 27.5159 10.5395L18.6533 8.34652C18.1407 8.21933 17.6674 8.61845 17.819 9.04828L19.5084 13.8356C19.6601 14.2632 19.1841 14.6623 18.6742 14.5373L11.5271 12.7676C11.2891 12.7084 11.0328 12.7632 10.8602 12.9101L7.48151 15.761C7.12324 16.0636 7.28015 16.579 7.76917 16.6996L18.0439 19.2413C18.2793 19.3005 18.5356 19.2456 18.7108 19.0987L18.703 19.1009Z"/></svg>
+              </header>
+              <p class="card__title">Plan to install</p>
+              <p class="card__text">Survey, configuration, QC and installation by one team.</p>
+              <span class="card__status" aria-hidden="true"></span>
+            </article>
+          </li>
+          <li class="card card--br" data-card="3">
+            <article>
+              <header class="card__head">
+                <h3 class="card__kicker">RANGE</h3>
+                <svg class="card__icon" viewBox="0 0 28 25" aria-hidden="true"><g transform="translate(16.25 16.75)"><path fill-rule="evenodd" d="M4.66709 0L2.33483 4.16711L0 8.33422H4.66709L6.99936 4.16711H11.6665L9.33419 0H4.66709Z"/></g><path fill-rule="evenodd" d="M4.6671 20.8302L6.99936 16.6631L9.33419 12.496L11.6665 8.32892L13.9987 4.16181H18.6658L16.3335 0H11.669L0 20.8302L2.33483 24.9974L4.6671 20.8302Z"/><g transform="translate(7 8.25)"><path fill-rule="evenodd" d="M4.6671 8.33422L2.33483 12.5013L0 16.6684H4.6671L6.99936 12.5013L9.33162 8.33422L11.6665 4.16711H16.331L13.9987 0H9.33162L6.99936 4.16711L4.6671 8.33422Z"/></g></svg>
+              </header>
+              <p class="card__title">One partner, every need</p>
+              <p class="card__text">Lighting, masts, flag poles, water and fitness.</p>
+              <span class="card__status" aria-hidden="true"></span>
+            </article>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <!-- ====== OUR PRODUCTS ====== -->
+  <section class="products" id="products" aria-labelledby="products-title">
+    <div class="products__pin">
+      <h2 class="products__title display" id="products-title" data-split>Our Products</h2>
+
+      <div class="products__viewport" tabindex="0" aria-roledescription="carousel" aria-label="SSG products. Use the left and right arrow keys to move between products.">
+
+        <ol class="products__track" role="list">
+          <!-- 01 -->
+          <li class="slide" data-name="Semi-Integrated Street Light" aria-roledescription="slide" aria-label="1 of 6: Semi-Integrated Street Light">
+            <h3 class="slide__name display">Semi-Integrated <br>Street Light</h3>
+            <div class="slide__card">
+              <p class="slide__desc">A separate solar panel with a built-in battery. Fewer parts on the pole, less upkeep, longer life.</p>
+              <ul class="slide__specs mono" role="list">
+                <li><span class="count" data-to="9">9</span>W – <span class="count" data-to="60">60</span>W LED</li>
+                <li><span class="count" data-to="6">6</span>AH – <span class="count" data-to="60">60</span>AH BATTERY</li>
+                <li><span class="count" data-to="50">50</span>W – <span class="count" data-to="160">160</span>W PANEL</li>
+              </ul>
+              <span class="slide__suns" aria-hidden="true"><svg><use href="#i-sun-outline"/></svg><svg><use href="#i-sun-outline"/></svg></span>
+              <svg class="slide__dots" aria-hidden="true"><use href="#i-dots"/></svg>
+            </div>
+            <p class="slide__tags mono"><span>&lt;SEMI-INTEGRATED SOLAR STREET LIGHT&gt;</span><span>TYPE MPPT // 12V / 24V SYSTEM</span></p>
+            <div class="slide__cta"><button class="btn btn--solid" type="button" data-view-product><span class="btn__label">View Product</span></button><button class="btn btn--solid" type="button" data-enquire="Semi-Integrated Street Light"><span class="btn__label">Get a Quote</span></button></div>
+            <figure class="slide__photo" style="--h:0.862;--ar:0.5795"><img src="assets/02-products/01-semi-integrated/photo-placeholder.webp" alt="Semi-integrated solar street light by SSG" width="1672" height="969" loading="lazy"></figure>
+            <div class="slide__right">
+              <figure class="slide__blueprint slide__blueprint--wide"><img src="assets/02-products/01-semi-integrated/blueprint.webp" alt="Technical drawing of the SSG semi-integrated solar street light with pole height and base plate dimensions" width="550" height="310" loading="lazy"></figure>
+              <div class="slide__iconrow">
+                <svg class="slide__icon slide__icon--layers" aria-hidden="true"><use href="#i-layers"/></svg>
+                <svg class="slide__icon slide__icon--battery" aria-hidden="true"><use href="#i-battery"/></svg>
+                <span class="slide__chem mono">LiFePO4<br>6–60AH</span>
+              </div>
+              <ul class="slide__lines mono" role="list"><li>LAYER 01: TEMPERED SOLAR GLASS</li><li>LAYER 02: MONOCRYSTALLINE CELLS</li><li>LAYER 03: BACKSHEET + ALUMINIUM FRAME</li></ul>
+            </div>
+          </li>
+          <!-- 02 -->
+          <li class="slide" data-name="All-in-One Solar Street Light" aria-roledescription="slide" aria-label="2 of 6: All-in-One Solar Street Light">
+            <h3 class="slide__name display">All-in-One Solar <br>Street Light</h3>
+            <div class="slide__card">
+              <p class="slide__desc">Panel, battery and LED in one sleek unit. Quick to install, easy to maintain, lights itself at dusk.</p>
+              <ul class="slide__specs mono" role="list">
+                <li><span class="count" data-to="9">9</span>W – <span class="count" data-to="60">60</span>W LED</li>
+                <li><span class="count" data-to="6">6</span>AH – <span class="count" data-to="48">48</span>AH BATTERY</li>
+                <li><span class="count" data-to="40">40</span>W – <span class="count" data-to="100">100</span>W PANEL</li>
+              </ul>
+              <span class="slide__suns" aria-hidden="true"><svg><use href="#i-sun-outline"/></svg><svg><use href="#i-sun-outline"/></svg></span>
+              <svg class="slide__dots" aria-hidden="true"><use href="#i-dots"/></svg>
+            </div>
+            <p class="slide__tags mono"><span>&lt;ALL-IN-ONE SOLAR STREET LIGHT&gt;</span><span>TYPE INTEGRATED // AUTO DUSK-TO-DAWN</span></p>
+            <div class="slide__cta"><button class="btn btn--solid" type="button" data-view-product><span class="btn__label">View Product</span></button><button class="btn btn--solid" type="button" data-enquire="All-in-One Solar Street Light"><span class="btn__label">Get a Quote</span></button></div>
+            <figure class="slide__photo" style="--h:0.764;--ar:0.5628"><img src="assets/02-products/02-all-in-one/photo.webp" alt="All-in-one solar street light by SSG" width="1672" height="941" loading="lazy"></figure>
+            <div class="slide__right">
+              <figure class="slide__blueprint"><img src="assets/02-products/02-all-in-one/blueprint.webp" alt="Technical drawing of the SSG all-in-one solar street light: 1000 mm head, 3000 mm pole, 250 mm base plate" width="1451" height="1084" loading="lazy"></figure>
+              <div class="slide__iconrow">
+                <svg class="slide__icon slide__icon--battery" aria-hidden="true"><use href="#i-battery"/></svg>
+                <span class="slide__chem mono">LiFePO4<br>6–48AH</span>
+              </div>
+              <ul class="slide__lines mono" role="list"><li>PANEL + BATTERY + LED IN ONE UNIT</li><li>EASY INSTALLATION</li><li>LOW MAINTENANCE</li></ul>
+            </div>
+          </li>
+          <!-- 03 -->
+          <li class="slide" data-name="Hybrid Solar Street Light" aria-roledescription="slide" aria-label="3 of 6: Hybrid Solar Street Light">
+            <h3 class="slide__name display">Hybrid Solar <br>Street Light</h3>
+            <div class="slide__card">
+              <p class="slide__desc">Solar by default, grid when needed. Uninterrupted light, every single night.</p>
+              <ul class="slide__specs mono" role="list">
+                <li><span class="count" data-to="9">9</span>W – <span class="count" data-to="150">150</span>W LED</li>
+                <li><span class="count" data-to="6">6</span>AH – <span class="count" data-to="60">60</span>AH BATTERY</li>
+                <li><span class="count" data-to="40">40</span>W – <span class="count" data-to="165">165</span>W PANEL</li>
+              </ul>
+              <span class="slide__suns" aria-hidden="true"><svg><use href="#i-sun-outline"/></svg><svg><use href="#i-sun-outline"/></svg></span>
+              <svg class="slide__dots" aria-hidden="true"><use href="#i-dots"/></svg>
+            </div>
+            <p class="slide__tags mono"><span>&lt;HYBRID SOLAR STREET LIGHT&gt;</span><span>TYPE HYBRID // SOLAR + GRID</span></p>
+            <div class="slide__cta"><button class="btn btn--solid" type="button" data-view-product><span class="btn__label">View Product</span></button><button class="btn btn--solid" type="button" data-enquire="Hybrid Solar Street Light"><span class="btn__label">Get a Quote</span></button></div>
+            <figure class="slide__photo" style="--h:0.817;--ar:0.5628"><img src="assets/02-products/03-hybrid/photo.webp" alt="Hybrid solar street light by SSG" width="1672" height="941" loading="lazy"></figure>
+            <div class="slide__right">
+              <figure class="slide__blueprint"><img src="assets/02-products/03-hybrid/blueprint.webp" alt="Technical drawing of the SSG hybrid solar street light: 1000 mm head, 3000 mm pole, 250 mm base plate" width="1451" height="1084" loading="lazy"></figure>
+              <div class="slide__iconrow">
+                <svg class="slide__icon slide__icon--battery" aria-hidden="true"><use href="#i-battery"/></svg>
+                <span class="slide__chem mono">LiFePO4<br>6–60AH</span>
+              </div>
+              <ul class="slide__lines mono" role="list"><li>ALL-IN-ONE OR SEMI-INTEGRATED</li><li>UNINTERRUPTED NIGHT ILLUMINATION</li><li>ENERGY-EFFICIENT OPERATION</li></ul>
+            </div>
+          </li>
+          <!-- 04 -->
+          <li class="slide" data-name="AC Street Light" aria-roledescription="slide" aria-label="4 of 6: AC Street Light">
+            <h3 class="slide__name display">AC Street <br>Light</h3>
+            <div class="slide__card">
+              <p class="slide__desc">High-output LED lighting for busy roads and campuses, built to last outdoors.</p>
+              <ul class="slide__specs mono" role="list">
+                <li><span class="count" data-to="12">12</span>W – <span class="count" data-to="250">250</span>W LED</li>
+                <li><span class="count" data-to="50000" data-format="comma">50,000</span>+ HR LIFESPAN</li>
+                <li>IP65 WEATHERPROOF</li>
+              </ul>
+              <span class="slide__suns" aria-hidden="true"><svg><use href="#i-sun-outline"/></svg><svg><use href="#i-sun-outline"/></svg></span>
+              <svg class="slide__dots" aria-hidden="true"><use href="#i-dots"/></svg>
+            </div>
+            <p class="slide__tags mono"><span>&lt;AC LED STREET LIGHT&gt;</span><span>TYPE AC // GRID-POWERED</span></p>
+            <div class="slide__cta"><button class="btn btn--solid" type="button" data-view-product><span class="btn__label">View Product</span></button><button class="btn btn--solid" type="button" data-enquire="AC Street Light"><span class="btn__label">Get a Quote</span></button></div>
+            <figure class="slide__photo" style="--h:0.819;--ar:0.5628"><img src="assets/02-products/04-ac/photo.webp" alt="AC LED street light on a curved-arm pole by SSG" width="1672" height="941" loading="lazy"></figure>
+            <div class="slide__right">
+              <figure class="slide__blueprint"><img src="assets/02-products/04-ac/blueprint.webp" alt="Technical drawing of the SSG AC street light: 180 by 280 mm LED head on a 3000 mm curved-arm pole" width="1451" height="1084" loading="lazy"></figure>
+              <div class="slide__iconrow">
+                <svg class="slide__icon slide__icon--sun" aria-hidden="true"><use href="#i-sun-solid"/></svg>
+              </div>
+              <ul class="slide__lines mono" role="list"><li>HIGH LUMEN OUTPUT</li><li>MULTIPLE WATTAGE OPTIONS</li><li>BUILT FOR EVERY ROAD</li></ul>
+            </div>
+          </li>
+          <!-- 05 -->
+          <li class="slide" data-name="Flood Light" aria-roledescription="slide" aria-label="5 of 6: Flood Light">
+            <h3 class="slide__name display">Flood <br>Light</h3>
+            <div class="slide__card">
+              <p class="slide__desc">Wide, bright light for grounds, yards, stadiums and open spaces.</p>
+              <ul class="slide__specs mono" role="list">
+                <li><span class="count" data-to="9">9</span>W – <span class="count" data-to="350">350</span>W LED</li>
+                <li><span class="count" data-to="50000" data-format="comma">50,000</span>+ HR LIFESPAN</li>
+                <li>IP65 WEATHERPROOF</li>
+              </ul>
+              <span class="slide__suns" aria-hidden="true"><svg><use href="#i-sun-outline"/></svg><svg><use href="#i-sun-outline"/></svg></span>
+              <svg class="slide__dots" aria-hidden="true"><use href="#i-dots"/></svg>
+            </div>
+            <p class="slide__tags mono"><span>&lt;LED FLOOD LIGHT&gt;</span><span>TYPE WIDE-ANGLE // AREA LIGHTING</span></p>
+            <div class="slide__cta"><button class="btn btn--solid" type="button" data-view-product><span class="btn__label">View Product</span></button><button class="btn btn--solid" type="button" data-enquire="Flood Light"><span class="btn__label">Get a Quote</span></button></div>
+            <figure class="slide__photo" style="--h:0.770;--ar:0.5628"><img src="assets/02-products/05-flood/photo.webp" alt="LED flood light on a pole by SSG" width="1672" height="941" loading="lazy"></figure>
+            <div class="slide__right">
+              <figure class="slide__blueprint"><img src="assets/02-products/05-flood/blueprint.webp" alt="Technical drawing of the SSG LED flood light: 280 by 200 mm fitting on a 3000 mm pole" width="1451" height="1084" loading="lazy"></figure>
+              <div class="slide__iconrow">
+                <svg class="slide__icon slide__icon--sun" aria-hidden="true"><use href="#i-sun-solid"/></svg>
+              </div>
+              <ul class="slide__lines mono" role="list"><li>HIGH-LUMEN LED OUTPUT</li><li>WIDE-ANGLE AREA ILLUMINATION</li><li>IP65 WEATHERPROOF CONSTRUCTION</li></ul>
+            </div>
+          </li>
+          <!-- 06 -->
+          <li class="slide slide--mast" data-name="High Mast &amp; Poles" aria-roledescription="slide" aria-label="6 of 6: High Mast and Poles">
+            <h3 class="slide__name display">High Mast <br>&amp; Poles</h3>
+            <div class="slide__card">
+              <p class="slide__desc">Strong galvanised steel, from street corners to skylines. Customised to every site.</p>
+              <ul class="slide__specs mono" role="list">
+                <li><span class="count" data-to="5">5</span>M – <span class="count" data-to="30">30</span>M HEIGHT</li>
+                <li>HOT-DIP GALVANISED</li>
+                <li>OCTAGONAL &amp; G.I.</li>
+              </ul>
+              <span class="slide__suns" aria-hidden="true"><svg><use href="#i-sun-outline"/></svg><svg><use href="#i-sun-outline"/></svg></span>
+              <svg class="slide__dots" aria-hidden="true"><use href="#i-dots"/></svg>
+            </div>
+            <p class="slide__tags mono"><span>&lt;HIGH MAST &amp; LIGHTING POLES&gt;</span><span>TYPE FLANGE BASE // HIGH-WIND DESIGN</span></p>
+            <div class="slide__cta"><button class="btn btn--solid" type="button" data-view-product><span class="btn__label">View Product</span></button><button class="btn btn--solid" type="button" data-enquire="High Mast &amp; Poles"><span class="btn__label">Get a Quote</span></button></div>
+            <figure class="slide__photo" style="--h:0.759;--ar:0.5628"><img src="assets/02-products/06-high-mast/photo.webp" alt="High mast lighting pole with flood lights by SSG" width="1672" height="941" loading="lazy"></figure>
+            <div class="slide__dimension" aria-hidden="true">
+              <svg viewBox="0 0 20 100" preserveAspectRatio="none"><path class="dim__line" d="M10 1V99"/><path d="M4 1H16M4 99H16"/></svg>
+              <span class="mono">30M</span>
+            </div>
+            <div class="slide__right">
+              <figure class="slide__blueprint"><img src="assets/02-products/06-high-mast/blueprint.webp" alt="Technical drawing of the SSG high mast: 12000 mm pole with a 2200 mm flood light ring and a 400 mm base plate" width="1451" height="1084" loading="lazy"></figure>
+              <ul class="slide__lines mono" role="list"><li>MATERIAL: PREMIUM MILD STEEL</li><li>FINISH: HOT-DIP GALVANISED</li><li>USE: SOLAR &amp; STREET LIGHTING</li></ul>
+            </div>
+          </li>
+        </ol>
+
+      </div>
+
+      <div class="products__nav">
+        <button class="products__arrow" type="button" data-dir="-1" aria-label="Previous product"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+        <button class="products__arrow" type="button" data-dir="1" aria-label="Next product"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+        <p class="products__status sr-only" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== OUR MISSION ====== -->
+  <section class="mission section-blue" id="about" aria-labelledby="mission-title">
+    <div class="mission__mosaic" aria-hidden="true">
+      <span class="tile" style="--tx:0;--ty:0"><span class="tile__img"></span></span><span class="tile" style="--tx:1;--ty:0"><span class="tile__img"></span></span><span class="tile" style="--tx:2;--ty:0"><span class="tile__img"></span></span>
+      <span class="tile" style="--tx:0;--ty:1"><span class="tile__img"></span></span><span class="tile" style="--tx:1;--ty:1"><span class="tile__img"></span></span><span class="tile" style="--tx:2;--ty:1"><span class="tile__img"></span></span>
+    </div>
+    <div class="mission__head">
+      <h2 class="mission__title display" id="mission-title" data-split>Our Mission</h2>
+      <p class="mission__text" data-fade>To be a trusted leader in sustainable infrastructure, delivering high-quality solutions that create long-term value for communities.</p>
+    </div>
+    <p class="mission__about" data-fade>Shree Shyam Group, a unit of Shyam Infratech, designs, supplies and installs sustainable infrastructure for communities, industries and government bodies across India, from solar lighting to public utilities.</p>
+    <dl class="mission__stats">
+      <div class="stat"><dt class="stat__value" data-typein>GeM</dt><dd class="stat__label">Associated with India's Government e-Marketplace.</dd></div>
+      <span class="stat__rule" aria-hidden="true"></span>
+      <div class="stat"><dt class="stat__value"><span class="count" data-to="4">4</span></dt><dd class="stat__label">Certifications and standards: ISO 9001:2015, RoHS, MSME and product compliance.</dd></div>
+      <span class="stat__rule" aria-hidden="true"></span>
+      <div class="stat"><dt class="stat__value"><span class="count" data-to="100">100</span>%</dt><dd class="stat__label">Products inspected before dispatch.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ====== NATIONAL FLAG (z 30, the panel passes behind it) ====== -->
+  <section class="flag" id="divisions" aria-labelledby="flag-title">
+    <h2 class="flag__title display" id="flag-title" data-split>BUILT FOR <br>PRIDE.</h2>
+    <p class="flag__text" data-fade>National Flag poles for public spaces, institutions, campuses and government buildings. Heavy-duty steel, built to carry the Tricolour high in every season.</p>
+
+    <div class="flag__banner" aria-hidden="true">
+      <img class="flag__sky" src="assets/04-flag/flag-sky.webp" width="1916" height="821" alt="" loading="lazy">
+    </div>
+    <div class="flag__flag">
+      <img class="flag__img" src="assets/04-flag/national-flag.webp" width="1400" height="2102" alt="The Indian National Flag flying from a tall steel flag pole" loading="lazy">
+      <canvas class="flag__gl" aria-hidden="true"></canvas>
+    </div>
+    <div class="flag__dimension" aria-hidden="true">
+      <svg viewBox="0 0 20 100" preserveAspectRatio="none"><path class="dim__line" d="M10 99V1"/><path class="dim__cap" d="M4 99H16M4 1H16"/></svg>
+      <span class="mono"><span class="count" data-to="100">100</span> FT</span>
+    </div>
+
+    <figure class="flag__project">
+      <img src="assets/04-flag/project-image.webp" width="1000" height="901" alt="A 100 ft National Flag mast installed by SSG in Arunachal Pradesh, against a blue sky and green hills" loading="lazy">
+      <figcaption class="mono"><span data-type>// FEATURED PROJECT</span><span data-type>100 FT NATIONAL FLAG MAST AT ARUNACHAL PRADESH</span></figcaption>
+    </figure>
+    <button class="btn btn--solid flag__cta" type="button" data-enquire="National Flag Pole"><span class="btn__label">Get a Quote</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+  </section>
+
+  <!-- ====== POWERED BY THE SUN ====== -->
+  <section class="sun section-blue" aria-labelledby="sun-title">
+    <svg class="sun__grid solar-grid" viewBox="0 0 1728 775" preserveAspectRatio="none" aria-hidden="true">
+      <g class="solar-grid__lines">
+        <path d="M630 152V662"/><path d="M761 152V662"/><path d="M893 144V670"/><path d="M1024 152V662"/><path d="M1157 152V662"/>
+        <path d="M499 271H1286"/><path d="M499 401H1286"/><path d="M499 533H1286"/>
+      </g>
+      <g class="solar-grid__diamonds"></g>
+    </svg>
+    <div class="anchor anchor--panel anchor--panel-sun" id="anchor-panel-sun">
+      <img class="anchor__fallback" src="assets/01-hero/panel-static.webp" width="1030 626" height="" alt="" loading="lazy">
+    </div>
+    <h2 class="sun__title display" id="sun-title"><span class="sun__line">POWERED</span><span class="sun__line">BY THE</span><span class="sun__line">SUN.</span></h2>
+    <div class="sun__body">
+      <p data-fade>Every SSG solar light charges by day and lights the road all night, with no grid connection, no wiring and no electricity bills. Cleaner streets, lower running costs.</p>
+      <p class="sun__mono mono" data-type>// ZERO GRID · ZERO BILLS · AUTO DUSK-TO-DAWN</p>
+    </div>
+  </section>
+
+  <!-- ====== PROUDLY ASSOCIATED WITH ====== -->
+  <section class="logos" aria-labelledby="logos-title">
+    <h2 class="logos__title display" id="logos-title" data-split>PROUDLY ASSOCIATED WITH</h2>
+    <div class="logos__viewport">
+      <ul class="logos__row" role="list">
+        <li class="logo"><img src="assets/06-logos/10-nrl.webp" width="440" height="440" alt="NRL, Numaligarh Refinery Limited" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/11-gov-assam.webp" width="440" height="440" alt="Government of Assam" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/12-gem.webp" width="440" height="440" alt="GeM, Government e Marketplace" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/13-indian-army.webp" width="440" height="440" alt="Indian Army" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/14-mplads.webp" width="440" height="440" alt="MPLADS, Members of Parliament Local Area Development Scheme" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/15-dept-rural-dev.webp" width="440" height="440" alt="Department of Rural Development" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/16-panchayat-rural-dev-assam.webp" width="440" height="440" alt="Panchayat and Rural Development Department, Assam" decoding="async"></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ====== SSG'S PROCESS ====== -->
+  <section class="process section-blue" id="ssg" aria-labelledby="process-title">
+    <h2 class="sr-only" id="process-title">SSG's process</h2>
+    <div class="process__head">
+      <p class="process__word process__word--l display" aria-hidden="true">SSG’s</p>
+      <div class="diamond">
+        <svg class="diamond__svg" viewBox="0 0 460 460" aria-hidden="true">
+          <defs>
+            <!-- the two bottom quadrants; process.js keeps these in step with the visible shapes -->
+            <clipPath id="clip-bottom-tri"><path class="diamond__clip"/><path class="diamond__clip"/></clipPath>
+          </defs>
+          <g class="diamond__quads"></g>
+          <!-- step line art, loaded and inlined by process.js -->
+          <g class="diamond__arts" clip-path="url(#clip-bottom-tri)"><g class="diamond__artwrap"></g></g>
+          <g class="diamond__labels"></g>
+        </svg>
+        <div class="diamond__content" aria-live="polite">
+          <p class="diamond__line"></p>
+        </div>
+        <!-- Accessible, focusable quadrant hit-areas are generated in process.js -->
+        <svg class="diamond__hits" viewBox="0 0 460 460" role="group" aria-label="Process steps. Focus a step and press Enter to explore it."></svg>
+      </div>
+      <p class="process__word process__word--r display" aria-hidden="true"><span class="ticker"><span class="ticker__item is-active">PROCESS</span></span></p>
+    </div>
+    <p class="process__hint mono" aria-hidden="true">HOVER TO EXPLORE</p>
+
+    <div class="exploded">
+      <svg class="exploded__svg" viewBox="70 25 1602 257" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Exploded view of an SSG solar street light: panel, bracket, battery, controller, LED head, pole and flange base"><g class="conn"><path class="conn__line" d="M207 141H343"/><path class="conn__arrow" d="M341 138.4L345.5 141L341 143.6"/></g><g class="conn"><path class="conn__line" d="M496 139H582"/><path class="conn__arrow" d="M580 136.4L584.5 139L580 141.6"/></g><g class="conn"><path class="conn__line" d="M711 139H801"/><path class="conn__arrow" d="M799 136.4L803.5 139L799 141.6"/></g><g class="conn"><path class="conn__line" d="M898 137H987"/><path class="conn__arrow" d="M985 134.4L989.5 137L985 139.6"/></g><g class="conn"><path class="conn__line" d="M1152 137H1241"/><path class="conn__arrow" d="M1239 134.4L1243.5 137L1239 139.6"/></g><g class="conn"><path class="conn__line" d="M1451 136H1541"/><path class="conn__arrow" d="M1539 133.4L1543.5 136L1539 138.6"/></g><g class="part" data-part="solar-panel" data-label="PANEL" data-cx="175.8" data-by="206.5" tabindex="0" role="img" aria-label="Panel"><g class="part__lift"><g transform="translate(93.75 74.50)"><path d="M52.4279 2.50494L163.91 0.208496M45.3298 13.9871L157.647 13.1521M38.023 25.6781L151.175 26.5132M30.9249 37.1603L144.494 40.2918M23.2005 49.4776L137.187 55.1143M15.2673 62.0036L130.089 69.9367M7.75173 73.9033L122.574 85.1767M0.0273438 86.2206L114.641 101.252" stroke-width="0.417534" stroke-opacity="0.4"/></g><g transform="translate(77.75 54.50)"><path d="M127.177 150.947L195.652 6.47981L193.564 0.216797L72.8971 6.47981L0.246094 121.719L4.42144 128.4L127.177 150.947ZM0.246094 121.719L123.419 143.431M193.564 0.216797L123.419 143.431M127.177 150.947L123.419 143.431" stroke-width="0.417534" /></g><g transform="translate(81.00 58.00)"><path d="M0.34375 117.133L71.5334 5.23405L186.147 0.223633L119.341 138.01L0.34375 117.133Z" stroke-width="0.417534" /></g><g transform="translate(86.00 62.00)"><path d="M0.208984 111.467V109.797L64.718 6.8744L65.3443 6.2481L66.1794 5.62179L67.2232 4.99549L67.8495 4.57796L68.8934 4.36919L115.24 2.69905L175.365 0.402615L175.156 0.193848L176.2 0.611382L176.826 1.23768V1.86398L176.2 2.90782L115.24 128.168L114.405 128.794L112.943 129.421L112.108 129.838H111.273L0.208984 111.467Z" stroke-width="0.417534" /></g><g transform="translate(89.25 66.50)"><path d="M0.177734 111.367L66.9832 3.64279M6.23198 112.202L72.8287 3.64279M11.6599 113.454L78.4654 3.43402M18.5492 114.289L85.5635 3.01649M25.8561 115.751L92.2441 3.01649M32.3279 116.795L98.7158 3.01649M38.3821 117.838L104.979 2.39019M45.689 118.882L112.286 2.18142M53.6221 120.344L119.801 1.76389M60.7202 121.596L126.691 1.55512M67.4008 122.64L133.371 1.34635M75.9602 123.893L141.513 0.928819M84.3109 125.354L149.238 0.720051M92.2441 126.607L156.753 0.511284M99.7597 127.859L163.851 0.09375" stroke-width="0.417534" stroke-opacity="0.4"/></g><rect class="part__hit" x="71.8" y="48.5" width="208.0" height="164.0" fill="transparent" stroke="none"/></g></g><g class="part" data-part="by-section" data-label="BRACKET" data-cx="444.2" data-by="204.2" tabindex="0" role="img" aria-label="Bracket"><g class="part__lift"><g transform="translate(508.25 76.75)"><path d="M2.45096 0.307129L0.314453 1.74072V3.1743L3.36661 3.46102H7.02919L9.47091 2.02743L9.77613 0.593846L8.55527 0.307129" stroke-width="0.630694" /></g><g transform="translate(370.00 156.75)"><path d="M0.31543 0V5.67701" stroke-width="0.630694" /></g><g transform="translate(448.00 75.00)"><path d="M0.0380859 20.563L46.1516 26.1041L78.2442 0.245605" stroke-width="0.630694" /></g><g transform="translate(370.25 129.75)"><path d="M0.31543 8.05036V33.1115M28.066 6.81277L15.1157 5.26579M13.8824 2.17181L8.64059 1.24362L5.86554 0.31543H4.63218L4.0155 2.17181L3.39882 3.1" stroke-width="0.630694" /></g><g transform="translate(454.00 89.50)"><path d="M0.474609 3.23404L5.74612 4.10742L8.67473 2.06953L7.50328 0.613882L3.40322 0.322754L1.06033 2.06953L0.474609 3.23404Z" stroke-width="0.630694" /></g><g transform="translate(466.00 78.75)"><path d="M0.341797 7.53154L0.657186 4.9075L6.0188 1.62745L8.22653 0.31543H9.48808L9.80347 0.971439L9.48808 2.61146L4.75725 7.53154L2.54952 8.51555L0.341797 7.53154Z" stroke-width="0.630694" /></g><g transform="translate(473.00 73.00)"><path d="M0.6298 3.4689L7.56744 4.0996L9.77487 2.20751L9.45952 0.946124L6.93674 0.31543H3.46792L1.26049 1.26147L0.314453 2.52286V3.4689M9.45952 12.9293V14.1907H11.0363L13.2437 13.8754L14.8204 12.2986L13.559 10.7219L11.667 11.3526L9.45952 12.9293Z" stroke-width="0.630694" /></g><g transform="translate(473.25 72.75)"><path d="M1.69764 1.20682L0.392578 2.973L1.69764 4.73918L6.26534 4.15045L8.87546 2.973L9.85425 1.20682L4.30775 0.32373L1.69764 1.20682Z" stroke-width="0.630694" /></g><g transform="translate(497.25 83.75)"><path d="M0.642578 6.04978L2.8503 4.04276L5.37342 1.4623L7.89653 0.31543H10.4196L11.3658 0.888865L10.735 2.32245L8.52731 4.61619L6.0042 6.04978L2.8503 6.62321L0.642578 6.04978ZM5.68881 4.04276L6.0042 3.46932L7.89653 1.74902H8.52731L7.26575 3.46932L6.47728 3.75604L5.68881 4.04276Z" stroke-width="0.630694" /></g><g transform="translate(382.25 180.75)"><path d="M2.5582 1.57699L1.99751 0.31543H0.876122L0.31543 1.2616V2.20777V5.99244V8.20016L0.876122 9.14633L1.99751 8.51555L2.83854 5.99244V4.1001L2.5582 1.57699Z" stroke-width="0.630694" /></g><g transform="translate(381.50 122.25)"><path d="M0.31543 7.2955V4.45699L0.595776 1.61849L1.15647 0.672323L1.43681 0.356934L2.5582 0.672323L2.83854 2.88005L2.5582 5.40316V7.61089L1.43681 8.55705L0.31543 7.2955Z" stroke-width="0.630694" /></g><g transform="translate(490.50 104.25)"><path d="M0.945147 0.00390625L0.314453 52.9822" stroke-width="0.630694" /></g><g transform="translate(415.50 141.00)"><path d="M5.01495 11.0643H2.83004L0.957266 10.1414L0.333008 8.29544L0.957266 6.4495L2.20578 4.91122L4.39069 3.37294H5.32708M61.5104 12.9103L6.26346 3.37294H5.32708M5.32708 3.37294L13.7546 0.296387" stroke-width="0.630694" /></g><g transform="translate(360.75 69.25)"><path d="M26.5552 107.797L26.8675 121.856L26.5552 123.418L5.93823 134.665H4.68872H3.12683L1.87732 134.04L0.627807 132.165L0.31543 59.0604L0.940185 57.8108L2.50207 56.8735L20.9324 48.126H23.4314L24.0561 48.4384M5.93823 134.665L4.37634 133.727L3.75159 133.415L3.12683 132.165L3.43921 58.4356L24.0561 48.4384M44.0483 64.3431L9.99914 95.3004V115.607L10.3115 116.545H11.561L15.9343 114.358L19.6829 112.796L22.4943 111.234L26.5552 107.797L32.4903 103.423L36.5513 99.9866L40.9245 95.9252L45.2978 92.4887L46.5473 90.9266M46.5473 90.9266L49.6711 89.677L54.6692 87.8025L56.8558 86.2404L58.7301 84.9908L59.9796 83.7411L60.6043 83.1163L116.52 93.1135M46.5473 90.9266H45.2978L42.4864 91.8639L36.5513 93.7384L34.3646 94.3632L34.3331 94.3868M130.014 88.9539L129.952 94.988L122.143 99.6742H119.956H117.145L116.52 98.4246V93.1135M116.52 93.1135V80.3046M122.143 99.6742V86.2404L123.08 84.6784L124.329 83.7411L126.204 81.8666H127.766H129.327H130.087M130.577 34.0673L135.263 34.6922L166.188 9.38666V5.32528L113.396 0.32666L86.2193 23.4453L85.5946 24.6949V25.6322V26.5694M130.577 34.0673L117.769 32.1863M130.577 34.0673L130.087 81.8666M117.769 32.1863L114.333 31.6816L104.498 30.2371L85.907 27.5067L85.5946 26.5694M85.5946 26.5694L44.0483 64.3431M10.3115 116.545L23.119 104.048M102.151 30.3184L88.7184 42.5025L80.2841 50.3129L74.6613 55.3115L62.4786 66.5584L53.732 74.3687L45.2978 81.8666L33.1151 93.1135L30.9285 95.3004L28.7418 97.4873L26.5552 99.6742L24.0561 101.861L23.119 103.111V104.048M23.119 104.048L24.6809 103.736L25.9304 102.486L28.4294 99.9866L30.6161 97.7997L33.1151 95.3004L34.3331 94.3868M33.1151 93.1135L33.4275 94.0508L34.3331 94.3868M102.151 30.3184L102.463 30.006M102.151 30.3184H103.088L103.712 30.6308M34.3331 94.3868L104.498 30.2371M114.333 31.6816L68.7262 72.1818L116.52 80.3046M116.52 80.3046L117.769 32.8177V32.1863M130.014 88.9539L130.087 81.8666M130.014 88.9539L128.39 88.8959M130.014 88.9539L132.764 89.0521M128.39 88.8959V89.677L127.766 91.239L127.141 92.1763H126.204L124.954 91.5515L124.329 90.3018V88.4273L124.954 87.4901L126.204 86.2404L127.766 86.8652L128.39 88.1149V88.8959ZM44.0483 64.3431L25.618 62.1846V49.688L24.6809 48.7508L24.0561 48.4384M125.891 88.4273L125.579 89.3646L125.891 89.9894H126.828L127.141 89.0521L126.828 88.4273H125.891Z" stroke-width="0.630694" /></g><g transform="translate(365.75 128.25)"><path d="M0.606558 1.98466L0.31543 2.61544V4.50777V7.03089L0.606558 8.92322L0.897687 9.86939L1.77107 10.5002L2.64446 9.86939L3.51784 8.60783L3.80897 6.40011L4.1001 3.877L3.80897 1.98466L2.93559 1.03849L1.77107 0.407715L0.606558 1.98466Z" stroke-width="0.630694" /></g><g transform="translate(365.75 156.25)"><path d="M0.876122 0.640376L0.31543 1.61522V4.21479V7.13931V9.41393L0.876122 10.3888L1.43681 11.0387L2.27785 10.7137L2.83854 9.73888V6.48941V1.61522L2.27785 0.31543H1.43681L0.876122 0.640376Z" stroke-width="0.630694" /></g><g transform="translate(368.75 189.25)"><path d="M0.31543 1.93779V8.87635L0.946208 9.82252L2.20776 10.1379L3.46932 9.19174L4.1001 6.98401V2.88395L3.78471 0.991618L1.89238 0.36084L0.31543 1.93779Z" stroke-width="0.630694" /></g><rect class="part__hit" x="354.8" y="63.2" width="179.0" height="147.0" fill="transparent" stroke="none"/></g></g><g class="part" data-part="battery" data-label="BATTERY" data-cx="657.0" data-by="174.0" tabindex="0" role="img" aria-label="Battery"><g class="part__lift"><g transform="translate(617.50 94.50)"><path d="M6.68077 1.87912L9.18597 0.417752L9.60351 0.208984M6.68077 1.87912L1.67035 1.67035M6.68077 1.87912L7.7246 2.50542M9.60351 0.208984H10.2298V1.87912L7.7246 2.50542M9.60351 0.208984H4.17556L1.46159 1.67035L0.835286 2.08789L0.777695 3.75803M7.7246 2.50542L7.51584 8.55967L7.34882 8.76844M0.777695 3.75803L0.626519 8.14214L0.208984 8.55967V13.9876L0.626519 15.449L1.04405 18.5805L1.87912 18.998L2.08789 19.0067M7.51584 3.96679L5.01063 3.88918L0.777695 3.75803M1.87912 3.96679V7.7246H5.01063M5.01063 7.7246V3.88918M5.01063 7.7246V8.76844M1.87912 7.93337V8.55967H0.417752M5.01063 8.76844H7.34882M5.01063 8.76844V10.021M7.34882 8.76844L6.68077 9.60351V12.9438L7.7246 13.3613L7.51584 18.7893L6.88953 19.2068L6.26323 19.1807M1.25282 8.76844V10.021M1.25282 10.021H5.01063M1.25282 10.021V12.3175V13.9876L1.46159 15.449L1.87912 16.4928L2.08789 17.7454V18.5805V19.0067M5.01063 10.021V12.9438L5.2194 14.6139L5.42816 15.8665L6.05447 16.4928L6.26323 17.1191V19.1807M6.26323 19.1807L2.08789 19.0067" stroke-width="0.417534" /></g><g transform="translate(665.75 97.50)"><path d="M6.68077 1.87912L9.18597 0.417752L9.60351 0.208984M6.68077 1.87912L1.67035 1.67035M6.68077 1.87912L7.7246 2.50542M9.60351 0.208984H10.2298V1.87912L7.7246 2.50542M9.60351 0.208984H4.17556L1.46159 1.67035L0.835286 2.08789L0.777695 3.75803M7.7246 2.50542L7.51584 8.55967L7.34882 8.76844M0.777695 3.75803L0.626519 8.14214L0.208984 8.55967V13.9876L0.626519 15.449L1.04405 18.5805L1.87912 18.998L2.08789 19.0067M7.51584 3.96679L5.01063 3.88918L0.777695 3.75803M1.87912 3.96679V7.7246H5.01063M5.01063 7.7246V3.88918M5.01063 7.7246V8.76844M1.87912 7.93337V8.55967H0.417752M5.01063 8.76844H7.34882M5.01063 8.76844V10.021M7.34882 8.76844L6.68077 9.60351V12.9438L7.7246 13.3613L7.51584 18.7893L6.88953 19.2068L6.26323 19.1807M1.25282 8.76844V10.021M1.25282 10.021H5.01063M1.25282 10.021V12.3175V13.9876L1.46159 15.449L1.87912 16.4928L2.08789 17.7454V18.5805V19.0067M5.01063 10.021V12.9438L5.2194 14.6139L5.42816 15.8665L6.05447 16.4928L6.26323 17.1191V19.1807M6.26323 19.1807L2.08789 19.0067" stroke-width="0.417534" /></g><g transform="translate(609.00 87.25)"><path d="M92.6928 10.441V3.96923L22.1295 0.211426L10.6473 5.4306L2.71419 8.97965L2.29666 14.8251M92.6928 3.96923L75.5739 13.155L65.3443 12.9462M63.2567 23.3846L77.4528 24.2197L93.9454 14.8251L95.198 14.1988V10.8586L92.6928 10.441M92.6928 10.441L76.2002 19.8355L64.0917 19.2092M95.198 10.8586L77.2441 20.8794L76.409 21.0881L63.6742 20.4618M93.9454 14.8251L93.3191 71.8186L76.6178 85.5972H75.7827L5.2194 77.2465L4.17556 76.829L3.54926 76.4114L3.13172 75.9939L2.92296 75.3676L1.87912 19.0585M56.7849 22.7583L15.2402 19.8355M2.29666 14.8251L1.04405 15.2427L0.208984 15.6602V15.869M2.29666 14.8251L8.97721 15.2427M2.71419 8.97965H8.97721M8.76844 19.2092L1.87912 19.0585M1.87912 19.0585L0.835286 19.0005L0.208984 18.5829V15.869M0.208984 15.869L8.76844 16.2865M15.449 16.9128L56.7849 19.6268M17.7454 9.81472L57.62 12.1112M16.0753 15.6602L57.2024 18.5829" stroke-width="0.417534" /></g><g transform="translate(683.25 101.00)"><path d="M0.208984 0.345994V6.68063M1.67035 0V6.68063M0.626519 11.0647V72.4422M1.87912 11.2734L2.08789 72.4422M2.71419 8.14192V11.0647" stroke-width="0.417534" /></g><g transform="translate(673.00 100.00)"><path d="M0.208984 1.87934V0.835369L5.01127 0.208984H5.42886L5.22007 0.417779" stroke-width="0.417534" /></g><g transform="translate(656.00 89.25)"><path d="M4.59368 1.49349H2.71452H1.04416L0.208984 1.91108V2.95506L1.04416 3.58144L2.92332 3.37265L5.01127 2.95506L6.47284 2.32867L7.51681 1.49349L7.30802 0.658313L6.47284 0.240723L5.84645 0.658313L5.22007 1.2847L4.59368 1.49349Z" stroke-width="0.417534" /></g><g transform="translate(683.25 90.50)"><path d="M2.31451 0.246582L2.9409 1.08176H5.23764L6.69921 0.455377L7.95198 0.246582V1.49935L7.53439 2.54333L6.28162 2.96092H4.61126H2.9409H1.47933L0.226562 1.91694L0.435358 0.664172L1.47933 0.246582H2.31451Z" stroke-width="0.417534" /></g><g transform="translate(636.25 87.25)"><path d="M0.115234 0.626574L0.741619 0.208984H1.99439H3.03836L4.49993 0.417779H5.5439" stroke-width="0.417534" /></g><g transform="translate(640.75 86.00)"><path d="M2.92332 2.35211V1.51693L2.50573 0.26416L1.25296 0.68175L0.208984 1.51693V2.9785H1.67055L2.50573 2.56091L2.92332 2.35211ZM2.92332 2.35211V2.9785L2.29693 3.60488L1.25296 4.44006L0.417779 4.85765V5.48404" stroke-width="0.417534" /></g><g transform="translate(634.00 88.00)"><path d="M1.87912 1.14366L0.208984 1.5612V2.39627L2.50542 3.02257H5.42816L7.93337 2.39627L10.021 1.5612V0.308594L7.93337 1.14366H6.88953H1.87912Z" stroke-width="0.417534" /></g><g transform="translate(609.25 102.00)"><path d="M7.51681 2.50768V0.419733L1.67055 0.210938L0.208984 1.25491V3.55166M0.208984 1.25491L5.22007 1.46371M7.51681 0.419733L5.22007 1.25491V1.46371M5.22007 1.46371V3.13407" stroke-width="0.417534" /></g><rect class="part__hit" x="603.0" y="80.0" width="108.0" height="100.0" fill="transparent" stroke="none"/></g></g><g class="part" data-part="conductor" data-label="CONTROLLER" data-cx="860.6" data-by="184.2" tabindex="0" role="img" aria-label="Controller"><g class="part__lift"><g transform="translate(827.25 127.50)"><path d="M1.16259 0.90283L0.291016 1.77441V2.64599L0.581542 3.51757L1.45312 4.09862L2.61523 4.38914L3.4868 3.80809L4.06786 2.64599L3.77733 1.48388L2.90575 0.612304L1.74365 0.321777L1.16259 0.90283ZM2.03417 1.77441L1.74365 2.35546V2.93651L2.03417 3.22704H2.90575L3.19628 2.64599V2.06493L2.90575 1.77441L2.61523 1.48388L2.03417 1.77441Z" stroke-width="0.580975" /></g><g transform="translate(822.75 96.25)"><path d="M0.930662 1.16211L2.38329 0.290527H3.5454L4.12645 1.16211V2.32421L3.5454 3.77684L1.80224 4.06737L0.930662 2.90526L0.349609 2.03368L0.930662 1.16211Z" stroke-width="0.580975" /></g><g transform="translate(879.50 95.75)"><path d="M0.291016 0.87158V0.290527H0.872068L1.16259 0.581054V1.16211L0.872068 1.45263L0.291016 0.87158Z" stroke-width="0.580975" /></g><g transform="translate(822.75 83.50)"><path d="M15.6869 0.290527H11.9105L0.871991 6.10028L0.291016 7.26223V8.13369L0.871991 8.42418H2.61492H3.48638" stroke-width="0.580975" /></g><g transform="translate(890.50 88.00)"><path d="M0.162109 0.241699L1.03357 0.822674L4.80991 1.40365V1.98462L3.93845 2.85609L4.51942 41.2004M4.51942 41.2004L2.7765 42.3624M4.51942 41.2004L6.55283 41.4909" stroke-width="0.580975" /></g><g transform="translate(883.75 89.50)"><path d="M9.29613 43.5732L8.42467 44.4446L7.5532 45.0256L5.51979 45.6066H3.77687L1.74345 45.0256L0.581503 44.1541L0.575323 43.2827M5.51979 45.6066V43.2827M2.9054 1.74296L0.581503 2.32394L0.291016 3.1954L0.311618 6.10028M2.9054 1.74296L3.77687 2.32394L5.51979 3.48589V5.74417M8.81378 8.79461L8.78422 6.68125L8.74348 3.76819L8.71515 1.74296L6.68174 0.290527H4.93882L2.9054 1.74296M0.311618 6.10028H4.93882L5.51979 5.74417M0.391965 17.4293L0.379604 15.6864L0.326039 8.13369L0.311618 6.10028M8.74348 3.76819L5.51979 5.74417M5.51979 5.74417V8.13369M0.326039 8.13369H5.51979M5.51979 8.13369L8.78422 6.68125M5.51979 8.13369V10.1671M5.51979 10.1671H0.871991M5.51979 10.1671L8.81378 8.79461M5.51979 10.1671V12.2005M8.81378 8.79461L9.00564 8.71466M8.88985 14.2339L8.86954 12.7815L8.8411 10.7481L8.81378 8.79461M5.51979 12.2005H0.581503M5.51979 12.2005L8.8411 10.7481M5.51979 12.2005V13.8258M5.51979 13.8258H0.871991M5.51979 13.8258L8.86954 12.7815M5.51979 13.8258V15.6864M0.379604 15.6864H5.51979M5.51979 15.6864L8.88985 14.2339M5.51979 15.6864V17.3378M8.88985 14.2339L8.91829 16.2673M0.391965 17.4293H5.2293L5.51979 17.3378M0.391965 17.4293L0.406387 19.4627M8.91829 16.2673L5.51979 17.3378M8.91829 16.2673L8.94673 18.3008M5.51979 17.3378V19.4627M0.406387 19.4627H5.51979M0.468192 28.1773L0.433169 23.239L0.406387 19.4627M5.51979 19.4627L8.94673 18.3008M5.51979 19.4627V21.4961M8.99955 22.0771L8.97517 20.3342L8.94673 18.3008M5.51979 21.4961H0.581503M5.51979 21.4961L8.97517 20.3342M5.51979 21.4961V23.239M0.433169 23.239H5.51979M5.51979 23.239L8.99955 22.0771M5.51979 23.239V25.7031M8.99955 22.0771L9.02799 24.1105M5.51979 25.7031H0.871991M5.51979 25.7031L9.02799 24.1105M5.51979 25.7031V28.1773M9.08606 28.2631L9.05882 26.3152L9.02799 24.1105M0.468192 28.1773H5.51979M0.468192 28.1773L0.480554 29.9203M5.51979 28.1773L9.05882 26.3152M5.51979 28.1773V29.9203M0.480554 29.9203H5.51979M0.509396 33.9871L0.494975 31.9537L0.480554 29.9203M5.51979 29.9203L9.08606 28.2631M5.51979 29.9203V31.9537M9.18237 35.149L9.14581 32.5346L9.1133 30.2107L9.08606 28.2631M0.494975 31.9537H5.51979M5.51979 31.9537L9.1133 30.2107M5.51979 31.9537V33.9871M0.509396 33.9871H5.51979M0.560901 41.2493L0.54545 39.0706L0.509396 33.9871M5.51979 33.9871L9.14581 32.5346M5.51979 33.9871V36.6015M5.51979 36.6015H0.581503M5.51979 36.6015L9.18237 35.149M5.51979 36.6015V39.0706M9.18237 35.149L9.21894 37.7634M0.54545 39.0706H5.51979M5.51979 39.0706L9.21894 37.7634M5.51979 39.0706V41.2493M9.27581 41.8302L9.24738 39.7968L9.21894 37.7634M0.560901 41.2493H5.51979M0.560901 41.2493L0.575323 43.2827M5.51979 41.2493L9.24738 39.7968M5.51979 41.2493V43.2827M0.575323 43.2827H5.51979M5.51979 43.2827L9.27581 41.8302M9.27581 41.8302L9.29613 43.2827" stroke-width="0.580975" /></g><g transform="translate(880.50 85.00)"><path d="M0.142578 6.64365L11.4716 0.25293M0.142578 8.38658L12.924 1.41488" stroke-width="0.580975" /></g><g transform="translate(826.50 82.25)"><path d="M1.74345 7.84711L0.291016 9.29955V49.6773L0.871991 50.8393L1.74345 51.1297L54.0312 54.0346L55.7741 52.8727L56.6456 52.5822H62.7458L70.8795 47.3534V6.39467L67.1031 5.23272V2.90882L14.8154 0.294434L1.74345 7.84711ZM1.74345 7.84711L54.0312 9.88052V53.7441" stroke-width="0.580975" /></g><g transform="translate(883.75 123.00)"><path d="M3.77733 0.289062L0.872068 0.579589L0.291016 1.16064V2.32275L0.581542 2.61327L1.16259 3.19432H3.4868" stroke-width="0.580975" /></g><g transform="translate(828.75 130.75)"><path d="M3.19628 0.290527H0.872068L0.291016 1.16211V2.03368V2.32421L0.872068 2.61474L1.74365 2.90526H3.4868" stroke-width="0.580975" /></g><g transform="translate(823.25 100.25)"><path d="M3.84132 0.290527H1.22693L0.645956 0.871502V1.74296L1.22693 2.32394L2.09839 2.61443H2.96986H3.84132M3.84132 3.77638H1.80791L0.936444 4.35735L0.645956 5.22881L0.936444 5.80979L1.51742 6.10028H3.84132M3.84132 7.55271H1.80791L1.22693 7.8432L0.645956 8.13369L0.936444 8.71466L1.80791 9.00515L2.96986 9.29564L3.97372 9.00515M3.97372 9.87661L1.80791 10.4576L0.936444 10.7481V11.6195L1.22693 12.2005L2.38888 12.491H3.55083H3.97372M3.97372 13.3625L2.09839 13.476L1.22693 14.2339L0.936444 14.9569V15.9769L1.51742 16.2673H2.67937L3.55083 16.5578H4.13181M3.97372 17.7198H2.09839L0.936444 18.3008V19.1722V19.4627L2.09839 20.0437H2.96986H3.55083L4.13181 20.3342M4.13181 21.2056H2.67937L1.51742 21.7866L0.355469 22.3676L0.645956 23.239L0.936444 23.82H2.09839L2.96986 24.1105H3.84132M4.13181 25.2725H2.79572L1.51742 25.5629L0.645956 26.1439L0.936444 27.0154L1.22693 27.3059L2.38888 27.5964L3.55083 27.8868H3.97372M4.13181 28.7583H2.67937H1.51742L0.936444 29.3393V30.2107L1.51742 30.7917H2.67937L3.55083 30.9105H4.13181" stroke-width="0.580975" /></g><g transform="translate(827.50 92.00)"><path d="M1.45312 0.290527L0.291016 0.87158V2.32421L1.16259 3.19579H2.03417L3.4868 2.32421V0.87158L2.61523 0.290527H1.45312ZM1.45312 1.45263L1.74365 0.87158L2.3247 1.16211V1.74316L2.03417 2.03368H1.45312V1.45263Z" stroke-width="0.580975" /></g><g transform="translate(827.25 128.00)"><path d="M1.16259 0.592772L0.291016 1.46435V2.62646L1.16259 3.49803L2.03417 4.07909H3.19628L3.4868 3.20751L4.06786 1.46435L3.19628 0.592772L2.03417 0.302246L1.16259 0.592772ZM1.74365 1.75488V2.33593L2.03417 2.62646H2.90575V1.75488L2.61523 1.46435H1.74365V1.75488Z" stroke-width="0.580975" /></g><g transform="translate(835.75 134.00)"><path d="M0.581503 0V0.871462L1.45297 1.45244L1.74345 2.90488L2.03394 3.77634L2.61492 4.35731M2.61492 4.35731H4.93882L5.51979 3.77634M2.61492 4.35731V27.3058L1.45297 27.8868V29.0487M5.51979 3.77634L6.10077 2.90488V2.03341L6.39125 1.16195L6.97223 0.580975M5.51979 3.77634V26.7248L5.81028 27.3058H6.39125V27.8868M1.45297 29.0487V30.2107L0.581503 31.6631V33.1156V34.2775V35.4395L0.291016 36.3109V36.8919M1.45297 29.0487L2.32443 29.6297L3.77687 29.9202H4.93882L6.10077 29.6297H6.39125M7.26272 33.4061L7.84369 34.8585V36.3109M7.26272 33.4061V32.2441L6.97223 30.5012L6.39125 29.6297M7.26272 33.4061L6.39125 33.987L5.81028 35.149L4.35784 35.4395H2.61492L2.03394 34.8585L1.74345 34.2775L0.871991 33.4061M6.39125 29.6297V28.4678V27.8868M1.74345 27.8868L3.77687 28.4678H4.93882L6.10077 28.1773L6.39125 27.8868M0.291016 36.8919V38.0539V39.7968V40.523M0.291016 36.8919H1.45297L2.32443 37.4729M2.32443 37.4729H4.35784H5.08406M2.32443 37.4729V41.9464M7.84369 36.3109V41.2492H7.5532L7.26272 41.8302V42.7017V45.6065L6.97223 45.897V46.1875L6.39125 46.7685H5.51979H2.61492L1.45297 46.478L0.871991 45.3161V43.2826V41.8302L0.291016 41.2492V40.523M7.84369 36.3109L6.97223 36.8919L6.24835 37.2539M0.291016 40.523L1.74345 41.8302L2.32443 41.9464M7.26272 41.5397L6.24835 41.7933L5.08406 42.0844L4.93882 42.1207H3.19589L2.32443 41.9464M5.08406 37.4729H5.81028L6.24835 37.2539M5.08406 37.4729V42.0844M6.24835 37.2539V41.7933M3.48638 37.7634V42.0844" stroke-width="0.580975" /></g><g transform="translate(847.75 134.50)"><path d="M0.581503 0V0.871462L1.45297 1.45244L1.74345 2.90488L2.03394 3.77634L2.61492 4.35731M2.61492 4.35731H4.93882L5.51979 3.77634M2.61492 4.35731V27.3058L1.45297 27.8868V29.0487M5.51979 3.77634L6.10077 2.90488V2.03341L6.39125 1.16195L6.97223 0.580975M5.51979 3.77634V26.7248L5.81028 27.3058H6.39125V27.8868M1.45297 29.0487V30.2107L0.581503 31.6631V33.1156V34.2775V35.4395L0.291016 36.3109V36.8919M1.45297 29.0487L2.32443 29.6297L3.77687 29.9202H4.93882L6.10077 29.6297H6.39125M7.26272 33.4061L7.84369 34.8585V36.3109M7.26272 33.4061V32.2441L6.97223 30.5012L6.39125 29.6297M7.26272 33.4061L6.39125 33.987L5.81028 35.149L4.35784 35.4395H2.61492L2.03394 34.8585L1.74345 34.2775L0.871991 33.4061M6.39125 29.6297V28.4678V27.8868M1.74345 27.8868L3.77687 28.4678H4.93882L6.10077 28.1773L6.39125 27.8868M0.291016 36.8919V38.0539V39.7968V40.523M0.291016 36.8919H1.45297L2.32443 37.4729M2.32443 37.4729H4.35784H5.08406M2.32443 37.4729V41.9464M7.84369 36.3109V41.2492H7.5532L7.26272 41.8302V42.7017V45.6065L6.97223 45.897V46.1875L6.39125 46.7685H5.51979H2.61492L1.45297 46.478L0.871991 45.3161V43.2826V41.8302L0.291016 41.2492V40.523M7.84369 36.3109L6.97223 36.8919L6.24835 37.2539M0.291016 40.523L1.74345 41.8302L2.32443 41.9464M7.26272 41.5397L6.24835 41.7933L5.08406 42.0844L4.93882 42.1207H3.19589L2.32443 41.9464M5.08406 37.4729H5.81028L6.24835 37.2539M5.08406 37.4729V42.0844M6.24835 37.2539V41.7933M3.48638 37.7634V42.0844" stroke-width="0.580975" /></g><g transform="translate(858.75 135.00)"><path d="M0.581503 0V0.871462L1.45297 1.45244L1.74345 2.90488L2.03394 3.77634L2.61492 4.35731M2.61492 4.35731H4.93882L5.51979 3.77634M2.61492 4.35731V27.3058L1.45297 27.8868V29.0487M5.51979 3.77634L6.10077 2.90488V2.03341L6.39125 1.16195L6.97223 0.580975M5.51979 3.77634V26.7248L5.81028 27.3058H6.39125V27.8868M1.45297 29.0487V30.2107L0.581503 31.6631V33.1156V34.2775V35.4395L0.291016 36.3109V36.8919M1.45297 29.0487L2.32443 29.6297L3.77687 29.9202H4.93882L6.10077 29.6297H6.39125M7.26272 33.4061L7.84369 34.8585V36.3109M7.26272 33.4061V32.2441L6.97223 30.5012L6.39125 29.6297M7.26272 33.4061L6.39125 33.987L5.81028 35.149L4.35784 35.4395H2.61492L2.03394 34.8585L1.74345 34.2775L0.871991 33.4061M6.39125 29.6297V28.4678V27.8868M1.74345 27.8868L3.77687 28.4678H4.93882L6.10077 28.1773L6.39125 27.8868M0.291016 36.8919V38.0539V39.7968V40.523M0.291016 36.8919H1.45297L2.32443 37.4729M2.32443 37.4729H4.35784H5.08406M2.32443 37.4729V41.9464M7.84369 36.3109V41.2492H7.5532L7.26272 41.8302V42.7017V45.6065L6.97223 45.897V46.1875L6.39125 46.7685H5.51979H2.61492L1.45297 46.478L0.871991 45.3161V43.2826V41.8302L0.291016 41.2492V40.523M7.84369 36.3109L6.97223 36.8919L6.24835 37.2539M0.291016 40.523L1.74345 41.8302L2.32443 41.9464M7.26272 41.5397L6.24835 41.7933L5.08406 42.0844L4.93882 42.1207H3.19589L2.32443 41.9464M5.08406 37.4729H5.81028L6.24835 37.2539M5.08406 37.4729V42.0844M6.24835 37.2539V41.7933M3.48638 37.7634V42.0844" stroke-width="0.580975" /></g><g transform="translate(871.00 136.25)"><path d="M0.581503 0V0.871462L1.45297 1.45244L1.74345 2.90488L2.03394 3.77634L2.61492 4.35731M2.61492 4.35731H4.93882L5.51979 3.77634M2.61492 4.35731V27.3058L1.45297 27.8868V29.0487M5.51979 3.77634L6.10077 2.90488V2.03341L6.39125 1.16195L6.97223 0.580975M5.51979 3.77634V26.7248L5.81028 27.3058H6.39125V27.8868M1.45297 29.0487V30.2107L0.581503 31.6631V33.1156V34.2775V35.4395L0.291016 36.3109V36.8919M1.45297 29.0487L2.32443 29.6297L3.77687 29.9202H4.93882L6.10077 29.6297H6.39125M7.26272 33.4061L7.84369 34.8585V36.3109M7.26272 33.4061V32.2441L6.97223 30.5012L6.39125 29.6297M7.26272 33.4061L6.39125 33.987L5.81028 35.149L4.35784 35.4395H2.61492L2.03394 34.8585L1.74345 34.2775L0.871991 33.4061M6.39125 29.6297V28.4678V27.8868M1.74345 27.8868L3.77687 28.4678H4.93882L6.10077 28.1773L6.39125 27.8868M0.291016 36.8919V38.0539V39.7968V40.523M0.291016 36.8919H1.45297L2.32443 37.4729M2.32443 37.4729H4.35784H5.08406M2.32443 37.4729V41.9464M7.84369 36.3109V41.2492H7.5532L7.26272 41.8302V42.7017V45.6065L6.97223 45.897V46.1875L6.39125 46.7685H5.51979H2.61492L1.45297 46.478L0.871991 45.3161V43.2826V41.8302L0.291016 41.2492V40.523M7.84369 36.3109L6.97223 36.8919L6.24835 37.2539M0.291016 40.523L1.74345 41.8302L2.32443 41.9464M7.26272 41.5397L6.24835 41.7933L5.08406 42.0844L4.93882 42.1207H3.19589L2.32443 41.9464M5.08406 37.4729H5.81028L6.24835 37.2539M5.08406 37.4729V42.0844M6.24835 37.2539V41.7933M3.48638 37.7634V42.0844" stroke-width="0.580975" /></g><rect class="part__hit" x="816.8" y="76.2" width="87.8" height="114.0" fill="transparent" stroke="none"/></g></g><g class="part" data-part="light" data-label="LED HEAD" data-cx="1088.8" data-by="172.2" tabindex="0" role="img" aria-label="Led Head"><g class="part__lift"><g transform="translate(1068.75 104.50)"><path d="M2.51519 30.0749L2.41496 30.0373M2.41496 30.0373L0.845052 29.4486L0.21875 28.4048L0.427517 27.1522L1.26259 26.9434H2.72396L3.55902 27.3609L4.39409 27.7785L4.18533 29.0311L3.14149 29.8661L2.41496 30.0373ZM14.2062 23.3943L14.131 23.4373M14.131 23.4373L12.7448 24.2294L14.6237 24.647L15.8763 24.2294L16.5026 22.5593V22.1417L14.6237 22.9768L14.131 23.4373ZM41.7634 31.3275L40.302 31.1187L41.3459 29.8661L43.2248 29.6574L44.0599 30.2837L43.4336 31.5363L41.7634 32.7889H40.0933L39.467 32.1626M46.3563 30.0749L47.6089 28.6135L46.3563 27.7785L45.9388 28.4048M62.8489 10.4508L61.5963 11.7034V12.7472L62.2226 13.3735L63.684 12.7472L64.519 11.2859L64.1015 10.4508L62.6401 9.40695L60.5525 10.242L60.1349 11.7034L60.5525 11.9122M59.0911 10.0332H58.256L57.0034 10.6595L56.7947 11.7034L57.421 12.1209H58.0473L58.4648 11.7034M56.1684 5.44037H57.8385L58.8823 4.18777M47.1914 2.93516L46.3563 1.89133V1.26503L46.7738 0.638726L47.8177 0.429959L49.279 0.221191L50.1141 1.05626L49.9053 1.68256L48.8615 2.51763L47.6089 3.14393L47.1914 2.93516ZM47.1914 2.93516L46.5651 3.77023L45.73 4.18777L45.1037 3.979M51.5755 6.48421L50.3229 7.11051L51.1579 7.94558L52.4105 8.15434L53.6631 7.52804V6.69297L53.4544 6.06667M50.9492 10.242L50.1141 9.40695L48.2352 10.0332L47.6089 10.6595L45.9388 10.8683L44.8949 9.61571L46.7738 9.19818M49.9053 11.4946H50.1141M50.1141 11.4946H50.9492L51.1579 12.1209L50.7404 12.956L49.6966 13.1648L48.6527 12.7472L48.444 11.9122L49.279 11.2859L50.1141 11.4946ZM55.607 13.3663L55.5421 13.3735L55.1245 14.4174L54.4982 15.67L55.9596 16.2963H58.0473L59.5086 14.2086L58.256 13.7911L57.6297 14.6261L55.9596 15.2524M55.5421 13.3735L57.9292 13.1648H57.421L55.607 13.3663M52.8281 13.9998L53.0368 13.1648L53.4544 12.7472H54.9157L55.607 13.3663M55.5421 18.5927L57.421 18.3839L58.256 18.8015L57.421 19.8453L56.3771 20.2628H55.1245L54.9157 19.6365V19.219M53.0368 18.5927L51.993 19.6365L51.1579 20.0541H49.9053L49.0703 19.0102L49.6966 18.3839L51.7842 17.5489L52.8281 17.3401L53.6631 17.5489L54.707 17.7576M48.6527 16.2963L49.6966 16.7138L50.7404 16.505L51.5755 15.67L51.1579 14.6261L49.9053 14.4174L48.444 15.0437L47.8177 15.8787L46.9826 16.2963M44.6862 16.0875L44.2686 15.2524H43.016H41.7634L41.1371 15.8787L40.9283 16.7138L41.3459 17.1313H42.181L44.0599 17.5489H45.9388L46.3563 18.1752V18.3839M36.5442 11.2859L36.1267 12.5385L35.2916 12.956L33.6215 12.7472L32.5777 12.5385L31.5338 11.4946L31.1163 10.4508L31.7426 9.19818L33.204 8.57188L34.2478 8.78065L35.2916 9.40695V10.0332L34.6653 10.6595L33.204 11.2859M34.6653 17.1313V17.5489L33.6215 17.7576L32.9952 17.1313V16.2963L33.6215 15.67L35.2916 15.0437H36.5442L37.5881 15.2524L38.0056 16.0875L37.5881 17.1313L36.9618 17.7576H36.1267M38.0056 20.8891L39.0494 20.6804L39.467 21.5154L40.302 21.0979V20.4716L40.7196 19.219L42.181 18.5927L43.4336 18.8015L44.6862 19.219L43.4336 20.2628L42.3897 20.4716L41.1371 20.6804M44.6862 22.3505L42.3897 22.1417L41.1371 22.768V24.2294L42.3897 24.647L44.0599 24.2294L44.2686 23.6182L45.1037 23.3943L46.7738 22.9768L47.6089 21.7242L46.5651 21.0979H44.6862M49.0703 24.0206V22.768L49.9053 21.933L51.5755 22.1417H52.8281L52.6193 22.768M25.6883 31.3275L27.776 31.1187L29.0286 31.3275L28.6111 29.8661L29.0286 29.4486L30.2812 29.0311V28.4048M31.7426 25.0645L32.3689 24.2294L33.204 23.8119H33.8303L34.4566 22.768L35.7092 22.1417L36.9618 22.5593V22.9768V23.6182L36.5442 24.4382M36.5442 24.4382H35.0829L34.039 23.8119M36.5442 24.4382V25.482L35.9179 26.3171L34.6653 27.1522L33.4127 27.3609L32.1601 26.7346L32.5777 25.6908L33.6215 25.0645M29.3418 16.7138L29.6549 16.505L30.2812 15.2524L29.6549 15.0437L28.6111 15.67H27.776L27.1497 16.0875L26.9409 16.9226H29.0286L29.3418 16.7138ZM29.3418 16.7138L29.6549 18.1752M17.5464 19.219L17.7552 18.1752L18.799 17.1313L20.8867 16.505L22.3481 16.0875L22.7656 16.505V17.1313M24.227 21.7242L21.9305 21.933H21.513M21.513 21.933H20.2604M21.513 21.933V22.768L20.8867 23.8119L20.2604 24.0206L18.799 23.6182L17.964 24.4382V25.0645V25.8996M30.2812 35.5028L29.8637 36.5467L30.2812 37.5905L32.1601 37.7993L34.039 37.3817V35.7116L32.9952 35.0853H31.7426L30.2812 35.5028ZM28.8199 35.0853L28.4023 35.5028L27.1497 36.1291L25.8971 35.9204L25.062 35.2941L25.2708 34.0415L25.8971 33.2064L27.1497 32.9976L28.4023 32.7889L29.0286 33.2064L29.2374 34.0415L28.8199 35.0853ZM22.3481 34.6678H20.8867L20.0516 33.6239L20.8867 32.7889L22.1393 32.1626L23.1831 32.5801L24.4357 33.4152L23.6007 34.459L22.3481 34.6678ZM17.7552 33.4152L15.6675 32.9976L16.0851 31.9538L17.3377 31.1187L19.0078 31.745L19.4253 32.3713L18.3815 33.6239L17.7552 33.4152ZM12.7448 32.1626L11.4922 31.745L11.2834 30.7012L12.1185 30.0749L13.5798 29.4486L14.6237 30.2837L14.8325 31.5363L13.5798 32.1626H12.7448ZM7.10807 31.1187L5.85546 30.2837L6.48177 29.0311L7.5256 28.6135L8.56944 28.8223L9.82204 29.4486L9.40451 30.91L7.73437 31.3275L7.10807 31.1187ZM6.06423 26.1083V24.8557L7.10807 23.1856L8.98697 22.9768L9.82204 23.3943L8.98697 24.2294L10.0308 24.647L10.2396 26.1083L8.7782 26.7346H6.8993L6.06423 26.1083ZM14.4149 22.1417L12.7448 21.7242L12.3272 20.4716L13.7886 19.6365H15.4588L16.0851 20.4716L15.0412 21.7242L14.4149 22.1417ZM11.9097 26.3171L11.2834 27.3609L12.1185 28.196L13.9974 27.7785L14.6237 26.7346L14.131 26.1083L13.1623 25.8996L11.9097 26.3171ZM34.8741 32.9976L34.6653 34.0415L35.9179 34.6678H37.5881L38.6319 33.8327L38.0056 32.7889L35.2916 32.3713L34.8741 32.9976ZM48.444 26.5259L49.4878 25.482L50.7404 26.1083L51.1579 27.5697L49.4878 28.4048H48.2352L48.0264 26.9434L48.444 26.5259ZM50.7404 25.0645L51.7842 24.0206H52.6193L54.2894 24.8557L53.8719 25.8996L52.8281 26.7346L52.2018 26.3171L51.1579 25.6908L50.7404 25.0645ZM55.3333 22.5593L56.3771 21.5154H57.8385L59.2999 21.933L58.8823 23.3943L58.256 23.8119L56.5859 24.0206L55.5421 23.3943L55.3333 22.5593ZM60.5525 20.0541L61.1788 19.219L62.2226 18.8015L63.0577 18.3839L64.1015 17.5489L64.9366 18.8015L64.3103 20.0541L63.2664 20.6804L61.5963 20.8891L60.5525 20.6804V20.0541ZM67.4418 16.2963L68.6944 14.8349H69.947H70.5733L72.2434 15.0437L71.8259 16.505L69.947 17.5489L68.4856 17.1313L67.4418 16.2963ZM73.496 12.7472L74.3311 11.7034H75.3749L76.6275 11.9122L76.8363 12.956L75.3749 14.2086L73.496 13.7911V12.956V12.7472ZM77.4626 10.4508L78.924 9.40695L80.3853 9.61571L81.2204 10.0332V11.2859L79.9678 12.1209L78.7152 11.9122L77.6714 11.2859L77.4626 10.4508ZM72.2434 10.0332V8.98941L73.496 7.73681H74.3311H76.0012L76.6275 8.57188L76.4188 9.40695L75.3749 10.0332L74.1223 10.6595L72.2434 10.0332ZM66.8155 12.1209L67.4418 11.7034L68.2768 11.0771L69.3207 11.2859L69.947 11.7034L69.7382 12.956L68.6944 13.3735L66.8155 13.7911L66.1892 12.956L66.8155 12.1209ZM66.6067 8.98941V7.94558L67.4418 6.90174H68.9032H70.5733V7.52804V8.36311L69.5294 8.98941H67.8593H66.6067ZM61.1788 7.11051L61.5963 6.06667L62.6401 5.44037H63.684L65.1453 5.85791V6.69297L64.519 7.73681H62.8489L61.5963 7.52804L61.1788 7.11051ZM57.8385 8.78065L56.1684 9.19818L54.9157 8.78065L55.1245 7.11051L56.5859 6.90174L57.9292 6.69297L58.6736 7.31928V7.94558L57.8385 8.78065ZM50.9492 3.77023L51.5755 2.93516L52.6193 2.51763L54.0807 2.1001L55.3333 2.30886L55.9596 2.7264V3.56147L55.1245 4.18777L53.6631 4.81407H52.2018L51.3667 4.6053L50.9492 3.77023ZM46.5651 5.44037L45.1037 5.64914V6.69297L45.3125 7.31928L46.3563 7.73681L48.0264 7.31928L48.444 6.06667L47.6089 5.2316L46.5651 5.44037ZM40.9283 4.39653L42.8073 4.6053V5.2316L42.181 6.06667L41.3459 6.69297H39.2582L39.0494 6.06667V5.2316L40.302 4.6053L40.9283 4.39653ZM40.7196 8.78065L41.5546 7.94558H42.3897L42.8073 8.15434L42.3897 9.19818L41.1371 9.61571L40.0933 9.19818L40.7196 8.78065ZM61.3875 15.0437L60.7612 16.0875L60.97 16.7138L62.4314 17.1313L64.1015 16.0875L64.9366 15.4612L64.3103 14.8349L62.6401 14.4174L61.5963 15.0437H61.3875ZM41.1371 14.4174L39.6757 14.2086L38.2144 13.3735L39.0494 12.5385L40.5108 11.7034L41.9722 12.1209L42.3897 12.5385L41.9722 13.3735L41.1371 14.4174ZM39.6757 27.3609L40.9283 26.5259L41.9722 26.3171L42.8073 26.5259L43.2248 27.3609L42.3897 28.196L40.7196 29.0311L39.467 28.6135V27.5697L39.6757 27.3609ZM32.3689 30.0749L33.204 29.2398L34.039 28.8223L35.2916 28.6135L36.3355 29.0311L36.5442 29.4486L36.3355 30.2837L35.7092 30.91L34.2478 31.1187H32.3689V30.0749ZM21.513 29.6574L22.1393 29.2398L22.7656 28.6135L24.6445 29.0311L25.2708 29.8661L24.227 30.7012L22.3481 31.1187L21.513 30.7012V29.6574ZM17.3377 29.4486L16.9201 28.196L17.1289 27.3609L18.1727 26.9434H19.2166L19.6341 26.3171L20.6779 25.8996L21.3042 26.5259V27.5697L20.6779 28.196L19.8429 29.0311L18.5903 29.2398L17.3377 29.4486ZM26.9409 26.3171L26.3146 27.5697L27.1497 28.196H28.8199L29.8637 26.9434V25.8996L28.8199 25.482L27.776 25.8996L26.9409 26.3171ZM31.3251 20.4716L31.9514 20.0541L32.9952 19.4278L34.8741 19.6365L35.5004 20.0541V20.8891L34.6653 21.7242L32.9952 21.933L31.7426 21.7242L31.3251 20.6804V20.4716ZM26.3146 19.4278L26.1059 20.2628L26.7322 21.3067H28.1936L29.4462 19.8453L29.6549 18.5927L27.776 18.1752L27.1497 19.0102L26.3146 19.4278ZM26.1059 14.4174L25.4796 13.3735L26.1059 12.7472L26.9409 12.1209L29.3418 12.5385L29.4462 13.3735L28.4023 14.4174H27.776H27.5672H26.1059ZM22.1393 18.3839L20.2604 18.5927L19.6341 19.6365L20.2604 20.6804L22.5568 20.2628L23.6007 19.4278L23.3919 18.3839H22.1393ZM24.8533 23.6182L23.6007 24.2294L24.8533 24.8557L26.3146 25.0645L27.776 24.2294L28.1936 22.9768H26.3146L25.2708 23.4373L24.8533 23.6182Z" stroke-width="0.417534" /></g><g transform="translate(1041.25 152.75)"><path d="M0.0527344 0.20166L39.301 10.64M21.7645 3.7507V4.79454H23.4347L23.8522 3.1244L22.3908 2.70687L21.7645 3.7507Z" stroke-width="0.417534" /></g><g transform="translate(1038.75 92.00)"><path d="M134.019 17.1191L133.601 16.4928L132.766 15.6578L131.096 15.0315L128.382 13.9876L87.2551 1.25282L83.7061 0.208984H81.6184H79.7395L77.4431 0.835286L75.3554 1.67035L73.4765 2.50542L70.1362 4.38433L41.3264 21.712L22.1198 32.9854L4.58333 44.0501L0.199219 57.4112M6.0447 44.8852L5.83593 44.7659L4.58333 44.0501M6.0447 44.8852L2.07812 61.169L1.03429 61.7953M59.6979 58.8726L59.2803 58.6638L6.0447 44.8852M5.83593 44.7659L12.7252 40.0835L36.3159 25.8873L71.5976 5.01063L74.5203 3.34049L76.608 2.29666L78.4869 1.67035L81.4097 1.46159H83.7061L86.2113 2.29666L131.514 16.4928L132.766 17.1191L132.975 17.5367L133.184 18.163V18.7893V20.2506M60.1154 59.0813L61.5768 59.7076L52.391 64.9268L50.7209 65.7619V64.718L52.1822 63.6844L59.2803 58.6638M50.7209 64.718L60.3242 59.2901L60.7417 59.7076H61.1592L50.9296 65.5531V64.718L51.3472 64.5093L53.2261 63.6742L54.6875 62.8391L55.9947 62.1533L57.6102 61.169L58.8628 60.5427L59.9066 59.9164L60.3242 59.7076H60.5329L59.2803 60.5427L53.6436 63.6844L52.1822 64.5093L51.1384 64.9268V65.1356M60.1154 59.0813L56.9839 61.169L55.105 62.1533M60.1154 59.0813L59.6979 58.8726M52.1822 63.6844L55.105 62.1533M55.105 62.1533L59.6979 58.8726M55.105 62.0041L56.7751 60.7515" stroke-width="0.417534" /></g><g transform="translate(1009.50 148.00)"><path d="M0.234375 0.907635L1.27835 0.28125L1.69594 0.907635V1.95161H0.44317L0.234375 0.907635Z" stroke-width="0.417534" /></g><g transform="translate(1018.25 158.25)"><path d="M0.563472 0.272227L1.77972 0.217618L1.84922 0.967224L1.3528 1.88562L0.250725 1.2899L0.563472 0.272227Z" stroke-width="0.417534" /></g><g transform="translate(1018.25 158.00)"><path d="M1.02673 0.251807L2.12264 0.782111L1.82733 1.47459L0.953912 2.04645L0.267682 0.998349L1.02673 0.251807Z" stroke-width="0.417534" /></g><g transform="translate(1109.50 112.25)"><path d="M1.02673 0.251807L2.12264 0.782111L1.82733 1.47459L0.953912 2.04645L0.267682 0.998349L1.02673 0.251807Z" stroke-width="0.417534" /></g><g transform="translate(1068.75 130.75)"><path d="M0.179688 1.67055L0.233073 1.58157M0.233073 1.58157L0.806073 0.626574L1.64125 0.208984H2.68523L3.938 0.626574L4.14679 1.87934L3.938 3.13211L3.52041 3.7585L2.47643 3.96729L1.22366 3.5497L0.388483 2.71452L0.233073 1.58157Z" stroke-width="0.417534" /></g><g transform="translate(1074.50 127.50)"><path d="M0.179688 1.67055L0.233073 1.58157M0.233073 1.58157L0.806073 0.626574L1.64125 0.208984H2.68523L3.938 0.626574L4.14679 1.87934L3.938 3.13211L3.52041 3.7585L2.47643 3.96729L1.22366 3.5497L0.388483 2.71452L0.233073 1.58157Z" stroke-width="0.417534" /></g><g transform="translate(1074.50 127.25)"><path d="M0.291794 3.23526L0.284966 3.13173M0.284966 3.13173L0.21168 2.02043L0.660068 1.20137L1.51798 0.606506L2.78543 0.235836L3.67085 1.14636L4.2131 2.29484L4.22685 3.04753L3.48791 3.81398L2.22047 4.18465L1.05824 3.97421L0.284966 3.13173Z" stroke-width="0.417534" /></g><g transform="translate(1100.75 127.75)"><path d="M0.835335 3.95368L1.00419 4.16439M1.00419 4.16439L0.310744 3.29291L0.212516 2.36433L0.578576 1.38664L1.78798 0.644201L3.45834 0.226611L4.29226 0.854993L4.19558 1.84909L4.02506 2.89999L3.19471 3.9268L2.20431 3.98692L1.00419 4.16439Z" stroke-width="0.417534" /></g><g transform="translate(1068.50 132.25)"><path d="M0.169922 0.121582L1.2139 1.58315L2.67546 2.41833" stroke-width="0.417534" /></g><g transform="translate(1006.25 143.25)"><path d="M5.43012 0.147461L3.55121 2.02637L1.88107 4.3228L0.628472 7.24554L0.210938 11.2121L0.628472 14.3436L1.67231 16.8488L3.55121 19.5628L7.93532 22.2768" stroke-width="0.417534" /></g><g transform="translate(1003.75 86.25)"><path d="M37.3695 47.8079H36.3257L7.7246 56.9937L5.8457 57.4112L4.17556 58.2463L2.29666 60.3339L1.25282 62.4216L0.626519 64.5093L0.208984 66.8057V69.9372L0.835286 72.2337L1.67035 74.1126L2.92296 76.409L5.01063 78.4967L7.7246 79.7493H10.2298L11.2736 78.7054L21.5032 76.6178L25.6786 75.9915L34.0293 74.5301L41.3361 73.0687M40.7098 70.4591L36.952 68.4759L35.0731 67.2233L34.8643 66.1794L34.6556 63.2567V56.7849L39.2484 45.3027L40.501 43.4238L41.9624 42.5887L52.8183 36.1169L105.845 4.17556L111.273 1.04405L114.613 0.208984H118.58L124.217 1.25282L138.622 4.5931L154.07 10.021L164.926 15.0315L165.97 16.0753L168.267 21.0857L169.102 21.9208V24.0084L168.893 25.6786L166.596 27.975L87.8912 70.5635L87.2649 70.9811L86.6386 71.3986L77.6616 77.0353L75.5739 77.6616H70.5635L67.2233 77.0353H66.1794L58.8726 78.9142L55.9498 78.7054L53.4446 78.0791L51.1482 77.6616L47.3904 76.6178L43.6326 75.6375L42.5887 75.3652L41.7537 74.5301L41.3361 73.0687M41.3361 73.0687H40.9186L40.7098 70.4591M41.3361 73.0687L42.5887 72.86M43.6326 75.6375L44.2589 74.5301L44.8852 73.4863L44.4676 72.4424L40.7098 70.4591" stroke-width="0.417534" /></g><g transform="translate(1053.00 97.75)"><path d="M13.7789 42.7975L23.3821 45.3027L25.4698 45.8161M15.2402 40.501L15.449 40.9186L15.0315 41.3361L14.6139 41.5449L14.1964 41.7537L13.7789 42.7975M111.378 13.8832L110.856 13.5701L106.054 11.8999L99.9997 10.2298L71.8161 1.87912L67.6408 0.626519L65.5531 0.208984H63.4654L62.0041 0.835286L20.6682 24.0084L6.26323 32.7767L2.29666 34.8643L1.04405 35.9082L0.208984 37.3695V38.8309L1.67035 39.666L4.38433 40.501L10.4386 41.9624L12.9438 42.5887L13.7789 42.7975M8.97721 36.7432L60.9602 6.472L63.4654 5.2194L65.5531 4.80186L102.296 15.4758L102.922 15.6578L104.801 16.4928L105.428 17.5367L105.01 18.3717L104.342 18.7893L103.34 19.4156L96.2419 23.1734L85.8035 28.8101L76.8265 34.0293L68.8934 38.4134L56.7849 45.7202L50.3131 49.478L48.0167 50.7306H45.5115L42.5887 49.8956L42.38 49.8484L36.1169 48.4342L25.4698 45.8161M102.922 15.6578L103.34 16.0753L103.758 17.1191L103.131 18.163L101.879 18.7893L97.912 20.8769L93.5279 23.3821L85.1772 27.975L77.4528 32.3591L68.8934 36.952L57.4112 43.8413L49.0605 48.3298L46.9728 49.0605H45.7202L43.0063 48.2672M8.97721 36.7432V37.3695L10.4386 37.9958L34.4468 44.2589L42.5887 46.3465L46.3465 47.1816L49.0605 46.3465L54.2797 42.7975L71.1898 33.403L77.8704 29.6452L88.1 24.6347L92.0665 22.5471L96.8682 19.4156L99.5822 18.3717L100.835 16.4928L102.296 15.4758M8.97721 36.7432H8.55967L8.14214 37.3695L8.55967 38.4134L10.021 39.0397L15.2402 40.501M104.342 18.7893L105.01 19.4156H106.889L108.977 18.7893L110.856 17.5367L112.108 16.2841V15.2402L111.899 14.1964L111.378 13.8832M24.8435 25.0523H25.0523L40.9186 16.0753L41.5449 15.2402V14.8227H43.215L52.7139 9.39474L57.8287 6.472L62.0041 4.38433L64.0917 3.54926L67.2233 3.96679L74.3213 6.472L108.768 16.0753L111.378 13.8832M2.71419 36.952L3.34049 36.7432L18.163 28.3926H18.7893L20.2506 27.5575L23.1734 25.6786L24.2172 25.0523H24.8435M18.7893 28.3926L18.3717 27.7663L18.163 26.7224V25.8873M2.71419 36.952L2.29666 35.9082L2.71419 34.8643M15.2402 40.501H14.8227L14.1964 40.9186L13.7789 41.3361L12.735 40.9186L6.88953 39.4572L4.38433 39.2484L3.13172 38.4134L2.71419 36.952M14.1964 40.9186L13.7789 41.5449L12.9438 42.5887M14.8227 40.501L15.0315 40.9186L14.1964 41.3361V41.5449L13.5701 41.9624V42.2756M15.2402 40.501L26.5136 43.4238M13.5701 42.2756V42.5887L13.7789 42.1712L13.5701 42.2756ZM13.5701 42.2756L13.3613 42.38M14.6139 41.5449L25.0523 44.2589L26.5136 43.4238M26.5136 43.4238H27.3487V44.2589M27.3487 44.2589L26.3049 45.3027L25.4698 45.8161M27.3487 44.2589L36.3257 46.3465M36.3257 48.1837L35.4906 48.0167L35.6994 47.1816L36.3257 46.3465M43.0063 48.2672L38.4134 46.7641L37.9958 46.6806L36.3257 46.3465M35.6994 47.1816L36.5345 46.5553L35.6994 48.0167L36.952 46.5553L36.6369 47.3746M37.0564 48.3298L37.3695 48.3924L37.5783 48.4342L38.4134 46.7641M36.3257 48.1837L36.6369 47.3746M37.0564 48.3298L36.7432 48.2672L36.3257 48.1837M36.6369 47.3746L36.1169 47.8079M36.6369 47.3746L37.3695 46.7641L37.0713 47.4798M36.7432 48.2672L37.0713 47.4798M37.0713 47.4798L37.7871 46.7641L37.0564 48.3298M37.0713 47.4798L36.7432 47.8079M37.9958 46.6806L37.3695 48.3924M43.0063 48.2672L42.38 49.8484M6.26323 39.2484L6.88953 37.9958H5.8457L6.26323 36.952L7.51584 36.3257L10.4386 34.8643L14.1964 32.3591L19.4156 29.4364L22.9646 27.1399L27.5575 24.6347L35.4906 20.4594L42.5887 16.0753L47.3904 13.7789L51.3569 10.8561L52.7139 9.39474M23.5909 22.5471L24.426 23.3821L24.6347 24.2172L24.8435 25.0523" stroke-width="0.417534" /></g><g transform="translate(1028.75 88.25)"><path d="M0.208984 73.9038V80.7931L1.46159 82.4632L3.13173 83.0896H4.5931L27.5575 75.7827M17.9542 39.2484L20.2506 34.8643L22.3383 31.1065L24.426 28.1838L26.0961 26.7224H27.3487H28.1838M33.6117 23.1734L34.6556 22.1295L34.8643 21.9208L36.3257 21.0857H38.2046M57.8287 11.6912H56.9937H55.3235L54.0709 12.5262L52.8183 13.5701H51.3569L49.6868 13.9876L48.0167 14.8227L46.5553 16.7016H45.0939L43.8413 17.1191L42.5887 18.163L40.9186 18.5805L39.666 19.6243L38.2046 21.0857M38.2046 21.0857L37.1608 22.5471M38.2046 21.0857L37.9958 22.5471L37.7871 24.426L37.3695 25.8873V27.7663M43.8413 17.1191L42.38 18.998M83.7159 0.208984H82.4633H79.3317L78.2879 1.25282L77.0353 3.13172H75.7827H74.3213L73.2775 3.54926L72.0249 4.38433L70.146 5.8457H67.432L66.3882 6.472L64.5093 8.3509L63.2567 8.55967H61.5865L60.5427 9.39474L59.2901 10.4386L58.6638 11.6912H57.8287M24.2172 35.9082L24.6347 32.5679L25.261 30.689L26.0961 29.2276L26.9312 28.1838L27.3487 27.7663L28.1838 26.7224M28.1838 26.7224H28.3926L29.6452 25.0523L31.3153 23.5909H32.5679H32.9854M26.0961 34.6556V32.5679L27.14 29.6452L28.3926 26.9312M29.0189 33.1942V30.4802L30.4802 26.3049L31.3153 25.4698L31.9416 24.426L32.9854 23.5909M32.9854 23.5909H33.1942L33.6117 23.1734M30.4802 32.3591L30.689 30.2715L31.5241 28.1838L31.9416 26.7224L32.5679 25.4698L32.9854 24.426L33.6117 23.1734M32.5679 30.689L32.9854 28.1838L33.6117 25.0523L34.238 23.1734L34.6556 22.1295M34.6556 22.5471H37.1608M37.1608 22.5471L36.3257 25.4698L35.6994 27.3487V29.0189M41.5449 18.7893L42.38 18.998M42.38 18.998L41.7537 21.0857L41.5449 22.5471L41.3361 25.6786M40.7098 20.4594L40.2923 22.1295L39.8748 23.1734L39.666 25.261V26.5136M46.7641 16.9104L46.1378 18.163L45.5115 19.4156L44.6764 21.0857L44.0501 22.7558L43.8413 23.7997M46.7641 22.1295V20.4594L47.1816 18.5805L48.0167 16.0753L49.0605 15.0315H50.5219L51.3569 15.2402L50.9394 16.4928L50.1043 17.7454L49.6868 18.998L49.478 20.6682M53.0271 13.7789L52.4008 16.0753L51.7745 18.163L51.5657 19.4156M54.4885 12.5262L54.0709 14.4052L53.4446 16.0753V17.7454V18.163M57.8287 11.6912L57.4112 12.9438L56.5761 13.9876L56.3674 15.8665V16.4928M58.6638 11.8999L58.455 12.9438L58.2463 13.9876V15.449M59.9164 14.8227V13.9876L60.3339 12.1087L60.5427 10.8561L61.169 10.021L62.2128 9.60351H63.4654M63.4654 9.60351V10.4386L63.0479 11.4824L62.4216 12.3175V12.9438M63.4654 9.60351L64.3005 8.76844M64.3005 8.76844L65.3443 8.14214L66.3882 7.51584H67.432L67.8496 8.14214L67.432 9.39474V10.021L64.3005 11.8999L64.5093 10.4386L65.3443 8.76844H64.3005ZM67.8496 7.51584L69.3109 6.472H70.5635L69.7285 7.51584V8.3509V8.76844M71.6074 7.30707L72.0249 5.8457L73.0687 4.17556L75.1564 3.96679H76.2002L76.409 4.59309" stroke-width="0.417534" /></g><g transform="translate(1020.00 144.25)"><path d="M1.04405 0.0546875L0.417752 2.35113L0.208984 3.8125V5.6914V7.15277L0.417752 8.82291L0.835286 10.0755L1.67035 12.372M10.6473 26.7769H11.8999L13.3613 26.5681L17.9542 24.898L22.7558 23.4366L26.5136 22.3928" stroke-width="0.417534" /></g><rect class="part__hit" x="997.8" y="80.2" width="182.0" height="98.0" fill="transparent" stroke="none"/></g></g><g class="part" data-part="pole" data-label="POLE" data-cx="1359.8" data-by="144.5" tabindex="0" role="img" aria-label="Pole"><g class="part__lift"><g transform="translate(1294.75 124.25)"><path d="M0.835069 18.998H136.534L138.413 17.7454L140.083 15.0315L140.918 12.1087V10.021V7.7246L140.5 5.63693L139.874 3.96679L138.204 1.25282L136.534 0.208984H0" stroke-width="0.417534" /></g><g transform="translate(1282.75 124.50)"><path d="M4.59309 1.46159L3.13172 2.71419L1.87912 5.01063L1.25282 7.51584V11.0649V13.7789L2.29666 15.2402L3.34049 16.9104L4.59309 17.7454L6.472 17.9542L7.51584 17.1191L9.60351 14.1964L10.6473 11.4824V9.81227V6.472L10.021 4.80186L8.97721 3.54926L7.93337 2.29666L6.472 1.46159H4.59309ZM2.29666 1.96466L1.25282 3.34049L0.417752 5.42816L0.208984 7.51584V12.3175L0.626519 14.1964L1.25282 16.0753L2.29666 17.3279L3.75803 18.7893L5.2194 19.2068L7.30707 18.998L8.14214 17.9542L9.60351 16.0753L11.0649 13.3613L11.2736 11.2736V6.68077L10.8561 5.01063L9.18597 2.08789L7.7246 0.835286L6.26323 0.208984H4.59309L3.34049 0.835286L2.29666 1.96466Z" stroke-width="0.417534" /></g><rect class="part__hit" x="1276.8" y="118.2" width="166.0" height="32.2" fill="transparent" stroke="none"/></g></g><g class="part" data-part="pole-stand" data-label="FLANGE BASE" data-cx="1614.0" data-by="252.5" tabindex="0" role="img" aria-label="Flange Base"><g class="part__lift"><g transform="translate(1564.25 125.75)"><path d="M0.123047 0.259277L41.3805 19.742L43.9591 20.315L46.5377 19.742L93.5254 4.27042L98.9691 2.26485" stroke-width="0.57302" /></g><g transform="translate(1626.25 94.50)"><path d="M0.333385 29.5068L8.06916 31.8398L18.3835 34.9505H19.8161V32.0854L1.76594 0.569225L0.046875 0.282715M0.333385 18.6194L2.05245 20.9115V21.771L8.06916 31.8398M0.333385 22.0575H2.05245" stroke-width="0.57302" /></g><g transform="translate(1599.00 33.25)"><path d="M5.53218 2.00568L2.95359 3.15172V5.1573L5.53218 6.58985L8.97031 7.44938H14.1275H20.4307L25.0149 6.01683L25.5879 3.72474L24.1553 2.00568L18.7117 0.859642H14.1275L8.97031 1.43266L5.53218 2.00568ZM14.1275 0.286621H8.97031L4.38614 0.859642L1.52104 2.5787L0.375 4.58427L2.66708 6.30334L6.67823 7.44938L11.2624 8.30891H16.9926L22.4363 7.73589L26.7339 6.30334L27.307 4.58427V2.5787L25.0149 1.43266L22.4363 0.859642L18.1386 0.286621H14.1275Z" stroke-width="0.57302" /></g><g transform="translate(1599.00 36.00)"><path d="M0.287109 1.71906V89.9642L1.14664 91.9698L3.72523 93.1158L6.87684 94.5484H13.4666H16.6182M21.7754 94.5484L24.6405 93.1158L26.3595 91.9698L27.2191 91.1102L27.5056 1.71906V0" stroke-width="0.57302" /></g><g transform="translate(1614.75 99.75)"><path d="M0.57362 6.30334L2.00617 13.7526L2.57919 20.3423L3.72523 28.9376L4.29825 30.6567V38.679M0.86013 30.9432L0.287109 1.14615L0.57362 0.286621H1.43315L5.7308 30.3702L6.01731 38.679L5.15778 39.252L3.72523 38.679L2.8657 35.5274L0.86013 30.9432Z" stroke-width="0.57302" /></g><g transform="translate(1580.50 94.75)"><path d="M16.3747 28.6209L2.33565 34.6376V33.4915L8.06585 21.7446L18.318 2.37953L18.9532 1.6889M16.3747 28.6209H18.6667M16.3747 28.6209V25.4692L17.8072 20.8851V20.0256M17.8072 20.0256L17.5207 18.3065L17.8072 16.5874L18.3802 15.4414L18.6667 15.1549V19.4525L18.0937 19.9109M17.8072 20.0256L18.0937 19.9109M18.0937 19.9109L19.2398 19.4525M18.0937 19.9109V20.0256M18.0937 19.9109V18.8795L18.3802 18.593L17.8072 18.3065L18.0937 17.7335L18.3802 16.8739M18.3802 16.8739V18.3065M18.3802 16.8739V16.0144L18.0937 17.1604M2.04914 34.6376H0.330078L0.616588 32.632L1.47612 30.3399L15.5151 3.98098L16.6612 1.97541L17.8072 0.829368L18.9532 0.256348" stroke-width="0.57302" /></g><g transform="translate(1626.50 96.50)"><path d="M0.242188 0.151855L11.7026 18.4885L18.2923 31.095V32.5275V33.1005" stroke-width="0.57302" /></g><g transform="translate(1563.75 117.25)"><path d="M21.7754 0.270508L16.0452 2.27608L2.00617 7.43326L0.287109 8.29279V12.3039L41.2581 30.9271L43.2636 31.5001H46.7018L47.8478 30.9271L99.7062 14.023V10.8714L99.1331 10.2984L77.6449 0.557018" stroke-width="0.57302" /></g><g transform="translate(1570.50 124.00)"><path d="M33.5223 15.7665L32.6628 16.626V18.3451L34.9548 19.2046L37.5334 18.3451L38.1065 17.4855L37.5334 16.053L34.3818 15.48L33.5223 15.7665ZM0.287109 1.44096V2.30049L0.86013 2.87351L2.00617 3.44653H5.15778L6.01731 2.30049L5.44429 1.15445L3.43872 0.294922L1.43315 0.581432L0.287109 1.44096ZM81.083 2.587L80.51 3.16002L80.2235 4.30607L81.083 5.1656L83.6616 5.45211L85.6672 4.59258V3.44653L85.3806 2.30049H83.0886L81.083 2.587Z" stroke-width="0.57302" /></g><g transform="translate(1568.00 133.50)"><path d="M4.88885 0V7.44927M4.88885 9.74135V16.0446M4.88885 17.7636V23.7803M4.88885 25.4994V30.0836M4.88885 30.0836L6.60791 30.6566H6.89442M0.877708 32.6622V31.8026L1.45073 31.2296L2.31026 30.6566L3.02653 30.5133L3.74281 30.3701L4.88885 30.0836M5.03211 36.9598H2.88328L1.73724 36.6733L0.877708 35.8138V32.6622M2.88328 36.9598V33.2352M3.02653 30.5133V32.9487M6.89442 32.9487H3.02653L0.877708 32.6622M6.89442 32.9487V30.6566M6.89442 32.9487H7.18093M6.89442 30.6566H8.04046L9.1865 30.9431L9.75953 32.6622V32.9487M9.75953 32.9487V34.6677L8.89999 36.3868L8.04046 36.9598H7.18093M9.75953 32.9487H7.18093M7.18093 32.9487V36.9598M7.18093 36.9598H5.03211M5.03211 36.9598L4.88885 42.117M5.17536 48.4202H4.88885V52.7179L3.4563 53.0044L2.59677 53.5774V54.4369M5.17536 52.7179L7.75395 53.0044L8.32697 53.5774V54.4369M2.02375 60.1671L2.31026 61.0267L3.16979 61.8862L4.88885 62.4592L6.89442 62.1727L8.04046 61.3132L8.61348 59.8806M2.59677 54.4369L3.4563 55.01L5.17536 55.2965H6.60791L8.04046 54.7235L8.32697 54.4369M2.59677 54.4369V55.8695M8.32697 54.4369V56.156M1.16422 83.9475L3.74281 85.3801L5.17536 85.5847M5.17536 85.5847L5.74838 85.6666L7.46744 85.3801L8.89999 83.9475M5.17536 85.5847V82.8015M5.17536 85.5847V97.127M6.73541 97.0845L5.17536 97.127L2.88328 96.8405L1.16422 95.6944M9.1865 95.6944V99.1325L8.32697 100.279L7.75395 100.852L6.60791 101.425H3.16979L2.02375 100.852L0.877708 99.7056L1.16422 60.4537L2.02375 59.8806L2.59677 59.5941V59.0211M9.1865 95.6944V60.4537L8.89999 59.8806L8.32697 59.5941V59.0211M9.1865 95.6944L8.32697 96.5539L6.73541 97.0845M6.60791 97.127L6.73541 97.0845M2.59677 55.8695L3.74281 56.729H5.17536H7.46744L8.32697 56.156M2.59677 55.8695V57.7318M8.32697 56.156V57.8751M2.59677 57.7318L3.74281 58.1616H6.89442L8.32697 57.8751M2.59677 57.7318V59.0211M8.32697 57.8751V59.0211M2.59677 59.0211L4.02932 59.5941H5.74838L6.89442 59.3076L8.32697 59.0211M33.8264 13.466V22.9208M33.8264 25.2129V31.5161M33.8264 33.8082V38.9654M33.8264 40.6845V45.2686M33.8264 45.2686L32.6803 45.8416L30.6748 46.1281L29.5287 46.9877V48.1337M33.8264 52.7179H36.1185L37.2645 52.1449L38.124 51.2853V46.9877L36.978 46.1281L35.5454 45.5551L33.8264 45.2686M33.8264 52.7179H31.5343L30.3883 52.1449L29.5287 51.2853V48.1337M31.5343 52.7179V48.7067M36.1185 52.7179V48.7067M29.5287 48.1337L31.8208 48.7067H34.9724H35.832H36.1185M37.8375 48.4202L36.405 48.7067H36.1185M32.6803 60.4537L31.8208 61.5997L32.9669 62.4592H35.2589L36.405 61.3132L35.5454 60.1671L32.3938 60.4537M33.8264 52.7179V59.3076M33.8264 59.3076H35.832L37.8375 59.8806L38.6971 61.5997L36.978 63.3188L33.8264 63.5612M33.8264 59.3076H33.5399H30.6748L29.5287 60.4537V62.4592L30.6748 63.3188L33.2534 63.6053L33.8264 63.5612M33.8264 63.5612V68.4759M33.8264 68.4759H32.3938L31.5343 69.049L30.9613 69.622V70.195M33.8264 68.4759H36.1185L36.6915 69.049L36.978 69.622V70.4815M31.3967 118.329H30.9613L29.5287 116.896L29.8152 76.2117L30.9613 75.6387V75.0657M29.8152 76.2117L30.6748 77.3578L31.8208 77.9308H35.832L36.6915 77.3578L37.551 76.2117M29.8152 113.458L30.9613 114.318L31.3967 114.366M36.1185 114.604L37.8375 113.745M36.1185 114.604V118.042M36.1185 114.604H33.8264M31.3967 114.366L33.5399 114.604H33.8264M31.3967 114.366V118.329M31.3967 118.329H35.5454L37.8375 117.469L37.9509 101.138M30.1018 101.138L32.3938 102.571L33.8264 102.775M33.8264 102.775L34.3994 102.857L36.405 101.998L37.9509 101.138M33.8264 102.775V99.7056M33.8264 102.775V114.604M36.978 75.0657V75.6387L37.2645 75.782L38.124 76.2117L37.9509 101.138M30.9613 70.195L32.9669 71.341H34.6859L35.5454 71.0545L36.978 70.4815M30.9613 70.195V71.9141M36.978 70.4815V71.9141M30.9613 71.9141L32.1073 72.4871H33.8264H35.5454L36.6915 72.2006L36.978 71.9141M30.9613 71.9141V73.3466M36.978 71.9141V73.3466M30.9613 73.3466L32.3938 73.9196H34.3994H35.832L36.978 73.3466M30.9613 73.3466V75.0657M36.978 73.3466V75.0657M30.9613 75.0657L32.6803 75.3522H34.6859H36.1185L36.978 75.0657M30.6748 75.9252L32.1073 76.4982H34.6859H36.1185L37.2645 75.782M3.74281 43.8361H1.73724L0.877708 44.6956L0.304688 45.5551L0.591198 46.9877L1.16422 47.5607L2.88328 48.1337H5.17536H8.32697L9.47301 46.9877L9.75953 45.5551L8.89999 44.1226L7.75395 43.5496H6.03489L3.74281 43.8361ZM4.02932 44.6956L2.59677 45.8416L3.16979 47.2742H5.17536L7.46744 46.4147L7.18093 45.2686L6.03489 44.6956H4.02932Z" stroke-width="0.57302" /></g><g transform="translate(1650.00 134.25)"><path d="M4.58476 0V9.45484M4.58476 12.3199V18.6232M4.58476 21.2018V26.3589M4.58476 30.3701V34.9542M4.58476 34.9542L3.43872 35.5273L1.43315 35.8138L0.287109 36.6733V37.8194M4.58476 42.4035H6.87684L8.02288 41.8305L8.88242 40.971V36.6733L7.73637 35.8138L6.30382 35.2408L4.58476 34.9542M4.58476 42.4035H2.29268L1.14664 41.8305L0.287109 40.971V37.8194M2.29268 42.4035V38.3924M6.87684 42.4035V38.3924M0.287109 37.8194L2.57919 38.3924H6.87684M8.59591 38.1059L7.16335 38.3924H6.87684M3.43872 50.1393L2.57919 51.2853L3.72523 52.1449H6.01731L7.16335 50.9988L6.30382 49.8528L3.15221 50.1393M4.58476 42.4035V48.9932M4.58476 48.9932H6.59033L8.59591 49.5663L9.45544 51.2853L7.73637 53.0044L4.58476 53.2468M4.58476 48.9932H1.43315L0.287109 50.1393V52.1449L1.43315 53.0044L4.01174 53.2909L4.58476 53.2468M4.58476 53.2468V58.1616M4.58476 58.1616H3.15221L2.29268 58.7346L1.71966 59.3076V59.8806M4.58476 58.1616H6.87684L7.44986 58.7346L7.73637 59.3076V60.1671M2.15503 108.014H1.71966L0.287109 106.582L0.57362 65.8974L1.71966 65.3243V64.7513M0.57362 65.8974L1.43315 67.0434L2.57919 67.6164H6.59033L7.44986 67.0434L8.30939 65.8974M0.57362 103.144L1.71966 104.003L2.15503 104.052M6.87684 104.29L8.59591 103.43M6.87684 104.29V107.728M6.87684 104.29H4.58476M2.15503 104.052L4.29825 104.29H4.58476M2.15503 104.052V108.014M2.15503 108.014H6.30382L8.59591 107.155L8.70932 90.8237M0.86013 90.8237L3.15221 92.2563L4.58476 92.4609M4.58476 92.4609L5.15778 92.5428L7.16335 91.6833L8.70932 90.8237M4.58476 92.4609V89.3912M4.58476 92.4609V104.29M8.70932 90.8237L8.88242 65.8974L8.02288 65.4676M1.71966 59.8806L3.72523 61.0267H5.44429L6.30382 60.7402L7.73637 60.1671M1.71966 59.8806V61.5997M7.73637 60.1671V61.5997M1.71966 61.5997L2.8657 62.1727H6.30382L7.44986 61.8862L7.73637 61.5997M1.71966 61.5997V63.0322M7.73637 61.5997V63.0322M1.71966 63.0322L3.15221 63.6053H6.59033L7.73637 63.0322M1.71966 63.0322V64.7513M7.73637 63.0322V64.7513M1.71966 64.7513L3.43872 65.0378H6.87684L7.73637 64.7513M7.73637 64.7513V65.3243L8.02288 65.4676M1.43315 65.6108L2.8657 66.1839H6.87684L8.02288 65.4676" stroke-width="0.57302" /></g><g transform="translate(1650.00 155.25)"><path d="M4.58476 9.45484V14.039M4.58476 14.039L3.43872 14.612L1.43315 14.8985L0.287109 15.7581V16.9041M4.58476 21.4883H6.87684L8.02288 20.9152L8.88242 20.0557V15.7581L7.73637 14.8985L6.30382 14.3255L4.58476 14.039M4.58476 21.4883H2.29268L1.14664 20.9152L0.287109 20.0557V16.9041M2.29268 21.4883V17.4771M6.87684 21.4883V17.4771M0.287109 16.9041L2.57919 17.4771H6.87684M8.59591 17.1906L7.16335 17.4771H6.87684M3.43872 29.224L2.57919 30.3701L3.72523 31.2296H6.01731L7.16335 30.0836L6.30382 28.9375L3.15221 29.224M4.58476 21.4883V28.078M4.58476 28.078H6.59033L8.59591 28.651L9.45544 30.3701L7.73637 32.0891L4.58476 32.3316M4.58476 28.078H1.43315L0.287109 29.224V31.2296L1.43315 32.0891L4.01174 32.3757L4.58476 32.3316M4.58476 32.3316V37.2463M4.58476 37.2463H3.15221L2.29268 37.8194L1.71966 38.3924V38.9654M4.58476 37.2463H6.87684L7.44986 37.8194L7.73637 38.3924V39.2519M2.15503 87.0991H1.71966L0.287109 85.6666L0.57362 44.9821L1.71966 44.4091V43.8361M0.57362 44.9821L1.43315 46.1281L2.57919 46.7012H6.59033L7.44986 46.1281L8.30939 44.9821M0.57362 82.2284L1.71966 83.088L2.15503 83.1363M6.87684 83.3745L8.59591 82.5149M6.87684 83.3745V86.8126M6.87684 83.3745H4.58476M2.15503 83.1363L4.29825 83.3745H4.58476M2.15503 83.1363V87.0991M2.15503 87.0991H6.30382L8.59591 86.2396L8.70932 69.9085M0.86013 69.9085L3.15221 71.341L4.58476 71.5457M4.58476 71.5457L5.15778 71.6276L7.16335 70.768L8.70932 69.9085M4.58476 71.5457V68.4759M4.58476 71.5457V83.3745M8.70932 69.9085L8.88242 44.9821L8.02288 44.5523M1.71966 38.9654L3.72523 40.1114H5.44429L6.30382 39.8249L7.73637 39.2519M1.71966 38.9654V40.6845M7.73637 39.2519V40.6845M1.71966 40.6845L2.8657 41.2575H6.30382L7.44986 40.971L7.73637 40.6845M1.71966 40.6845V42.117M7.73637 40.6845V42.117M1.71966 42.117L3.15221 42.69H6.59033L7.73637 42.117M1.71966 42.117V43.8361M7.73637 42.117V43.8361M1.71966 43.8361L3.43872 44.1226H6.87684L7.73637 43.8361M7.73637 43.8361V44.4091L8.02288 44.5523M1.43315 44.6956L2.8657 45.2686H6.87684L8.02288 44.5523M4.58476 0V5.44369" stroke-width="0.57302" /></g><g transform="translate(1620.75 143.50)"><path d="M4.58476 9.45484V14.039M4.58476 14.039L3.43872 14.612L1.43315 14.8985L0.287109 15.7581V16.9041M4.58476 21.4883H6.87684L8.02288 20.9152L8.88242 20.0557V15.7581L7.73637 14.8985L6.30382 14.3255L4.58476 14.039M4.58476 21.4883H2.29268L1.14664 20.9152L0.287109 20.0557V16.9041M2.29268 21.4883V17.4771M6.87684 21.4883V17.4771M0.287109 16.9041L2.57919 17.4771H6.87684M8.59591 17.1906L7.16335 17.4771H6.87684M3.43872 29.224L2.57919 30.3701L3.72523 31.2296H6.01731L7.16335 30.0836L6.30382 28.9375L3.15221 29.224M4.58476 21.4883V28.078M4.58476 28.078H6.59033L8.59591 28.651L9.45544 30.3701L7.73637 32.0891L4.58476 32.3316M4.58476 28.078H1.43315L0.287109 29.224V31.2296L1.43315 32.0891L4.01174 32.3757L4.58476 32.3316M4.58476 32.3316V37.2463M4.58476 37.2463H3.15221L2.29268 37.8194L1.71966 38.3924V38.9654M4.58476 37.2463H6.87684L7.44986 37.8194L7.73637 38.3924V39.2519M2.15503 87.0991H1.71966L0.287109 85.6666L0.57362 44.9821L1.71966 44.4091V43.8361M0.57362 44.9821L1.43315 46.1281L2.57919 46.7012H6.59033L7.44986 46.1281L8.30939 44.9821M0.57362 82.2284L1.71966 83.088L2.15503 83.1363M6.87684 83.3745L8.59591 82.5149M6.87684 83.3745V86.8126M6.87684 83.3745H4.58476M2.15503 83.1363L4.29825 83.3745H4.58476M2.15503 83.1363V87.0991M2.15503 87.0991H6.30382L8.59591 86.2396L8.70932 69.9085M0.86013 69.9085L3.15221 71.341L4.58476 71.5457M4.58476 71.5457L5.15778 71.6276L7.16335 70.768L8.70932 69.9085M4.58476 71.5457V68.4759M4.58476 71.5457V83.3745M8.70932 69.9085L8.88242 44.9821L8.02288 44.5523M1.71966 38.9654L3.72523 40.1114H5.44429L6.30382 39.8249L7.73637 39.2519M1.71966 38.9654V40.6845M7.73637 39.2519V40.6845M1.71966 40.6845L2.8657 41.2575H6.30382L7.44986 40.971L7.73637 40.6845M1.71966 40.6845V42.117M7.73637 40.6845V42.117M1.71966 42.117L3.15221 42.69H6.59033L7.73637 42.117M1.71966 42.117V43.8361M7.73637 42.117V43.8361M1.71966 43.8361L3.43872 44.1226H6.87684L7.73637 43.8361M7.73637 43.8361V44.4091L8.02288 44.5523M1.43315 44.6956L2.8657 45.2686H6.87684L8.02288 44.5523M4.58476 0V5.44369" stroke-width="0.57302" /></g><rect class="part__hit" x="1557.8" y="27.2" width="112.5" height="231.2" fill="transparent" stroke="none"/></g></g></svg>
+      <p class="exploded__label mono" aria-hidden="true"></p>
+    </div>
+
+    <p class="process__body" data-fade>From panel wattage to battery capacity and pole height, each light is configured for the road it will stand on.</p>
+    <a class="btn btn--outline-light process__cta" href="#about" data-scroll-to="#about"><span class="btn__label">About SSG</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+  </section>
+
+  <!-- ====== CTA ====== -->
+  <section class="cta" id="contact" aria-labelledby="cta-title">
+    <h2 class="cta__title display" id="cta-title" data-split>PLANNING A PUBLIC <br>PROJECT?</h2>
+    <p class="cta__text" data-fade>Panchayats, municipalities, schools and departments trust SSG to deliver lighting and infrastructure on time.</p>
+    <div class="cta__buttons">
+      <button class="btn btn--solid" type="button" data-enquire=""><span class="btn__label">Request a Quote</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+      <a class="btn btn--solid" href="#" data-brochure><span class="btn__label">Download Brochure</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </div>
+    <div class="cta__skyline" aria-hidden="true" data-svg-src="assets/08-cta/cta-skyline.svg">
+      <noscript><img src="assets/08-cta/cta-skyline.svg" alt="" loading="lazy" width="1672" height="941"></noscript>
+    </div>
+  </section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer section-blue" aria-labelledby="footer-title">
+  <h2 class="sr-only" id="footer-title">Contact and site links</h2>
+  <div class="footer__top">
+    <a class="footer__logo" href="#home" aria-label="SSG home"><img src="assets/logo-new.webp" width="420" height="421" alt="Shree Shyam Group logo" loading="lazy"></a>
+    <nav class="footer__col" aria-label="Overview">
+      <h3 class="footer__heading">Overview</h3>
+      <ul role="list">
+        <li><a class="footer__link" href="#home">Home</a></li>
+        <li><a class="footer__link" href="#about">About SSG</a></li>
+        <li><a class="footer__link" href="#products">Products</a></li>
+        <li><a class="footer__link" href="#" data-todo="careers">Careers</a></li>
+        <li><a class="footer__link" href="#contact">Contact Us</a></li>
+      </ul>
+    </nav>
+    <nav class="footer__col" aria-label="Socials">
+      <h3 class="footer__heading">Socials</h3>
+      <ul role="list">
+        <li><a class="footer__link" href="#" data-todo="instagram">Instagram</a></li>
+        <li><a class="footer__link" href="#" data-todo="facebook">Facebook</a></li>
+        <li><a class="footer__link" href="#" data-todo="linkedin">LinkedIn</a></li>
+        <li><a class="footer__link" href="mailto:shyaminfratech.co.in@gmail.com">Email</a></li>
+      </ul>
+    </nav>
+    <address class="footer__card">
+      <p class="footer__card-label mono">// GET IN TOUCH</p>
+      <p class="footer__card-addr">Jyotikuchi, Guwahati,<br>Assam – 781034</p>
+      <p class="footer__card-row"><a href="tel:+919559993505">+91 95599 93505</a><span aria-hidden="true"> · </span><a href="tel:+919207131170">+91 92071 31170</a></p>
+      <p class="footer__card-row"><a href="mailto:shyaminfratech.co.in@gmail.com">shyaminfratech.co.in@gmail.com</a></p>
+      <p class="footer__card-row"><a href="https://www.ssginfo.com" rel="noopener">www.ssginfo.com</a></p>
+      <a class="footer__map mono" href="https://www.google.com/maps/search/?api=1&amp;query=Jyotikuchi%2C+Guwahati%2C+Assam+781034" target="_blank" rel="noopener">OPEN IN MAPS ↗</a>
+    </address>
+  </div>
+  <div class="footer__landscape" aria-hidden="true" data-svg-src="assets/09-footer/footer-landscape.svg">
+    <noscript><img src="assets/09-footer/footer-landscape.svg" alt="" loading="lazy" width="2048" height="768"></noscript>
+  </div>
+  <div class="footer__legal">
+    <p>© 2026 Shree Shyam Group, a unit of Shyam Infratech. All rights reserved.</p>
+    <p><a href="#" data-todo="terms">Terms</a><span aria-hidden="true"> · </span><a href="#" data-todo="privacy">Privacy</a></p>
+  </div>
+</footer>
+
+<!-- ============ QUOTE MODAL ============ -->
+<dialog class="quote pview" id="product-view" aria-labelledby="pview-title">
+  <div class="pview__inner">
+    <button class="quote__close" type="button" aria-label="Close">×</button>
+    <figure class="pview__photo"><img alt=""></figure>
+    <div class="pview__body">
+      <p class="mono quote__kicker pview__kicker"></p>
+      <h2 class="quote__title display pview__title" id="pview-title"></h2>
+      <p class="pview__desc"></p>
+      <ul class="pview__specs mono" role="list"></ul>
+      <p class="pview__tags mono"></p>
+      <figure class="pview__blueprint"><img alt=""></figure>
+      <p class="pview__chem mono"></p>
+      <ul class="pview__lines mono" role="list"></ul>
+      <button class="btn btn--solid pview__quote" type="button"><span class="btn__label">Get a Quote</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="quote" id="quote" aria-labelledby="quote-title">
+  <form class="quote__form" method="dialog" novalidate>
+    <button class="quote__close" type="button" value="cancel" aria-label="Close">×</button>
+    <p class="mono quote__kicker">// REQUEST A QUOTE</p>
+    <h2 class="quote__title display" id="quote-title">Tell us about your project</h2>
+    <div class="quote__grid">
+      <label class="field"><span>Name</span><input name="name" type="text" autocomplete="name" required></label>
+      <label class="field"><span>Organisation</span><input name="org" type="text" autocomplete="organization"></label>
+      <label class="field"><span>Phone</span><input name="phone" type="tel" autocomplete="tel" required></label>
+      <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email"></label>
+      <label class="field field--wide"><span>Product</span><input name="product" type="text" placeholder="e.g. All-in-One Solar Street Light"></label>
+      <label class="field field--wide"><span>Message</span><textarea name="message" rows="4" placeholder="Site, quantity, timeline"></textarea></label>
+    </div>
+    <p class="quote__note mono" role="status"></p>
+    <button class="btn btn--solid quote__submit" type="submit"><span class="btn__label">Send Enquiry</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+  </form>
+</dialog>
+
+<!-- GSAP 3.13 (all plugins free) + Lenis -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/CustomEase.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js" defer></script>
+<script src="js/scene.js?v=33" defer></script>
+<script src="js/products.js?v=33" defer></script>
+<script src="js/process.js?v=33" defer></script>
+<script src="js/flag.js?v=34" defer></script>
+<script src="js/scanlines.js?v=33" defer></script>
+<script src="js/main.js?v=34" defer></script>
+<script>
+  // Safety net: never leave visitors on the preloader if a script fails to load
+  setTimeout(function () {
+    if (window.__ssgBooted) return;
+    var p = document.getElementById('preloader');
+    if (p) p.remove();
+    document.body.classList.remove('is-loading');
+    document.documentElement.classList.add('no-webgl', 'static-panels', 'reduced-motion');
+  }, 12000);
+</script>
+</body>
+</html>
