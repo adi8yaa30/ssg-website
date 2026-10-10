@@ -68,6 +68,25 @@ if (!gsap || !ScrollTrigger || !initProducts) {
 gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin, CustomEase);
 CustomEase.create('settle', 'M0,0 C0.18,0.9 0.32,1.08 0.6,1.02 0.8,0.99 1,1 1,1');
 gsap.defaults({ ease: 'power3.out' });
+// mobile browsers resize the viewport as the address bar slides; don't re-measure every trigger for that
+ScrollTrigger.config({ ignoreMobileResize: true });
+
+// Endless ambient loops (sun bob, cloud drift, marquee, glows…) only tick while their
+// section is on screen, so off-screen sections cost nothing per frame
+const ambient = new Map();
+const ambientIO = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => entries.forEach((e) => {
+  const a = ambient.get(e.target);
+  a.on = e.isIntersecting;
+  a.anims.forEach((anim) => anim.paused(!a.on));
+}), { rootMargin: '80px 0px' }) : null;
+function whileVisible(el, anim) {
+  if (!el || !anim || !ambientIO) return anim;
+  let a = ambient.get(el);
+  if (!a) { a = { on: false, anims: [] }; ambient.set(el, a); ambientIO.observe(el); }
+  a.anims.push(anim);
+  anim.paused(!a.on);
+  return anim;
+}
 
 function hasWebGL() {
   try {
@@ -85,9 +104,7 @@ document.body.classList.add('is-loading');
 // Smooth scroll (Lenis, synced with ScrollTrigger)
 let lenis = null;
 if (!reduced && Lenis) {
-  // Slightly faster convergence keeps the smooth feel without making input
-  // seem delayed, especially around pinned and media-heavy sections.
-  lenis = new Lenis({ lerp: 0.14, smoothWheel: true, autoRaf: false });
+  lenis = new Lenis({ lerp: 0.1, smoothWheel: true, autoRaf: false });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -170,8 +187,12 @@ const nodeLed = $('.leader__node--led');
 const calloutPole = $('.callout--pole');
 const calloutLed = $('.callout--led');
 
+// the leaders are only measured while the hero is on screen
+let heroOn = true;
+if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { heroOn = e.isIntersecting; }).observe(hero);
+
 function updateLeaders() {
-  if (!heroPoints.pole || !use3D) return;
+  if (!heroOn || !heroPoints.pole || !use3D) return;
   const hr = hero.getBoundingClientRect();
   if (hr.bottom < 0) return;
   const u = root.clientWidth / 1728;
@@ -218,7 +239,7 @@ function buildHeroIntro() {
     .fromTo('.hero__sun', { clipPath: 'inset(100% 0% 0% 0%)', y: 40 }, { clipPath: 'inset(0% 0% 0% 0%)', y: 0, duration: 1.5, ease: 'expo.out' }, 0.15)
     .from('.hero__sub', { y: 26, opacity: 0, duration: 1 }, 0.45)
     .from('.hero__ctas .btn', { y: 20, opacity: 0, duration: 0.8, stagger: 0.08 }, 0.6)
-    .add(() => gsap.to('.hero__sun', { y: -8, duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1 }), 1.7);
+    .add(() => whileVisible(hero, gsap.to('.hero__sun', { y: -8, duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1 })), 1.7);
 
   if (sceneApi) {
     tl.to(canvas, { opacity: 1, duration: 0.7, ease: 'power2.out' }, 0.05)
@@ -499,33 +520,31 @@ function buildMission() {
 function buildFlag() {
   const section = $('.flag');
   const flagState = initFlag({ section, reduced: reduced || mobile });
-  if (flagState) flagState.amp = reduced ? 0 : 0;
   if (reduced) return;
   const banner = $('.flag__banner');
+  const bannerInner = $('.flag__banner-inner');
   const dim = $('.flag__dimension');
   const dimCount = $('.count', dim);
+  const count = { v: 0 };
   dimCount.textContent = '0';
 
-  const skyDrift = gsap.fromTo('.flag__sky', { x: -20 }, {
-    x: 20, duration: 7, ease: 'sine.inOut', yoyo: true, repeat: -1, paused: true,
-  });
-  ScrollTrigger.create({
-    trigger: section,
-    start: 'top bottom',
-    end: 'bottom top',
-    onToggle: (self) => (self.isActive ? skyDrift.play() : skyDrift.pause()),
-  });
+  // clouds drift slowly while the section is on screen (in %, so the edge never shows at any width)
+  whileVisible(section, gsap.fromTo('.flag__sky', { xPercent: -1.5 }, { xPercent: 1.5, duration: 7, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
   gsap.set($$('path', dim), { drawSVG: '0%' });
-  const tl = gsap.timeline({ scrollTrigger: { trigger: section, start: mobile ? 'top 78%' : 'top 76%', toggleActions: toggle } });
-  // Transform-only reveal avoids repainting the large banner every frame.
-  tl.fromTo(banner, { scaleY: 0, transformOrigin: '50% 100%' }, { scaleY: 1, duration: 1.15, ease: 'power3.inOut' }, 0)
-    .from('.flag__flag', { y: 45, opacity: 0, duration: 1.25, ease: 'expo.out' }, 0.18)
-    .to(flagState || {}, { amp: 1, duration: 1.6, ease: 'power2.inOut' }, 0.35)
+  // everything here moves on the GPU: the banner opens from the bottom as a sliding mask
+  // (the frame moves up while its content moves down by the same amount), not a repainted clip-path
+  const tl = gsap.timeline({ scrollTrigger: { trigger: section, start: mobile ? 'top 70%' : 'top 62%', toggleActions: toggle } });
+  tl.fromTo(banner, { yPercent: 100 }, { yPercent: 0, duration: 1.5, ease: 'power3.inOut' }, 0)
+    .fromTo(bannerInner, { yPercent: -100 }, { yPercent: 0, duration: 1.5, ease: 'power3.inOut' }, 0)
+    .fromTo('.flag__flag', { y: 70, opacity: 0 }, { y: 0, opacity: 1, duration: 1.9, ease: 'power3.out' }, 0.3)
     .to($('.dim__line', dim), { drawSVG: '100%', duration: 1.4, ease: 'power2.inOut' }, 0.9)
     .to($('.dim__cap', dim), { drawSVG: '100%', duration: 0.4 }, 0.9)
-    .add(() => countUp(dimCount, 1.4), 0.9)
+    // a tween (not a callback), so scrolling back up counts down instead of restarting
+    .to(count, { v: 100, duration: 1.4, ease: 'power2.out', onUpdate: () => { dimCount.textContent = Math.round(count.v); } }, 0.9)
     .from('.flag__dimension > span', { opacity: 0, x: -8, duration: 0.5 }, 0.9)
-    .from('.flag__project', { y: 90, opacity: 0, duration: 1.3, ease: 'expo.out' }, 0.75);
+    .fromTo('.flag__project', { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 1.4, ease: 'expo.out' }, 0.75);
+  // the cloth starts to wave as the flag settles (WebGL flag only; phones show the still image)
+  if (flagState) tl.to(flagState, { amp: 1, duration: 2.6, ease: 'sine.inOut' }, 0.5);
 }
 
 // ---------------------------------------------------------------------------
@@ -539,7 +558,7 @@ function buildLogos() {
   if (window.innerWidth < 1200 && !reduced) {
     logos.forEach((l) => { const c = l.cloneNode(true); c.setAttribute('aria-hidden', 'true'); c.querySelector('img').alt = ''; row.appendChild(c); });
     row.classList.add('is-marquee');
-    gsap.to(row, { xPercent: -50, duration: 32, ease: 'none', repeat: -1 });
+    whileVisible($('.logos'), gsap.to(row, { xPercent: -50, duration: 32, ease: 'none', repeat: -1, force3D: true }));
   }
 }
 
@@ -551,12 +570,15 @@ function buildNav() {
     .map((h) => $(h)).filter(Boolean)
     .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
   let currentId = null;
+  // section tops are measured once per layout (ScrollTrigger refresh), not on every scroll frame
+  let tops = [];
+  const measure = () => { tops = targets.map((t) => ({ id: t.id, top: t.getBoundingClientRect().top + window.scrollY })); };
   const update = () => {
     // the last linked section whose top has passed the middle of the screen
     // (sections without a link, like Why SSG, keep the one above them current)
-    const line = window.innerHeight * 0.5;
-    let id = targets[0]?.id;
-    targets.forEach((t) => { if (t.getBoundingClientRect().top <= line) id = t.id; });
+    const line = window.scrollY + window.innerHeight * 0.5;
+    let id = tops[0]?.id;
+    tops.forEach((t) => { if (t.top <= line) id = t.id; });
     if (id === currentId) return;
     currentId = id;
     links.forEach((a) => {
@@ -564,7 +586,8 @@ function buildNav() {
       else a.removeAttribute('aria-current');
     });
   };
-  ScrollTrigger.create({ start: 0, end: 'max', onUpdate: update, onRefresh: update });
+  ScrollTrigger.create({ start: 0, end: 'max', onUpdate: update, onRefresh: () => { measure(); update(); } });
+  measure();
   update();
   const burger = $('.nav__burger');
   const menu = $('#mobile-menu');
@@ -667,14 +690,14 @@ async function boot() {
   buildMission();
   buildFlag();
   buildLogos();
-  initProcess({ gsap, ScrollTrigger, reduced, touch: !finePointer });
+  initProcess({ gsap, ScrollTrigger, reduced, touch: !finePointer, whileVisible });
   buildNav();
   trackPointer();
   // heavy media is only fetched once its section is getting close
   const near = (sel, fn) => ScrollTrigger.create({ trigger: sel, start: 'top 250%', once: true, onEnter: fn });
   near('.mission', () => $('.mission').classList.add('is-near'));
-  near('.cta', () => initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer }));
-  near('.footer', () => initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer }));
+  near('.cta', () => initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, whileVisible }));
+  near('.footer', () => initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer, whileVisible }));
   ScrollTrigger.refresh();
 
   // preloader out: the logo bows out, a seam draws down the middle and the screen splits open like two doors

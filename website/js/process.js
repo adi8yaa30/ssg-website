@@ -126,7 +126,7 @@ function el(tag, attrs = {}, parent) {
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
-function initProcess({ gsap, ScrollTrigger, reduced, touch }) {
+function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, a) => a }) {
   const section = document.querySelector('.process');
   if (!section) return;
   const diamond = section.querySelector('.diamond');
@@ -188,7 +188,9 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch }) {
     ticker.appendChild(span);
   });
   const tickerItems = [...ticker.children];
-  gsap.set(tickerItems.slice(1), { yPercent: 110 });
+  gsap.set(tickerItems.slice(1), { yPercent: 100, autoAlpha: 0 });
+  let activeTicker = tickerItems[0];
+  let tickerTransition;
 
   // focusable hit areas: the plain quadrants with no gap, so they tile the diamond
   const hitPaths = [
@@ -247,16 +249,35 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch }) {
 
   function setTicker(i) {
     const target = i < 0 ? tickerItems[0] : tickerItems[i + 1];
-    tickerItems.forEach((it) => {
-      if (it === target) {
-        if (!it.classList.contains('is-active')) gsap.fromTo(it, { yPercent: 110 }, { yPercent: 0, duration: 0.5 * D, ease: 'power3.out', overwrite: true });
-        it.classList.add('is-active');
-      } else {
-        if (it.classList.contains('is-active')) gsap.to(it, { yPercent: -110, duration: 0.4 * D, ease: 'power3.in', overwrite: true });
-        else if (!gsap.isTweening(it)) gsap.set(it, { yPercent: 110 });
-        it.classList.remove('is-active');
-      }
+    if (target === activeTicker) return;
+    tickerTransition?.kill();
+    const previous = activeTicker;
+    const previousY = Number(gsap.getProperty(previous, 'yPercent')) || 0;
+    // Reversing an interrupted change should bring the outgoing row back from
+    // its current side, without restarting it at the bottom of the mask.
+    const backwards = Number(gsap.getProperty(target, 'opacity')) > 0 &&
+      Number(gsap.getProperty(target, 'yPercent')) < previousY;
+    const direction = backwards ? -1 : 1;
+    activeTicker = target;
+    tickerItems.forEach((item) => {
+      item.classList.toggle('is-active', item === target);
+      if (item !== target && item !== previous) gsap.set(item, { yPercent: 100, autoAlpha: 0 });
     });
+    if (reduced) {
+      gsap.set(previous, { yPercent: 100, autoAlpha: 0 });
+      gsap.set(target, { yPercent: 0, autoAlpha: 1 });
+      return;
+    }
+    gsap.set(previous, { autoAlpha: 1 });
+    gsap.set(target, { yPercent: previousY + direction * 100, autoAlpha: 1 });
+    // The two equal-height rows stay exactly one row apart throughout the
+    // tween. One timeline also prevents stale outgoing tweens on rapid hover.
+    tickerTransition = gsap.timeline({
+      defaults: { duration: 0.45, ease: 'power3.inOut' },
+      onComplete: () => gsap.set(previous, { yPercent: 100, autoAlpha: 0 }),
+    })
+      .to(previous, { yPercent: -direction * 100 }, 0)
+      .to(target, { yPercent: 0 }, 0);
   }
 
   function showText(i, delay) {
@@ -362,10 +383,10 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch }) {
     diamond.addEventListener('pointerleave', () => { ax(0); ay(0); });
   }
 
-  // idle hint: quadrant 01 pulses every 4 s
+  // idle hint: quadrant 01 pulses every 4 s (only while the diamond is on screen)
   if (!reduced) {
-    gsap.timeline({ repeat: -1, repeatDelay: 2.6, delay: 3 })
-      .fromTo(halo, { opacity: 0.7, scale: 1, transformOrigin: '75% 75%' }, { opacity: 0, scale: 1.08, duration: 1.4, ease: 'power2.out' });
+    whileVisible(diamond, gsap.timeline({ repeat: -1, repeatDelay: 2.6, delay: 3 })
+      .fromTo(halo, { opacity: 0.7, scale: 1, transformOrigin: '75% 75%' }, { opacity: 0, scale: 1.08, duration: 1.4, ease: 'power2.out' }));
   }
 
   // mobile: auto-cycle 01 -> 04 while the section is on screen

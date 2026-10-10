@@ -11,12 +11,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&family=Unbounded:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=Space+Mono&family=Unbounded:wght@400&display=swap" rel="stylesheet">
 
 
   <link rel="stylesheet" href="css/reset.css?v=34">
   <link rel="stylesheet" href="css/tokens.css?v=34">
-  <link rel="stylesheet" href="css/main.css?v=34">
+  <link rel="stylesheet" href="css/main.css?v=35">
 
   <script type="importmap">
   {
@@ -32,7 +32,7 @@
     if (location.protocol !== 'file:' && matchMedia('(min-width: 768px)').matches) {
       var l = document.createElement('link');
       l.rel = 'preload'; l.as = 'fetch'; l.crossOrigin = 'anonymous';
-      l.href = 'assets/01-hero/model/ssg-streetlight.web.glb';
+      l.href = 'assets/01-hero/model/ssg-streetlight.web.glb?v=landscape-4';
       document.head.appendChild(l);
     }
   </script>
@@ -151,7 +151,7 @@
 
       <!-- DOM anchor for the 3D street light (static image is the no-WebGL / mobile fallback) -->
       <div class="anchor anchor--streetlight" id="anchor-streetlight">
-        <img class="anchor__fallback" src="assets/01-hero/streetlight-fallback.webp" width="800" height="1375" alt="SSG solar street light with an LED head and a solar panel, standing on a grass island" fetchpriority="high">
+        <img class="anchor__fallback" src="assets/01-hero/streetlight-fallback.webp?v=landscape-4" width="800" height="1375" alt="SSG solar street light with an LED head and a solar panel, standing on a grass island" fetchpriority="high">
       </div>
 
       <!-- Callouts: leader lines are drawn in JS from the model's projected points -->
@@ -462,10 +462,12 @@
     <p class="flag__text" data-fade>National Flag poles for public spaces, institutions, campuses and government buildings. Heavy-duty steel, built to carry the Tricolour high in every season.</p>
 
     <div class="flag__banner" aria-hidden="true">
-      <img class="flag__sky" src="assets/04-flag/flag-sky.webp" width="1916" height="821" alt="" loading="lazy">
+      <div class="flag__banner-inner">
+        <img class="flag__sky" src="assets/04-flag/flag-sky.webp" width="1916" height="821" alt="" loading="lazy" decoding="async">
+      </div>
     </div>
     <div class="flag__flag">
-      <img class="flag__img" src="assets/04-flag/national-flag.webp" width="1400" height="2102" alt="The Indian National Flag flying from a tall steel flag pole" loading="lazy">
+      <img class="flag__img" src="assets/04-flag/national-flag.webp" width="1400" height="2102" alt="The Indian National Flag flying from a tall steel flag pole" loading="lazy" decoding="async">
       <canvas class="flag__gl" aria-hidden="true"></canvas>
     </div>
     <div class="flag__dimension" aria-hidden="true">
@@ -474,7 +476,7 @@
     </div>
 
     <figure class="flag__project">
-      <img src="assets/04-flag/project-image.webp" width="1000" height="901" alt="A 100 ft National Flag mast installed by SSG in Arunachal Pradesh, against a blue sky and green hills" loading="lazy">
+      <img src="assets/04-flag/project-image.webp" width="1000" height="901" alt="A 100 ft National Flag mast installed by SSG in Arunachal Pradesh, against a blue sky and green hills" loading="lazy" decoding="async">
       <figcaption class="mono"><span data-type>// FEATURED PROJECT</span><span data-type>100 FT NATIONAL FLAG MAST AT ARUNACHAL PRADESH</span></figcaption>
     </figure>
     <button class="btn btn--solid flag__cta" type="button" data-enquire="National Flag Pole"><span class="btn__label">Get a Quote</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></button>
@@ -650,11 +652,11 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/CustomEase.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js" defer></script>
-<script src="js/scene.js?v=33" defer></script>
-<script src="js/products.js?v=33" defer></script>
-<script src="js/process.js?v=33" defer></script>
+<script src="js/scene.js?v=35" defer></script>
+<script src="js/products.js?v=34" defer></script>
+<script src="js/process.js?v=35" defer></script>
 <script src="js/flag.js?v=34" defer></script>
-<script src="js/scanlines.js?v=33" defer></script>
+<script src="js/scanlines.js?v=34" defer></script>
 <script src="js/main.js?v=34" defer></script>
 <script>
   // Safety net: never leave visitors on the preloader if a script fails to load

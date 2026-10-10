@@ -20,6 +20,12 @@ If you change `ssg-streetlight.web.glb`, `cta-skyline.svg`, `footer-landscape.sv
 cd website && python3 tools/embed-local-assets.py
 ```
 
+`cta-skyline.svg` and `footer-landscape.svg` are built from the original exports in `../assets` by `tools/optimize-svg.py` (fewer vertices and compact path data: the skyline goes from 1.3 MB to 190 KB and looks the same). If the exports change, run it before the embed script:
+
+```bash
+cd website && python3 tools/optimize-svg.py && python3 tools/embed-local-assets.py
+```
+
 ## Structure
 
 ```
@@ -37,7 +43,8 @@ js/flag.js          WebGL wave on the national flag
 js/scanlines.js     CTA skyline and footer landscape row animations
 assets/             web-ready copies of the provided assets (kebab-case),
                     plus *.js embedded copies used when opened from disk
-tools/              embed-local-assets.py (regenerates those embedded copies)
+tools/              embed-local-assets.py (regenerates those embedded copies),
+                    optimize-svg.py (rebuilds the light scanline SVGs from the exports)
 TODO.md             missing assets and things to confirm with the client
 ```
 
@@ -47,3 +54,31 @@ TODO.md             missing assets and things to confirm with the client
 - **3D anchoring.** The 3D is anchored to `#anchor-streetlight`, `#anchor-panel-why` and `#anchor-panel-sun`, and recomputed every frame. To move the light or the panels, move those divs in CSS.
 - **Fallbacks.** On mobile (< 768 px), without WebGL, or with `prefers-reduced-motion`, the page uses static images instead: `streetlight-fallback.webp` and `panel-static.webp`, which was rendered from the GLB.
 - **Debugging.** Add `?debug` to the URL to expose `window.__ssg` (scene state, GSAP, ScrollTrigger). `window.__ssg.sceneApi.capturePanel()` re-renders the static panel image.
+
+## Landscape quality update
+
+The hero GLB includes 39,205 curved grass blades, paired three-dimensional shrub
+leaves and woody stems. Vertex colors contain deterministic color variation,
+root darkening, local ambient occlusion and sun occlusion. These are baked into
+the mesh, so there is no additional per-frame shadow pass. The GLB is about
+4.75 MB; the existing hardware meshes, textures, node transforms and detachable
+panel assembly are preserved. The static mobile/reduced-motion image and the
+embedded `file://` model have also been updated.
+
+For a close inspection and before/after comparison, open
+`http://localhost:5173/tools/landscape-preview.html` while the local server runs.
+This development preview uses the same lighting and tone mapping as the website.
+
+Rebuild from the preserved original asset using Blender 5.1:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender -b -t 4 --python tools/rebuild-landscape.py
+python3 tools/embed-local-assets.py
+python3 tools/verify-landscape.py
+```
+
+Run these commands from `website/`. After future asset edits, increment the
+`landscape-4` URL version in `index.html`, `js/scene.js` and the preview together.
+Keep the unversioned model path for `file://` embedding. In the preview, **Mobile
+render → Save render** exports the matching 800 × 1375 transparent WebP fallback.
+Original GLB and fallback backups are retained under `tools/backups/`.

@@ -150,7 +150,7 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
         .catch(reject);
     } else {
       loader.load(
-        MODEL_URL,
+        `${MODEL_URL}?v=landscape-4`,
         done,
         (e) => { if (e.lengthComputable) onProgress(Math.min(0.98, e.loaded / e.total)); },
         reject
@@ -294,9 +294,23 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
   function rectOf(el) { return el.getBoundingClientRect(); }
   const onScreen = (r, pad = 0) => r.bottom > -pad && r.top < vh + pad && r.right > -pad && r.left < vw + pad;
 
+  // Whether any anchor is within a screen of the viewport. Once the hero, Why SSG and
+  // the sun section are all far away, frames skip every DOM read and draw nothing.
+  let anchorsNear = true;
+  if ('IntersectionObserver' in window) {
+    const near = new Set();
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => (e.isIntersecting ? near.add(e.target) : near.delete(e.target)));
+      anchorsNear = near.size > 0;
+    }, { rootMargin: '100% 0px' });
+    Object.values(anchors).forEach((a) => a && io.observe(a));
+  }
+
   function frame(dt) {
     if (!api.ready) return;
     time += dt;
+    // nothing near and the canvas already cleared: nothing to do
+    if (!anchorsNear && !lastVisible && !needsRender) return;
     const s = api.state;
 
     // --- street light at #anchor-streetlight

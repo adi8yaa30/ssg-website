@@ -92,7 +92,7 @@ function ripple({ gsap, section, svg, rows, viewH, amount = 4, radius = 60 }) {
   });
 }
 
-async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer }) {
+async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, whileVisible = (el, a) => a }) {
   const section = document.querySelector('.cta');
   const container = section?.querySelector('.cta__skyline');
   if (!container) return;
@@ -129,8 +129,10 @@ async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer }) {
     .to(glows, { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(3)', stagger: 0.06 }, '-=0.3')
     .to(shimmer, { opacity: 1, duration: 0.6 }, '-=0.4')
     .add(() => {
-      gsap.fromTo(shimmer, { backgroundPosition: '120% 0' }, { backgroundPosition: '-20% 0', duration: 5, ease: 'sine.inOut', repeat: -1, repeatDelay: 1.5 });
-      gsap.to(glows, { opacity: 0.55, duration: 1.8, ease: 'sine.inOut', repeat: -1, yoyo: true, stagger: { each: 0.25, from: 'random' } });
+      // the shimmer band and the glows are their own GPU layers, so these loops never repaint
+      // the skyline; they also stop while the section is off screen
+      whileVisible(section, gsap.fromTo(shimmer, { xPercent: -160 }, { xPercent: 260, duration: 5, ease: 'sine.inOut', repeat: -1, repeatDelay: 1.5, force3D: true }));
+      whileVisible(section, gsap.to(glows, { opacity: 0.55, duration: 1.8, ease: 'sine.inOut', repeat: -1, yoyo: true, stagger: { each: 0.25, from: 'random' } }));
       // transforms are only needed for the intro; drop them so the ripple groups stay cheap
       gsap.set(order.map((o) => o.el), { clearProps: 'transform' });
     });
@@ -143,7 +145,7 @@ async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer }) {
   }
 }
 
-async function initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer }) {
+async function initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer, whileVisible = (el, a) => a }) {
   const footer = document.querySelector('.footer');
   const container = footer?.querySelector('.footer__landscape');
   if (!container) return;
@@ -152,14 +154,20 @@ async function initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer }
   const vb = svg.viewBox.baseVal;
   const all = measure([...svg.querySelectorAll('path')]);
 
-  // clouds: white artwork in the upper band drifts slowly
+  // clouds: white artwork in the upper band drifts slowly. They move to an identical
+  // SVG laid over the landscape, so the drift is a GPU transform instead of a repaint
+  // of the whole landscape every frame.
   const white = svg.querySelector('#white-scanlines, #white-artwork') || svg.querySelectorAll('g')[1];
   const NS = 'http://www.w3.org/2000/svg';
-  const clouds = document.createElementNS(NS, 'g');
-  clouds.setAttribute('class', 'footer__clouds');
   const cloudItems = all.filter((it) => white && white.contains(it.el) && it.cy < vb.height * 0.5);
-  white?.appendChild(clouds);
-  cloudItems.forEach((it) => clouds.appendChild(it.el));
+  const clouds = document.createElementNS(NS, 'svg');
+  ['viewBox', 'preserveAspectRatio', 'aria-hidden'].forEach((a) => clouds.setAttribute(a, svg.getAttribute(a)));
+  clouds.setAttribute('class', 'footer__clouds');
+  const cloudHost = white ? white.cloneNode(false) : document.createElementNS(NS, 'g'); // keeps the white fill
+  cloudHost.removeAttribute('id');
+  cloudItems.forEach((it) => cloudHost.appendChild(it.el));
+  clouds.appendChild(cloudHost);
+  container.appendChild(clouds);
   const rest = all.filter((it) => !cloudItems.includes(it));
 
   if (reduced) return;
@@ -174,7 +182,7 @@ async function initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer }
     .to(clouds, { opacity: 1, duration: 1.2, ease: 'power2.out' }, '-=0.6');
   ScrollTrigger.create({ trigger: container, start: 'top 85%', once: true, onEnter: () => tl.play() });
 
-  gsap.to(clouds, { x: 26, duration: 9, ease: 'sine.inOut', repeat: -1, yoyo: true });
+  whileVisible(footer, gsap.to(clouds, { xPercent: (26 / vb.width) * 100, duration: 9, ease: 'sine.inOut', repeat: -1, yoyo: true, force3D: true }));
 
   if (finePointer) ripple({ gsap, section: footer, svg, rows: groups, viewH: vb.height, amount: 5, radius: 45 });
 }

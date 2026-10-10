@@ -34,4 +34,4 @@
 ## Nice to have
 
 - [ ] An optimised, licence-cleared **map embed** for the footer card (currently an "Open in Maps" link).
-- [ ] A Lighthouse pass on the production host with caching and compression on. Heaviest assets: `cta-skyline.svg` (1.3 MB, compresses well with gzip or brotli), `03-mission/image.webp` (690 KB) and the GLB (1.95 MB, desktop only).
+- [ ] A Lighthouse pass on the production host with caching and compression on. Heaviest assets: `03-mission/image.webp` (690 KB), `footer-landscape.svg` (300 KB, compresses well with gzip or brotli) and the GLB (1.95 MB, desktop only).
