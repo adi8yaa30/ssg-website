@@ -199,8 +199,9 @@ function updateLeaders() {
   const u = root.clientWidth / 1728;
   const pole = { x: heroPoints.pole.x - hr.left, y: heroPoints.pole.y - hr.top };
   const led = { x: heroPoints.led.x - hr.left, y: heroPoints.led.y - hr.top };
-  const lp = { x: calloutPole.offsetLeft + calloutPole.offsetWidth, y: calloutPole.offsetTop + 34 * u };
-  const ll = { x: calloutLed.offsetLeft, y: calloutLed.offsetTop + 33 * u };
+  // the boxes grow with their text and the frame stretches, so meet the notch (y 34 / 33 of 140) proportionally
+  const lp = { x: calloutPole.offsetLeft + calloutPole.offsetWidth, y: calloutPole.offsetTop + calloutPole.offsetHeight * (34 / 140) };
+  const ll = { x: calloutLed.offsetLeft, y: calloutLed.offsetTop + calloutLed.offsetHeight * (33 / 140) };
   // pole: short run left, 45° diagonal down, long run to the box
   const a1 = pole.x - 22 * u;
   const d1 = Math.max(lp.x + 10 * u, a1 - Math.max(0, lp.y - pole.y));
