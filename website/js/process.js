@@ -76,7 +76,8 @@ const R = 12;             // outer corner radius (12px in the design)
 const R_IN = 4;           // inner (centre) corner radius of a quadrant
 const GAP = 2;            // half gap between quadrants
 const GAP_OPEN = 4.3;     // half gap between the two triangles
-const OVERLAP = 0.6;      // halves overlap a hair when merged so no seam shows
+const OVERLAP = 0.6;
+const HIT_DEAD = 40;       // half-size of the centre zone that hovers no quadrant      // halves overlap a hair when merged so no seam shows
 const SQ2 = Math.SQRT2;
 const TAN_22 = Math.tan(Math.PI / 8);
 
@@ -195,7 +196,11 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
   // focusable hit areas: the plain quadrants with no gap, so they tile the diamond
   const hitPaths = [
     [[C, 7], [C, C], [7, C]], [[C, 7], [453, C], [C, C]], [[7, C], [C, C], [C, 453]], [[C, C], [453, C], [C, 453]],
-  ].map((pts, i) => el('path', {
+  ].map(([a, , b]) => {
+    // cut a small diamond out of the centre so the middle hovers nothing
+    const toward = (pt) => [C + Math.sign(pt[0] - C) * HIT_DEAD, C + Math.sign(pt[1] - C) * HIT_DEAD];
+    return [a, toward(a), toward(b), b];
+  }).map((pts, i) => el('path', {
     d: `M${pts.map((pt) => pt.join(' ')).join('L')}Z`,
     tabindex: 0, role: 'button', 'aria-label': `0${i + 1}: ${STEPS[i].label}. ${STEPS[i].line}`,
   }, hits));
@@ -475,19 +480,19 @@ function initExploded({ gsap, ScrollTrigger, reduced }) {
   gsap.set(partPaths.flat(), { drawSVG: '0%' });
 
   const tl = gsap.timeline({
-    scrollTrigger: { trigger: wrap, start: 'top 82%', end: 'bottom 45%', scrub: 1 },
+    scrollTrigger: { trigger: wrap, start: 'top 95%', end: 'bottom 72%', scrub: 0.5 },
     onComplete: () => { if (!played) flourish(); },
   });
   parts.forEach((p, i) => {
-    const at = i * 1.0;
-    tl.to(partPaths[i], { drawSVG: '100%', duration: 0.9, ease: 'none', stagger: 0.004 }, at);
-    if (clipRects[i]) tl.to(clipRects[i].r, { attr: { width: clipRects[i].w }, duration: 0.9, ease: 'none' }, at + 0.35);
+    const at = i * 0.45;
+    tl.to(partPaths[i], { drawSVG: '100%', duration: 0.7, ease: 'none', stagger: 0.004 }, at);
+    if (clipRects[i]) tl.to(clipRects[i].r, { attr: { width: clipRects[i].w }, duration: 0.7, ease: 'none' }, at + 0.25);
   });
 
   // one-time flourish when the row completes: parts slide together into one light, then apart
   let played = false;
   ScrollTrigger.create({
-    trigger: wrap, start: 'bottom 45%', once: true,
+    trigger: wrap, start: 'bottom 72%', once: true,
     onEnter: () => { if (!played) { played = true; flourish(); } },
   });
   function flourish() {
