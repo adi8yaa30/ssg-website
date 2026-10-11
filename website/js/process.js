@@ -193,14 +193,11 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
   let activeTicker = tickerItems[0];
   let tickerTransition;
 
-  // focusable hit areas: the plain quadrants with no gap, so they tile the diamond
-  const hitPaths = [
-    [[C, 7], [C, C], [7, C]], [[C, 7], [453, C], [C, C]], [[7, C], [C, C], [C, 453]], [[C, C], [453, C], [C, 453]],
-  ].map(([a, , b]) => {
-    // cut a small diamond out of the centre so the middle hovers nothing
-    const toward = (pt) => [C + Math.sign(pt[0] - C) * HIT_DEAD, C + Math.sign(pt[1] - C) * HIT_DEAD];
-    return [a, toward(a), toward(b), b];
-  }).map((pts, i) => el('path', {
+  // focusable hit areas: the plain quadrants with no gap, minus a small diamond at the
+  // centre so the middle hovers nothing. [sx, sy] is each quadrant's direction from C.
+  const hitPaths = [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sy]) => [
+    [C, C + sy * (C - 7)], [C, C + sy * HIT_DEAD], [C + sx * HIT_DEAD, C], [C + sx * (C - 7), C],
+  ]).map((pts, i) => el('path', {
     d: `M${pts.map((pt) => pt.join(' ')).join('L')}Z`,
     tabindex: 0, role: 'button', 'aria-label': `0${i + 1}: ${STEPS[i].label}. ${STEPS[i].line}`,
   }, hits));
@@ -480,19 +477,19 @@ function initExploded({ gsap, ScrollTrigger, reduced }) {
   gsap.set(partPaths.flat(), { drawSVG: '0%' });
 
   const tl = gsap.timeline({
-    scrollTrigger: { trigger: wrap, start: 'top 95%', end: 'bottom 72%', scrub: 0.5 },
+    scrollTrigger: { trigger: wrap, start: 'top 98%', end: 'bottom 85%', scrub: 0.3 },
     onComplete: () => { if (!played) flourish(); },
   });
   parts.forEach((p, i) => {
-    const at = i * 0.45;
-    tl.to(partPaths[i], { drawSVG: '100%', duration: 0.7, ease: 'none', stagger: 0.004 }, at);
-    if (clipRects[i]) tl.to(clipRects[i].r, { attr: { width: clipRects[i].w }, duration: 0.7, ease: 'none' }, at + 0.25);
+    const at = i * 0.3;
+    tl.to(partPaths[i], { drawSVG: '100%', duration: 0.55, ease: 'none', stagger: 0.004 }, at);
+    if (clipRects[i]) tl.to(clipRects[i].r, { attr: { width: clipRects[i].w }, duration: 0.55, ease: 'none' }, at + 0.2);
   });
 
   // one-time flourish when the row completes: parts slide together into one light, then apart
   let played = false;
   ScrollTrigger.create({
-    trigger: wrap, start: 'bottom 72%', once: true,
+    trigger: wrap, start: 'bottom 85%', once: true,
     onEnter: () => { if (!played) { played = true; flourish(); } },
   });
   function flourish() {
