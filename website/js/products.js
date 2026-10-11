@@ -71,7 +71,7 @@ function initProducts({ gsap, ScrollTrigger, SplitText, lenis, native, onEnquire
 
   // ---- per-slide entrance -------------------------------------------------
   function slideTimeline(slide) {
-    const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
+    const tl = gsap.timeline({ paused: true });
     const name = slide.querySelector('.slide__name');
     const split = SplitText.create(name, { type: 'lines', mask: 'lines', linesClass: 'split-line' });
     const card = slide.querySelector('.slide__card');
@@ -82,16 +82,16 @@ function initProducts({ gsap, ScrollTrigger, SplitText, lenis, native, onEnquire
     const dim = slide.querySelector('.slide__dimension');
     const counts = [...slide.querySelectorAll('.count')];
 
-    tl.from(split.lines, { yPercent: 110, duration: 0.9, stagger: 0.08, ease: 'power4.out' }, 0)
-      .from(card, { y: 50, opacity: 0, duration: 0.8 }, 0.08)
+    tl.from(split.lines, { yPercent: 110, duration: 1.6, stagger: 0.08 }, 0)
+      .from(card, { y: 50, opacity: 0, duration: 1.6 }, 0.08)
       .add(() => countUp(counts), 0.2)
-      .from(tags, { y: 16, opacity: 0, duration: 0.6, stagger: 0.06 }, 0.16)
-      .fromTo(blueprint, { clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 1.1, ease: 'power2.inOut' }, 0.24)
-      .from(rightRest, { y: 14, opacity: 0, duration: 0.6, stagger: 0.05 }, 0.34)
-      .from(cta, { y: 20, opacity: 0, duration: 0.6 }, 0.4);
+      .from(tags, { y: 16, opacity: 0, duration: 1.6, stagger: 0.06 }, 0.16)
+      .fromTo(blueprint, { clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 1.6 }, 0.24)
+      .from(rightRest, { y: 14, opacity: 0, duration: 1.6, stagger: 0.05 }, 0.34)
+      .from(cta, { y: 20, opacity: 0, duration: 1.6 }, 0.4);
     if (dim) {
-      tl.fromTo(dim.querySelector('.dim__line'), { drawSVG: '0%' }, { drawSVG: '100%', duration: 1.2, ease: 'power2.inOut' }, 0.3)
-        .from(dim.querySelector('span'), { opacity: 0, duration: 0.4 }, 1.1);
+      tl.fromTo(dim.querySelector('.dim__line'), { drawSVG: '0%' }, { drawSVG: '100%', duration: 1.6 }, 0.3)
+        .from(dim.querySelector('span'), { opacity: 0, duration: 0.4 }, 1.4);
     }
     return tl;
   }
@@ -102,7 +102,7 @@ function initProducts({ gsap, ScrollTrigger, SplitText, lenis, native, onEnquire
       const comma = c.dataset.format === 'comma';
       const o = { v: 0 };
       gsap.to(o, {
-        v: to, duration: 1.1, ease: 'power2.out',
+        v: to, duration: 1.6,
         onUpdate: () => { const v = Math.round(o.v); c.textContent = comma ? v.toLocaleString('en-IN') : v; },
       });
     });
@@ -149,13 +149,13 @@ function initProducts({ gsap, ScrollTrigger, SplitText, lenis, native, onEnquire
   };
 
   const place = (i, duration) => {
-    const opts = { duration, ease: 'power3.inOut', overwrite: true };
+    const opts = { duration, overwrite: true };
     gsap.to(track, { x: -i * S(), ...opts });
   };
   const go = (i) => {
     i = Math.max(0, Math.min(n - 1, i));
     setIndex(i);
-    place(i, 1.2);
+    place(i, 1.6);
     reveal(i, 0.45);
   };
   prevBtn.addEventListener('click', () => go(wrap(index - 1)));

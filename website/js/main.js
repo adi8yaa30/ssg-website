@@ -66,8 +66,9 @@ if (!gsap || !ScrollTrigger || !initProducts) {
 }
 
 gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin, CustomEase);
-CustomEase.create('settle', 'M0,0 C0.18,0.9 0.32,1.08 0.6,1.02 0.8,0.99 1,1 1,1');
-gsap.defaults({ ease: 'power3.out' });
+// the site's one motion curve; entrances run 1.6s on it (scroll-linked tweens and ambient loops opt out)
+CustomEase.create('ssg', '0.4,0.01,0.04,1');
+gsap.defaults({ ease: 'ssg' });
 // mobile browsers resize the viewport as the address bar slides; don't re-measure every trigger for that
 ScrollTrigger.config({ ignoreMobileResize: true });
 
@@ -134,7 +135,7 @@ function renderProgress() {
   pctEl.textContent = Math.round(progress.v * 100);
 }
 function setProgress(p) {
-  gsap.to(progress, { v: Math.max(progress.v, p), duration: 0.5, ease: 'power2.out', overwrite: true, onUpdate: renderProgress });
+  gsap.to(progress, { v: Math.max(progress.v, p), duration: 0.5, overwrite: true, onUpdate: renderProgress });
 }
 
 const fontsReady = (document.fonts ? document.fonts.ready : Promise.resolve()).catch(() => {});
@@ -221,33 +222,33 @@ function typeIn(el, opts = {}) {
   gsap.set(split.chars, { autoAlpha: 0 });
   return gsap.to(split.chars, { autoAlpha: 1, duration: 0.01, stagger: opts.stagger ?? 0.022, ease: 'none', ...opts });
 }
-function countUp(el, duration = 1.4) {
+function countUp(el, duration = 1.6) {
   const to = parseFloat(el.dataset.to);
   const o = { v: 0 };
   el.textContent = '0';
-  return gsap.to(o, { v: to, duration, ease: 'power2.out', onUpdate: () => { el.textContent = Math.round(o.v); } });
+  return gsap.to(o, { v: to, duration, onUpdate: () => { el.textContent = Math.round(o.v); } });
 }
 
 // ---------------------------------------------------------------------------
 // HERO intro
 function buildHeroIntro() {
-  const tl = gsap.timeline({ paused: true, defaults: { ease: 'power4.out' } });
+  const tl = gsap.timeline({ paused: true });
   if (reduced) return tl;
   const split = SplitText.create('.hero__line', { type: 'chars', mask: 'chars' });
   gsap.set('.hero__title', { opacity: 1 });
-  tl.from(split.chars, { yPercent: 110, duration: 1.1, stagger: 0.025, onComplete: () => split.revert() }, 0)
-    .fromTo('.hero__sun', { clipPath: 'inset(100% 0% 0% 0%)', y: 40 }, { clipPath: 'inset(0% 0% 0% 0%)', y: 0, duration: 1.5, ease: 'expo.out' }, 0.15)
-    .from('.hero__sub', { y: 26, opacity: 0, duration: 1 }, 0.45)
-    .from('.hero__ctas .btn', { y: 20, opacity: 0, duration: 0.8, stagger: 0.08 }, 0.6)
+  tl.from(split.chars, { yPercent: 110, duration: 1.6, stagger: 0.025, onComplete: () => split.revert() }, 0)
+    .fromTo('.hero__sun', { clipPath: 'inset(100% 0% 0% 0%)', y: 40 }, { clipPath: 'inset(0% 0% 0% 0%)', y: 0, duration: 1.6 }, 0.15)
+    .from('.hero__sub', { y: 26, opacity: 0, duration: 1.6 }, 0.45)
+    .from('.hero__ctas .btn', { y: 20, opacity: 0, duration: 1.6, stagger: 0.08 }, 0.6)
     .add(() => whileVisible(hero, gsap.to('.hero__sun', { y: -8, duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1 })), 1.7);
 
   if (sceneApi) {
-    tl.to(canvas, { opacity: 1, duration: 0.7, ease: 'power2.out' }, 0.05)
-      .to(sceneApi.state, { intro: 1, duration: 1.6, ease: 'expo.out' }, 0.05)
-      .to(sceneApi.state, { ledGlow: 3.4, duration: 0.45, ease: 'power2.out' }, 1.05)
-      .to(sceneApi.state, { ledGlow: 0.9, duration: 1.3, ease: 'power2.inOut' }, 1.5);
+    tl.to(canvas, { opacity: 1, duration: 0.7 }, 0.05)
+      .to(sceneApi.state, { intro: 1, duration: 1.6 }, 0.05)
+      .to(sceneApi.state, { ledGlow: 3.4, duration: 0.45 }, 1.05)
+      .to(sceneApi.state, { ledGlow: 0.9, duration: 1.3 }, 1.5);
   } else {
-    tl.from('#anchor-streetlight img', { y: 40, opacity: 0, duration: 1.4, ease: 'expo.out' }, 0.1);
+    tl.from('#anchor-streetlight img', { y: 40, opacity: 0, duration: 1.6 }, 0.1);
   }
 
   // callouts: leader lines draw out from the product, then boxes + text type in
@@ -258,9 +259,9 @@ function buildHeroIntro() {
   gsap.set('.callout__corner, .callout__icon, .leader__node', { opacity: 0 });
   gsap.set('.callout [data-type]', { opacity: 0 });
   tl.to('.leader__node', { opacity: 1, duration: 0.3 }, 1.2)
-    .to(leaders, { drawSVG: '100%', duration: 0.9, ease: 'power2.inOut', stagger: 0.12 }, 1.25)
+    .to(leaders, { drawSVG: '100%', duration: 0.9, stagger: 0.12 }, 1.25)
     .add(() => gsap.set(leaders, { clearProps: 'strokeDasharray,strokeDashoffset' }), 2.3)
-    .to(outlines, { drawSVG: '100%', duration: 0.8, ease: 'power2.inOut', stagger: 0.12 }, 1.9)
+    .to(outlines, { drawSVG: '100%', duration: 0.8, stagger: 0.12 }, 1.9)
     .to('.callout__corner, .callout__icon', { opacity: 1, duration: 0.4, stagger: 0.05 }, 2.4)
     .add(() => {
       $$('.callout [data-type]').forEach((el, i) => { gsap.set(el, { opacity: 1 }); typeIn(el, { delay: i * 0.12 }); });
@@ -324,15 +325,15 @@ function buildChoreography() {
   const tlC = gsap.timeline({
     scrollTrigger: { trigger: why, start: () => whyPin.start + innerHeight * 0.5, end: () => whyPin.end - innerHeight * 0.05, scrub: 1 },
   });
-  tlC.to(gridLines, { drawSVG: '0% 100%', duration: 1, ease: 'power2.out', stagger: 0.05 }, 0)
-    .to(diamondsWhy, { scale: 1, duration: 0.5, ease: 'back.out(2.5)', stagger: { each: 0.03, from: 'center' } }, 0.3);
+  tlC.to(gridLines, { drawSVG: '0% 100%', duration: 1, stagger: 0.05 }, 0)
+    .to(diamondsWhy, { scale: 1, duration: 0.5, stagger: { each: 0.03, from: 'center' } }, 0.3);
   cards.forEach((card, i) => {
     const at = 0.8 + i * 0.35;
     tlC.to(circuitLines[i], { drawSVG: '100%', duration: 0.8, ease: 'none' }, at)
       .to(pulses[i], { opacity: 1, duration: 0.05 }, at)
       .fromTo(pulses[i], { drawSVG: '0% 0%' }, { drawSVG: '92% 100%', duration: 0.8, ease: 'none', immediateRender: false }, at)
       .to(pulses[i], { opacity: 0, duration: 0.15 }, at + 0.8)
-      .to(card, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.5, ease: 'power2.out' }, at + 0.7)
+      .to(card, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.5 }, at + 0.7)
       .to(icons[i], { drawSVG: '100%', duration: 0.5, stagger: 0.05, ease: 'none' }, at + 0.8)
       .to(icons[i], { fillOpacity: 1, duration: 0.3 }, at + 1.2)
       .to(card.querySelector('.card__status'), { backgroundColor: '#F5DB68', boxShadow: '0 0 10px 2px rgba(245,219,104,.8)', duration: 0.2 }, at + 1.1);
@@ -392,9 +393,9 @@ function buildChoreography() {
   const sunTitle = SplitText.create('.sun__line', { type: 'lines', mask: 'lines' });
   gsap.set(sunTitle.lines, { xPercent: 105 });
   gsap.timeline({ scrollTrigger: { trigger: sun, start: 'top 22%', toggleActions: 'play none none reverse' } })
-    .to(sunLines, { drawSVG: '0% 100%', duration: 1.1, ease: 'power2.out', stagger: 0.05 }, 0)
-    .to(diamondsSun, { scale: 1, duration: 0.5, ease: 'back.out(2.5)', stagger: { each: 0.03, from: 'center' } }, 0.3)
-    .to(sunTitle.lines, { xPercent: 0, duration: 1, ease: 'power4.out', stagger: 0.1 }, 0.1);
+    .to(sunLines, { drawSVG: '0% 100%', duration: 1.6, stagger: 0.05 }, 0)
+    .to(diamondsSun, { scale: 1, duration: 0.5, stagger: { each: 0.03, from: 'center' } }, 0.3)
+    .to(sunTitle.lines, { xPercent: 0, duration: 1.6, stagger: 0.1 }, 0.1);
   const flowSun = buildEnergyFlow($('.sun .solar-grid'), [893, 401]);
   ScrollTrigger.create({
     trigger: sun, start: 'top 22%', end: 'bottom top',
@@ -465,12 +466,12 @@ function buildReveals() {
   $$('[data-split]').forEach((el) => {
     const split = SplitText.create(el, { type: 'lines', mask: 'lines' });
     gsap.from(split.lines, {
-      yPercent: 110, duration: 1.05, stagger: 0.08, ease: 'power4.out',
+      yPercent: 110, duration: 1.6, stagger: 0.08,
       scrollTrigger: { trigger: el, start: 'top 86%', toggleActions: toggle },
     });
   });
   $$('[data-fade]').forEach((el) => {
-    gsap.fromTo(el, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: toggle } });
+    gsap.fromTo(el, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.6, scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: toggle } });
   });
   $$('[data-type]').forEach((el) => {
     if (el.closest('.callout')) return;
@@ -479,7 +480,7 @@ function buildReveals() {
   });
 
   // Why SSG title rules
-  gsap.from('.why__rule', { scaleX: 0, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: '.why__title', start: 'top 85%' } });
+  gsap.from('.why__rule', { scaleX: 0, duration: 1.6, scrollTrigger: { trigger: '.why__title', start: 'top 85%' } });
 }
 
 // ---------------------------------------------------------------------------
@@ -493,9 +494,9 @@ function buildMission() {
   // while the photo behind them zooms out as one picture
   const tl = gsap.timeline({ scrollTrigger: { trigger: '.mission__mosaic', start: 'top 78%', toggleActions: toggle } });
   tl.fromTo(tiles, { clipPath: (i) => (i < 3 ? 'inset(100% 0% 0% 0%)' : 'inset(0% 0% 100% 0%)') }, {
-    clipPath: 'inset(0% 0% 0% 0%)', duration: 1.25, ease: 'power4.inOut', stagger: 0.12,
+    clipPath: 'inset(0% 0% 0% 0%)', duration: 1.6, stagger: 0.12,
   }, 0)
-    .fromTo(imgs, { scale: 1.35 }, { scale: 1, duration: 2.4, ease: 'expo.out' }, 0.1);
+    .fromTo(imgs, { scale: 1.35 }, { scale: 1, duration: 2.4 }, 0.1);
   // the photo drifts behind the fixed windows while the section scrolls
   if (desktopMotion) {
     gsap.fromTo(imgs, { yPercent: -4.5 }, {
@@ -503,7 +504,7 @@ function buildMission() {
       scrollTrigger: { trigger: '.mission', start: 'top bottom', end: 'bottom top', scrub: true },
     });
   }
-  gsap.from('.stat__rule', { scaleY: 0, duration: 1.1, ease: 'expo.out', stagger: 0.15, scrollTrigger: { trigger: stats, start: 'top 85%' } });
+  gsap.from('.stat__rule', { scaleY: 0, duration: 1.6, stagger: 0.15, scrollTrigger: { trigger: stats, start: 'top 85%' } });
   const gem = $('[data-typein]');
   const gemTw = typeIn(gem, { paused: true, stagger: 0.09 });
   const counts = $$('.mission .count');
@@ -512,7 +513,7 @@ function buildMission() {
     trigger: stats, start: 'top 96%', once: true,
     onEnter: () => { gemTw.play(); counts.forEach((c) => countUp(c)); },
   });
-  gsap.from('.stat__label', { y: 20, opacity: 0, duration: 0.9, stagger: 0.1, scrollTrigger: { trigger: stats, start: 'top 85%' } });
+  gsap.from('.stat__label', { y: 20, opacity: 0, duration: 1.6, stagger: 0.1, scrollTrigger: { trigger: stats, start: 'top 85%' } });
 }
 
 // ---------------------------------------------------------------------------
@@ -534,15 +535,15 @@ function buildFlag() {
   // everything here moves on the GPU: the banner opens from the bottom as a sliding mask
   // (the frame moves up while its content moves down by the same amount), not a repainted clip-path
   const tl = gsap.timeline({ scrollTrigger: { trigger: section, start: mobile ? 'top 70%' : 'top 62%', toggleActions: toggle } });
-  tl.fromTo(banner, { yPercent: 100 }, { yPercent: 0, duration: 1.5, ease: 'power3.inOut' }, 0)
-    .fromTo(bannerInner, { yPercent: -100 }, { yPercent: 0, duration: 1.5, ease: 'power3.inOut' }, 0)
-    .fromTo('.flag__flag', { y: 70, opacity: 0 }, { y: 0, opacity: 1, duration: 1.9, ease: 'power3.out' }, 0.3)
-    .to($('.dim__line', dim), { drawSVG: '100%', duration: 1.4, ease: 'power2.inOut' }, 0.9)
+  tl.fromTo(banner, { yPercent: 100 }, { yPercent: 0, duration: 1.6 }, 0)
+    .fromTo(bannerInner, { yPercent: -100 }, { yPercent: 0, duration: 1.6 }, 0)
+    .fromTo('.flag__flag', { y: 70, opacity: 0 }, { y: 0, opacity: 1, duration: 1.9 }, 0.3)
+    .to($('.dim__line', dim), { drawSVG: '100%', duration: 1.6 }, 0.9)
     .to($('.dim__cap', dim), { drawSVG: '100%', duration: 0.4 }, 0.9)
     // a tween (not a callback), so scrolling back up counts down instead of restarting
-    .to(count, { v: 100, duration: 1.4, ease: 'power2.out', onUpdate: () => { dimCount.textContent = Math.round(count.v); } }, 0.9)
+    .to(count, { v: 100, duration: 1.6, onUpdate: () => { dimCount.textContent = Math.round(count.v); } }, 0.9)
     .from('.flag__dimension > span', { opacity: 0, x: -8, duration: 0.5 }, 0.9)
-    .fromTo('.flag__project', { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 1.4, ease: 'expo.out' }, 0.75);
+    .fromTo('.flag__project', { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 1.6 }, 0.75);
   // the cloth starts to wave as the flag settles (WebGL flag only; phones show the still image)
   if (flagState) tl.to(flagState, { amp: 1, duration: 2.6, ease: 'sine.inOut' }, 0.5);
 }
@@ -553,7 +554,7 @@ function buildLogos() {
   const row = $('.logos__row');
   const logos = $$('.logo', row);
   if (!reduced) {
-    gsap.fromTo(logos, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.08, ease: 'power3.out', scrollTrigger: { trigger: '.logos', start: 'top 85%', toggleActions: toggle } });
+    gsap.fromTo(logos, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 1.6, stagger: 0.08, scrollTrigger: { trigger: '.logos', start: 'top 85%', toggleActions: toggle } });
   }
   if (window.innerWidth < 1200 && !reduced) {
     logos.forEach((l) => { const c = l.cloneNode(true); c.setAttribute('aria-hidden', 'true'); c.querySelector('img').alt = ''; row.appendChild(c); });
@@ -620,7 +621,7 @@ function toast(msg) {
   let t = $('.toast');
   if (!t) { t = document.createElement('div'); t.className = 'toast mono'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
   t.textContent = msg;
-  gsap.fromTo(t, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'expo.out', overwrite: true });
+  gsap.fromTo(t, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, overwrite: true });
   gsap.to(t, { y: 20, opacity: 0, duration: 0.4, delay: 2.6 });
 }
 
@@ -727,10 +728,10 @@ async function boot() {
     preloader.appendChild(seam);
     preloader.classList.add('is-splitting');
     out.to('.preloader__pct', { opacity: 0, duration: 0.2 })
-      .to(inner, { opacity: 0, scale: 0.94, duration: 0.45, ease: 'power2.in' }, 0.05)
-      .fromTo(seam, { scaleY: 0 }, { scaleY: 1, duration: 0.45, ease: 'expo.inOut' }, 0.3)
-      .to(panels[0], { xPercent: -100, duration: 1.1, ease: 'expo.inOut' }, 0.7)
-      .to(panels[1], { xPercent: 100, duration: 1.1, ease: 'expo.inOut' }, 0.7)
+      .to(inner, { opacity: 0, scale: 0.94, duration: 0.45 }, 0.05)
+      .fromTo(seam, { scaleY: 0 }, { scaleY: 1, duration: 0.45 }, 0.3)
+      .to(panels[0], { xPercent: -100, duration: 1.6 }, 0.7)
+      .to(panels[1], { xPercent: 100, duration: 1.6 }, 0.7)
       .to(seam, { opacity: 0, duration: 0.25 }, 0.75)
       .add(() => heroIntro.play(), 1);
   }

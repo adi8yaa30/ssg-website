@@ -125,8 +125,8 @@ async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, while
   gsap.set(order.map((o) => o.el), { scaleX: 0, transformOrigin: (i) => (order[i].cx < half ? '0% 50%' : '100% 50%') });
 
   const tl = gsap.timeline({ paused: true });
-  tl.to(order.map((o) => o.el), { scaleX: 1, duration: 0.9, ease: 'expo.out', stagger: { each: 1.5 / order.length } })
-    .to(glows, { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(3)', stagger: 0.06 }, '-=0.3')
+  tl.to(order.map((o) => o.el), { scaleX: 1, duration: 1.6, stagger: { each: 1.5 / order.length } })
+    .to(glows, { opacity: 1, scale: 1, duration: 0.45, stagger: 0.06 }, '-=0.3')
     .to(shimmer, { opacity: 1, duration: 0.6 }, '-=0.4')
     .add(() => {
       // the shimmer band and the glows are their own GPU layers, so these loops never repaint
@@ -178,8 +178,8 @@ async function initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer, 
   gsap.set(sorted.map((r) => r.g), { opacity: 0, y: 10 });
   gsap.set(clouds, { opacity: 0 });
   const tl = gsap.timeline({ paused: true })
-    .to(sorted.map((r) => r.g), { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: { each: 1.3 / sorted.length } })
-    .to(clouds, { opacity: 1, duration: 1.2, ease: 'power2.out' }, '-=0.6');
+    .to(sorted.map((r) => r.g), { opacity: 1, y: 0, duration: 1.6, stagger: { each: 1.3 / sorted.length } })
+    .to(clouds, { opacity: 1, duration: 1.6 }, '-=0.6');
   ScrollTrigger.create({ trigger: container, start: 'top 85%', once: true, onEnter: () => tl.play() });
 
   whileVisible(footer, gsap.to(clouds, { xPercent: (26 / vb.width) * 100, duration: 9, ease: 'sine.inOut', repeat: -1, yoyo: true, force3D: true }));

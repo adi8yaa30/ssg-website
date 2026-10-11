@@ -275,7 +275,7 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
     // The two equal-height rows stay exactly one row apart throughout the
     // tween. One timeline also prevents stale outgoing tweens on rapid hover.
     tickerTransition = gsap.timeline({
-      defaults: { duration: 0.45, ease: 'power3.inOut' },
+      defaults: { duration: 0.45 },
       onComplete: () => gsap.set(previous, { yPercent: 100, autoAlpha: 0 }),
     })
       .to(previous, { yPercent: -direction * 100 }, 0)
@@ -285,10 +285,10 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
   function showText(i, delay) {
     gsap.killTweensOf(lineEl);
     gsap.to(lineEl, {
-      opacity: 0, duration: 0.12 * D, ease: 'power1.in', onComplete: () => {
+      opacity: 0, duration: 0.12 * D, onComplete: () => {
         lineEl.innerHTML = STEPS[i].line.split(' ').map((w) => `<span class="w">${w}</span>`).join(' ');
         gsap.set(lineEl, { opacity: 1 });
-        gsap.from(lineEl.children, { yPercent: 70, opacity: 0, duration: 0.5 * D, stagger: 0.03 * D, ease: 'power3.out', delay: delay * D });
+        gsap.from(lineEl.children, { yPercent: 70, opacity: 0, duration: 0.5 * D, stagger: 0.03 * D, delay: delay * D });
       },
     });
   }
@@ -298,15 +298,15 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
       if (current !== i) return;
       if (shown >= 0 && shown !== i) {
         const prev = artGroups[shown];
-        gsap.to(prev, { opacity: 0, y: 8, duration: 0.25 * D, ease: 'power2.in', overwrite: true });
+        gsap.to(prev, { opacity: 0, y: 8, duration: 0.25 * D, overwrite: true });
       }
       shown = i;
       playLoops(i, delay);
       const g = artGroups[i];
-      gsap.fromTo(g, { opacity: 1, y: -6, scale: 1.06, transformOrigin: '50% 0%' }, { y: 0, scale: 1, duration: 1.1 * D, ease: 'expo.out', delay: delay * D, overwrite: true });
+      gsap.fromTo(g, { opacity: 1, y: -6, scale: 1.06, transformOrigin: '50% 0%' }, { y: 0, scale: 1, duration: 1.1 * D, delay: delay * D, overwrite: true });
       // the drawing sketches in from the top edge down
       gsap.killTweensOf(artPaths[i]);
-      gsap.fromTo(artPaths[i], { opacity: 0 }, { opacity: 1, duration: 0.35 * D, ease: 'power1.out', stagger: { amount: 0.6 * D }, delay: delay * D });
+      gsap.fromTo(artPaths[i], { opacity: 0 }, { opacity: 1, duration: 0.35 * D, stagger: { amount: 0.6 * D }, delay: delay * D });
     });
   }
 
@@ -335,7 +335,7 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
     const first = !open;
     open = true;
     current = i;
-    gsap.to(state, { t: 1, duration: 0.55 * D, ease: 'power3.inOut', onUpdate: render, overwrite: true });
+    gsap.to(state, { t: 1, duration: 0.55 * D, onUpdate: render, overwrite: true });
     showText(i, first ? 0.3 : 0);
     showArt(i, first ? 0.25 : 0.05);
     setTicker(i);
@@ -351,7 +351,7 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
     shown = -1;
     stopLoops();
     gsap.to(state, {
-      t: 0, duration: 0.5 * D, ease: 'power3.inOut', delay: 0.05 * D, onUpdate: render, overwrite: true,
+      t: 0, duration: 0.5 * D, delay: 0.05 * D, onUpdate: render, overwrite: true,
       onComplete: () => { halo.style.display = ''; },
     });
     setTicker(-1);
@@ -420,15 +420,15 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
   gsap.set(hint, { opacity: 0 });
   gsap.set(words[0], { x: -80, opacity: 0, letterSpacing: '0.6em' });
   gsap.set(words[1], { x: 80, opacity: 0, letterSpacing: '0.6em' });
-  const tl = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } });
+  const tl = gsap.timeline({ paused: true });
   order.forEach((q, k) => {
-    tl.to(quadPaths[q], { opacity: 1, duration: 0.5, ease: 'power1.out' }, k * 0.09)
-      .to(quadPaths[q], { x: 0, y: 0, duration: 1.3 }, k * 0.09);
+    tl.to(quadPaths[q], { opacity: 1, duration: 0.5 }, k * 0.09)
+      .to(quadPaths[q], { x: 0, y: 0, duration: 1.6 }, k * 0.09);
   });
-  tl.to(nums, { opacity: 1, y: 0, duration: 0.7, stagger: 0.06, ease: 'power3.out' }, 0.55)
-    .to(labels, { opacity: 1, duration: 0.8, stagger: 0.08, ease: 'power1.out' }, 0.65)
-    .to(words, { x: 0, opacity: 1, letterSpacing: '0.36em', duration: 1.4 }, 0.1)
-    .to(hint, { opacity: 0.7, duration: 0.6, ease: 'power1.out' }, 1.1);
+  tl.to(nums, { opacity: 1, y: 0, duration: 0.7, stagger: 0.06 }, 0.55)
+    .to(labels, { opacity: 1, duration: 0.8, stagger: 0.08 }, 0.65)
+    .to(words, { x: 0, opacity: 1, letterSpacing: '0.36em', duration: 1.6 }, 0.1)
+    .to(hint, { opacity: 0.7, duration: 0.6 }, 1.1);
   ScrollTrigger.create({ trigger: diamond, start: 'top 78%', once: true, onEnter: () => tl.play() });
 
   initExploded({ gsap, ScrollTrigger, reduced });
@@ -497,9 +497,9 @@ function initExploded({ gsap, ScrollTrigger, reduced }) {
     const centre = vb.x + vb.width / 2;
     const lifts = parts.map((p) => p.querySelector('.part__lift'));
     gsap.timeline({ delay: 0.2 })
-      .to(lifts, { x: (i) => (centre - parseFloat(parts[i].dataset.cx)) * 0.86, scale: 0.85, transformOrigin: '50% 50%', duration: 0.9, ease: 'power3.inOut', stagger: { each: 0.03, from: 'edges' } })
+      .to(lifts, { x: (i) => (centre - parseFloat(parts[i].dataset.cx)) * 0.86, scale: 0.85, transformOrigin: '50% 50%', duration: 0.9, stagger: { each: 0.03, from: 'edges' } })
       .to(svg.querySelectorAll('.conn'), { opacity: 0, duration: 0.3 }, 0)
-      .to(lifts, { x: 0, scale: 1, duration: 1.1, ease: 'expo.out', stagger: { each: 0.03, from: 'center' } }, '+=0.35')
+      .to(lifts, { x: 0, scale: 1, duration: 1.1, stagger: { each: 0.03, from: 'center' } }, '+=0.35')
       .to(svg.querySelectorAll('.conn'), { opacity: 1, duration: 0.6 }, '<0.3')
       .add(() => gsap.set(lifts, { clearProps: 'transform' }));
   }
