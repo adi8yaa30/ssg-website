@@ -9,6 +9,13 @@
 - [ ] **Form backend.** "Request a Quote" / "Enquire Now" open a modal whose Send button composes an email to shyaminfratech.co.in@gmail.com (`mailto:`). Replace it with the client's form endpoint or CRM (`js/main.js`, the `form.addEventListener('submit', …)` handler).
 - [ ] **Divisions page.** The nav "Divisions" link points at the National Flag section for now. Confirm where it should go.
 
+## Dark theme (Blue Hour, see `../instructions.md` §12)
+
+- [ ] **Dusk versions of all six product photos** on continuous grass: blue-hour sky, LED switched on, warm glow on the grass, no white background. Until then, use the interim cut-out and grade from §12.7.
+- [ ] **Dusk versions of the Mission mosaic photo and the flag project photo** (the interim is a CSS grade).
+- [ ] Client sign-off on the hero gradient: amber horizon (default), or the blue-only fallback.
+- [ ] Re-render `streetlight-fallback.webp` and `panel-static.webp` with night lighting and the LED on.
+
 ## Asset issues found in the export
 
 - **Product photos were misfiled.** The grass photos did not match their folders or blueprints. Each photo is now paired with its blueprint by what it shows:

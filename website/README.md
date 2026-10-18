@@ -26,6 +26,10 @@ cd website && python3 tools/embed-local-assets.py
 cd website && python3 tools/optimize-svg.py && python3 tools/embed-local-assets.py
 ```
 
+## Theme
+
+The site is moving to a **dark "Blue Hour" theme** (pre-sunrise / post-sunset, street lights on). The full spec (tokens, hero gradient, 3D night lighting, per-section colours and image treatments) is in `../instructions.md` §12, and it overrides the light colours in the Figma images. Build it on the `dark-theme` branch: `main` auto-deploys.
+
 ## Structure
 
 ```
