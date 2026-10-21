@@ -625,6 +625,7 @@ function buildNav() {
 // Pointer position feeds the 3D scene's subtle parallax
 function trackPointer() {
   if (!finePointer) return;
+  if (!reduced) buildCursor();
   window.addEventListener('pointermove', (e) => {
     if (!sceneApi) return;
     sceneApi.state.pointerX = (e.clientX / window.innerWidth - 0.5) * 2;
@@ -634,6 +635,33 @@ function trackPointer() {
 
 // ---------------------------------------------------------------------------
 // Links, enquiry modal, toasts
+// Custom cursor (§4, §12.6): the dot follows the pointer, the ring trails it
+function buildCursor() {
+  const cursor = $('.cursor');
+  if (!cursor) return;
+  root.classList.add('has-cursor');
+  const dot = $('.cursor__dot', cursor);
+  const ring = $('.cursor__ring', cursor);
+  const dotX = gsap.quickTo(dot, 'x', { duration: 0.12, ease: 'power3.out' });
+  const dotY = gsap.quickTo(dot, 'y', { duration: 0.12, ease: 'power3.out' });
+  const ringX = gsap.quickTo(ring, 'x', { duration: 0.45, ease: 'power3.out' });
+  const ringY = gsap.quickTo(ring, 'y', { duration: 0.45, ease: 'power3.out' });
+  let mode = '';
+  window.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    cursor.classList.add('is-on');
+    dotX(e.clientX); dotY(e.clientY); ringX(e.clientX); ringY(e.clientY);
+    const t = e.target instanceof Element ? e.target : null;
+    const next = t?.closest('.diamond, .slide__photo') ? 'view'
+      : t?.closest('a, button, [role="button"], label, .products__arrow') ? 'link' : '';
+    if (next === mode) return;
+    if (mode) cursor.classList.remove(`is-${mode}`);
+    if (next) cursor.classList.add(`is-${next}`);
+    mode = next;
+  }, { passive: true });
+  document.documentElement.addEventListener('pointerleave', () => cursor.classList.remove('is-on'));
+}
+
 const dialog = $('#quote');
 const form = $('.quote__form', dialog);
 const note = $('.quote__note', dialog);

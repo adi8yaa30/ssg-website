@@ -88,7 +88,9 @@ body.is-loading { overflow: hidden; }
   background: var(--night);
 }
 .preloader__inner { display: grid; justify-items: center; gap: 22px; }
-.preloader__logo { width: 120px; height: auto; }
+.preloader__logo { width: 120px; height: auto; filter: drop-shadow(0 0 22px color-mix(in srgb, var(--gold) 45%, transparent)); }
+.preloader__fill { box-shadow: 0 0 10px color-mix(in srgb, var(--gold) 60%, transparent); }
+.preloader__pct { color: var(--ash); }
 .preloader__battery { display: flex; align-items: center; gap: 3px; }
 .preloader__shell { display: flex; width: 168px; height: 30px; }
 .preloader__half {
@@ -117,6 +119,26 @@ html:not(.js) .preloader { display: none; }
   background: var(--gold); transform: scaleY(0); transform-origin: top center; z-index: 1;
 }
 
+/* ---------- Cursor ------------------------------------------------------ */
+/* a warm-white dot; its ring turns gold over links and buttons, and reads "View" over
+   the process diamond and the product photos (fine pointers, no reduced motion) */
+.cursor { display: none; position: fixed; left: 0; top: 0; z-index: 150; pointer-events: none; opacity: 0; transition: opacity .3s var(--ease); }
+.has-cursor .cursor { display: block; }
+.cursor.is-on { opacity: 1; }
+.cursor__dot, .cursor__ring { position: absolute; left: 0; top: 0; border-radius: 50%; will-change: transform; }
+.cursor__dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--text); transition: opacity .25s var(--ease); }
+/* GSAP moves .cursor__ring; the circle inside it carries the CSS scale (GSAP resets `scale` on what it moves) */
+.cursor__circle { display: grid; place-items: center; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%;
+  border: 1px solid var(--text); opacity: 0; scale: .35;
+  transition: scale .45s var(--ease), opacity .3s var(--ease), border-color .3s var(--ease), background-color .3s var(--ease); }
+.cursor__label { font-size: 11px; letter-spacing: .14em; color: var(--text); opacity: 0; transition: opacity .25s var(--ease); }
+.cursor.is-link .cursor__circle { opacity: 1; scale: .6; border-color: var(--gold); box-shadow: 0 0 12px color-mix(in srgb, var(--gold) 35%, transparent); }
+.cursor.is-view .cursor__circle { opacity: 1; scale: 1; border-color: var(--gold); background: color-mix(in srgb, var(--night) 55%, transparent); }
+.cursor.is-view .cursor__label { opacity: 1; }
+.cursor.is-link .cursor__dot, .cursor.is-view .cursor__dot { opacity: 0; }
+.has-cursor, .has-cursor * { cursor: none !important; }
+.has-cursor input, .has-cursor textarea { cursor: text !important; }
+
 /* ---------- Nav --------------------------------------------------------- */
 .nav {
   --nu: max(var(--u), .72px);
@@ -139,15 +161,14 @@ html:not(.js) .preloader { display: none; }
   color: var(--ash);
   transition: background-color .4s var(--ease), color .4s var(--ease);
 }
-/* current section: the tab inverts to blue with the buttons' inner hairline */
+/* sliding underline: warm white on hover, a small gold mark on the current section */
 .nav__link::before {
-  content: ""; position: absolute; inset: calc(3 * var(--nu));
-  border: 1px solid var(--line);
-  border-radius: calc(3.5 * var(--nu));
-  opacity: 0; transition: opacity .4s var(--ease);
+  content: ""; position: absolute; left: 50%; bottom: calc(5 * var(--nu)); width: calc(28 * var(--nu)); height: 1px; margin-left: calc(-14 * var(--nu));
+  background: var(--text); transform: scaleX(0); transition: transform .45s var(--ease), background-color .4s var(--ease);
 }
-.nav__link[aria-current] { background: var(--dusk); color: var(--text); }
-.nav__link[aria-current]::before { opacity: 1; }
+.nav__link:hover, .nav__link:focus-visible, .nav__link[aria-current] { color: var(--text); }
+.nav__link:hover::before, .nav__link:focus-visible::before { transform: scaleX(1); }
+.nav__link[aria-current]::before { transform: scaleX(1); background: var(--gold); box-shadow: 0 0 6px color-mix(in srgb, var(--gold) 70%, transparent); }
 .nav__logo {
   position: absolute; left: calc(813 * var(--nu)); top: 0;
   width: calc(102 * var(--nu)); height: calc(84 * var(--nu));
