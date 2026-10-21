@@ -31,8 +31,12 @@
   --gold-glow:  0 0 18px rgba(233, 169, 74, .45);
 
   /* Gradients */
+  /* The horizon is raised from §12.2's 92–100% so the thin gold line glows behind the grass
+     island's base (~88% of the hero), then falls back to #2E3742, which is where --why-gradient
+     starts, so the hero/why seam is seamless without an extra fade (approved Oct 2026). */
   --hero-gradient: linear-gradient(180deg,
-      #12171E 0%, #1E2630 35%, #2E3742 62%, #4E4A45 80%, #8A6A3A 92%, #E9A94A 97%, #FFE2A0 100%);
+      #12171E 0%, #1E2630 35%, #2E3742 55%, #4E4A45 72%, #8A6A3A 82%, #E9A94A 87%, #FFE2A0 88.5%,
+      #E9A94A 91%, #8A6A3A 94%, #4E4A45 97%, #2E3742 100%);
   --why-gradient:  linear-gradient(180deg, #2E3742 0%, #1E2630 40%, #12171E 100%);
   --sun-gradient:  linear-gradient(180deg, #12171E 0%, #2E3742 55%, #4E4A45 80%, #8A6A3A 94%, #E9A94A 100%);
 
