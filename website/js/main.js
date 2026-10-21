@@ -235,10 +235,13 @@ function countUp(el, duration = 1.6) {
 function buildHeroIntro() {
   const tl = gsap.timeline({ paused: true });
   if (reduced) return tl;
+  const streaks = $$('.hero__streaks path');
+  gsap.set(streaks, { drawSVG: '0%' });
+  tl.to(streaks, { drawSVG: '100%', duration: 1.6, stagger: 0.18 }, 1);
   const split = SplitText.create('.hero__line', { type: 'chars', mask: 'chars' });
   gsap.set('.hero__title', { opacity: 1 });
   tl.from(split.chars, { yPercent: 110, duration: 1.6, stagger: 0.025, onComplete: () => split.revert() }, 0)
-    .fromTo('.hero__sun', { clipPath: 'inset(100% 0% 0% 0%)', y: 40 }, { clipPath: 'inset(0% 0% 0% 0%)', y: 0, duration: 1.6 }, 0.15)
+    .fromTo('.hero__sun', { clipPath: 'inset(100% -20% 0% -20%)', y: 40 }, { clipPath: 'inset(-50% -20% 0% -20%)', y: 0, duration: 1.6 }, 0.15)
     .from('.hero__sub', { y: 26, opacity: 0, duration: 1.6 }, 0.45)
     .from('.hero__ctas .btn', { y: 20, opacity: 0, duration: 1.6, stagger: 0.08 }, 0.6)
     .add(() => whileVisible(hero, gsap.to('.hero__sun', { y: -8, duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1 })), 1.7);
@@ -483,6 +486,18 @@ function buildReveals() {
 
   // Why SSG title rules
   gsap.from('.why__rule', { scaleX: 0, duration: 1.6, scrollTrigger: { trigger: '.why__title', start: 'top 85%' } });
+
+  // gold seam lines draw out from the middle as the seam enters, then drift slowly
+  $$('.seam').forEach((svg) => {
+    const paths = $$('path', svg);
+    gsap.fromTo(paths, { drawSVG: '50% 50%' }, {
+      drawSVG: '0% 100%', duration: 1.6, stagger: 0.14,
+      scrollTrigger: { trigger: svg, start: 'top 92%', toggleActions: toggle },
+    });
+    paths.forEach((p, i) => whileVisible(svg, gsap.to(p, {
+      x: i % 2 ? 14 : -14, y: i % 2 ? -5 : 5, duration: 6 + i * 1.6, ease: 'sine.inOut', yoyo: true, repeat: -1,
+    })));
+  });
 }
 
 // ---------------------------------------------------------------------------

@@ -16,7 +16,7 @@
 
   <link rel="stylesheet" href="css/reset.css?v=34">
   <link rel="stylesheet" href="css/tokens.css?v=dusk-b">
-  <link rel="stylesheet" href="css/main.css?v=dusk-c">
+  <link rel="stylesheet" href="css/main.css?v=dusk-d2">
 
   <script type="importmap">
   {
@@ -42,6 +42,13 @@
 <!-- SVG sprite: small reusable icons -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
+    <linearGradient id="gold-fade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#E9A94A" stop-opacity="0"/>
+      <stop offset=".18" stop-color="#E9A94A"/>
+      <stop offset=".5" stop-color="#FFE2A0"/>
+      <stop offset=".82" stop-color="#E9A94A"/>
+      <stop offset="1" stop-color="#E9A94A" stop-opacity="0"/>
+    </linearGradient>
     <symbol id="i-arrow" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-arrow-circle" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 10h7.5M10.5 7l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-sun-outline" viewBox="0 0 26 26">
@@ -134,6 +141,11 @@
   <div class="gradient-wrap">
 
     <section class="hero" id="home" aria-labelledby="hero-title">
+      <!-- two gold streaks arc across the upper-left sky, as in the client's reference -->
+      <svg class="hero__streaks gold-lines" viewBox="0 0 1728 1530" preserveAspectRatio="xMinYMin slice" aria-hidden="true">
+        <path d="M-40 300C220 272 470 196 690 84"/>
+        <path d="M-40 304C280 290 610 214 930 70"/>
+      </svg>
       <h1 class="hero__title display" id="hero-title" data-hero-title>
         <span class="hero__line">Powering</span>
         <span class="hero__line">India's</span>
@@ -269,6 +281,11 @@
 
   <!-- ====== OUR PRODUCTS ====== -->
   <section class="products" id="products" aria-labelledby="products-title">
+    <svg class="seam gold-lines" viewBox="0 0 1728 160" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 92C380 30 760 150 1150 84S1600 40 1728 70"/>
+      <path d="M0 110C420 60 820 160 1220 100S1620 70 1728 96"/>
+      <path class="gold-lines__faint" d="M0 70C300 122 900 20 1300 72S1650 112 1728 88"/>
+    </svg>
     <div class="products__pin">
       <h2 class="products__title display" id="products-title" data-split>Our Products</h2>
 
@@ -458,6 +475,11 @@
 
   <!-- ====== NATIONAL FLAG (z 30, the panel passes behind it) ====== -->
   <section class="flag" id="divisions" aria-labelledby="flag-title">
+    <svg class="seam gold-lines" viewBox="0 0 1728 160" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 92C380 30 760 150 1150 84S1600 40 1728 70"/>
+      <path d="M0 110C420 60 820 160 1220 100S1620 70 1728 96"/>
+      <path class="gold-lines__faint" d="M0 70C300 122 900 20 1300 72S1650 112 1728 88"/>
+    </svg>
     <h2 class="flag__title display" id="flag-title" data-split>BUILT FOR <br>PRIDE.</h2>
     <p class="flag__text" data-fade>National Flag poles for public spaces, institutions, campuses and government buildings. Heavy-duty steel, built to carry the Tricolour high in every season.</p>
 
@@ -503,6 +525,11 @@
 
   <!-- ====== PROUDLY ASSOCIATED WITH ====== -->
   <section class="logos" aria-labelledby="logos-title">
+    <svg class="seam gold-lines" viewBox="0 0 1728 160" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 92C380 30 760 150 1150 84S1600 40 1728 70"/>
+      <path d="M0 110C420 60 820 160 1220 100S1620 70 1728 96"/>
+      <path class="gold-lines__faint" d="M0 70C300 122 900 20 1300 72S1650 112 1728 88"/>
+    </svg>
     <h2 class="logos__title display" id="logos-title" data-split>PROUDLY ASSOCIATED WITH</h2>
     <div class="logos__viewport">
       <ul class="logos__row" role="list">
@@ -657,7 +684,7 @@
 <script src="js/process.js?v=dusk-c" defer></script>
 <script src="js/flag.js?v=dusk-a" defer></script>
 <script src="js/scanlines.js?v=dusk-a" defer></script>
-<script src="js/main.js?v=dusk-a" defer></script>
+<script src="js/main.js?v=dusk-d2" defer></script>
 <script>
   // Safety net: never leave visitors on the preloader if a script fails to load
   setTimeout(function () {

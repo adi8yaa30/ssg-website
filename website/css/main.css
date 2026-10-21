@@ -173,6 +173,15 @@ html:not(.js) .preloader { display: none; }
 .hero { background: var(--hero-gradient); }
 .why { background: var(--why-gradient); }
 
+/* ---------- Gold wave lines (§12.4) ------------------------------------- */
+/* thin, glowing, fading out at both ends; drawn with DrawSVG in main.js */
+.gold-lines { position: absolute; pointer-events: none; overflow: visible;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--gold) 70%, transparent)) drop-shadow(var(--gold-glow)); }
+.gold-lines path { fill: none; stroke: url(#gold-fade); stroke-width: 1.25; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.gold-lines .gold-lines__faint { opacity: .45; }
+/* section dividers straddle the seam above their section */
+.seam { left: 0; top: calc(-80 * var(--u)); width: 100%; height: calc(160 * var(--u)); z-index: 2; }
+
 /* ---------- Hero -------------------------------------------------------- */
 .hero {
   position: relative; z-index: var(--z-content);
@@ -187,6 +196,7 @@ html:not(.js) .preloader { display: none; }
   will-change: transform;
 }
 .hero__line { display: block; }
+.hero__streaks { left: 0; top: 0; width: 100%; height: calc(1530 * var(--u)); }
 .hero__aside {
   position: absolute; right: calc(32 * var(--u)); top: calc(207 * var(--u));
   width: calc(488 * var(--u));
@@ -194,7 +204,8 @@ html:not(.js) .preloader { display: none; }
 }
 .hero__sun { width: calc(488 * var(--u)); height: calc(182 * var(--u)); overflow: visible; }
 .hero__sun path { fill: var(--sun); }
-.hero__sun { filter: drop-shadow(var(--gold-glow)) drop-shadow(0 0 48px color-mix(in srgb, var(--gold) 30%, transparent)); }
+/* negative insets leave room for the glow; the flat bottom is the horizon the sun crests */
+.hero__sun { clip-path: inset(-50% -20% 0% -20%); filter: drop-shadow(var(--gold-glow)) drop-shadow(0 0 48px color-mix(in srgb, var(--gold) 30%, transparent)); }
 .hero__sub {
   margin-top: calc(26 * var(--u));
   font-size: calc(24.5 * var(--u));
@@ -578,6 +589,7 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
 .exploded__svg { width: 100%; height: auto; overflow: visible; color: var(--text); }
 .exploded__svg .part path { stroke-width: .5; }
 .exploded__svg [stroke-opacity] { stroke-opacity: .45; }
+.conn__line, .conn__arrow { filter: drop-shadow(0 0 2px color-mix(in srgb, var(--gold) 60%, transparent)); }
 .conn__line { stroke: var(--gold); stroke-width: .7; stroke-dasharray: 12 11; }
 .conn__arrow { stroke: var(--gold); stroke-width: .7; fill: none; }
 .part { cursor: default; outline: none; }
