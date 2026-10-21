@@ -28,7 +28,12 @@ cd website && python3 tools/optimize-svg.py && python3 tools/embed-local-assets.
 
 ## Theme
 
-The site is moving to a **dark "Golden Dusk" theme** (pre-sunrise / post-sunset, muted slate with gold accents, street lights on), taken from the client's reference `../client-colour-reference.png`. The full spec (tokens, hero gradient, 3D dusk lighting, per-section colours and image treatments) is in `../instructions.md` §12, and it overrides the light colours in the Figma images. Build it on the `dark-theme` branch: `main` auto-deploys.
+The `dark-theme` branch has the **dark "Golden Dusk" theme** (post-sunset, muted slate with gold accents, street lights on), taken from the client's reference `../client-colour-reference.png`. The spec is `../instructions.md` §12, and it overrides the light colours in the Figma images. `main` auto-deploys, so merge only after the client approves.
+
+- Every colour is a token in `css/tokens.css`; the 3D reads `--gold`, `--sun`, `--night` and `--earth` from CSS at load.
+- The scanline SVGs are recoloured by `tools/optimize-svg.py` (re-run it, then the embed script, if the exports change). The flag sky is a raster and is recoloured by the `#duo-dusk` / `#duo-warm` SVG filters in `index.html`.
+- Interim product images come from the daytime ones: `python3 tools/cutout-products.py` writes `photo-dusk.webp` (white sky cut out) and `blueprint-dusk.webp` (warm-white lines on transparent) next to the originals. The dusk grade is CSS. When the client's dusk photos arrive, replace the `photo-dusk.webp` files and drop the `filter` on `.slide__photo img`.
+- Re-render the static 3D fallbacks from the page itself: open `http://localhost:5173/?debug` and run `await window.__ssg.sceneApi.captureStreetlight(800, 1375)` (→ `assets/01-hero/streetlight-fallback.webp`) and `await window.__ssg.sceneApi.capturePanel(1030, 626)` (→ `assets/01-hero/panel-static.webp`). Each returns a WebP `Blob` with the dusk lighting, the LED on and bloom.
 
 ## Structure
 
@@ -71,7 +76,8 @@ embedded `file://` model have also been updated.
 
 For a close inspection and before/after comparison, open
 `http://localhost:5173/tools/landscape-preview.html` while the local server runs.
-This development preview uses the same lighting and tone mapping as the website.
+This development preview still uses the original studio lighting, not the dusk
+lighting; render the dusk fallbacks from the page instead (see Theme above).
 
 Rebuild from the preserved original asset using Blender 5.1:
 
@@ -83,6 +89,7 @@ python3 tools/verify-landscape.py
 
 Run these commands from `website/`. After future asset edits, increment the
 `landscape-4` URL version in `index.html`, `js/scene.js` and the preview together.
-Keep the unversioned model path for `file://` embedding. In the preview, **Mobile
-render → Save render** exports the matching 800 × 1375 transparent WebP fallback.
+Keep the unversioned model path for `file://` embedding. (The preview's **Mobile
+render → Save render** exports a daytime-lit fallback; for the dark theme use
+`captureStreetlight()` instead.)
 Original GLB and fallback backups are retained under `tools/backups/`.

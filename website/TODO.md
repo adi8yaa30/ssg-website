@@ -11,11 +11,32 @@
 
 ## Dark theme (Golden Dusk, see `../instructions.md` §12)
 
+Built on the `dark-theme` branch (not merged: `main` auto-deploys). Preview screenshots at 1440 and 390 px, reduced motion and the hero next to the client's reference are in `../qa-screenshots/` (not committed).
+
+### Done
+
+- [x] Tokens (§12.2) and every hard-coded light colour replaced; no `#2744DF` outside the restricted `--brand-blue` token.
+- [x] Section backgrounds and the §7 rhythm; hero and Why SSG on their own gradients with a seamless join.
+- [x] Text colours, dark button variants and a contrast pass: all visible text meets §12.3 at 1440 and 390 px (lowest 5.2:1, Why SSG card body on glass).
+- [x] Gold wave lines: hero streaks, seam dividers (Why/Products, Mission/Flag, Sun/Logos), gold circuit lines + pulses, callouts and the process connector.
+- [x] 3D at dusk: LED on with flicker-on, warm spot cone, bloom (transparent canvas kept), dusk key/fill/rim, env at 0.35, gold sweep on the panel, first light in Powered by the Sun.
+- [x] Re-rendered `streetlight-fallback.webp` and `panel-static.webp` with dusk lighting and the LED on.
+- [x] Scanline art: CTA skyline, footer landscape (via `tools/optimize-svg.py`) and the flag sky (duotone filters, since it is a raster) recoloured, with glowing lamps and gold horizons.
+- [x] Interim images: product cut-outs + grade + lamp glows, warm-white blueprints (`tools/cutout-products.py`), graded mission mosaic and project photo (its flag stays true colour), logos on warm-white chips.
+- [x] Nav, preloader, and the custom cursor from §4/§12.6, which had never been built and is now added in the dusk colours.
+
+### Confirm with the client
+
 - [ ] **Brand blue decision:** gold and slate replace `#2744DF` everywhere by default. Ask the client whether the blue must stay visible; if so, it is used only on the primary "Request a Quote" button (§12.3).
-- [ ] **Dusk versions of all six product photos** on continuous grass, matching `client-colour-reference.png`: muted slate sky, gold horizon, LED switched on, no white background. Until then, use the interim cut-out and grade from §12.7.
+- [ ] **Dusk versions of all six product photos** on continuous grass, matching `client-colour-reference.png`: muted slate sky, gold horizon, LED switched on, no white background. The interim is a cut-out (`photo-dusk.webp`) with a CSS grade; the daytime originals are kept.
 - [ ] **Dusk versions of the Mission mosaic photo and the flag project photo** (the interim is a CSS grade).
-- [ ] Client sign-off on the hero gradient (slate → thin gold horizon).
-- [ ] Re-render `streetlight-fallback.webp` and `panel-static.webp` with dusk lighting and the LED on.
+- [ ] **Sign-off on the hero gradient** (slate → thin gold horizon). Note: the gold line was raised from §12.2's 92–100% to ~87–91% of the hero so it glows behind the grass island (approved internally); on phones it is a band tied to the street light.
+- [ ] **Hero sun:** it is the brightest element on the first screen (flat `--sun`, Figma size), where the reference has a small, low sun. Confirm it reads as intended, or make it smaller / dimmer.
+
+### Follow-ups
+
+- [ ] Phones have a small (4 px) horizontal overflow that predates the dark theme (it is on `main` too).
+- [ ] `tools/landscape-preview.html` still uses the old studio lighting; the dusk fallbacks are rendered from the page itself (see README).
 
 ## Asset issues found in the export
 
