@@ -800,7 +800,7 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
   .hero { background: linear-gradient(180deg, #12171E 0%, #1E2630 40%, #2E3742 100%); }
   .anchor--streetlight { position: relative; left: auto; top: auto; width: 82%; height: auto; aspect-ratio: 800 / 1375; margin: 28px auto 0; isolation: isolate; }
   .anchor--streetlight::before {
-    content: ""; position: absolute; z-index: -1; left: -50vw; right: -50vw; top: 72%; height: 32%;
+    content: ""; position: absolute; z-index: -1; left: calc(50% - 50vw); right: calc(50% - 50vw); top: 72%; height: 32%;
     background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, #4E4A45 70%, transparent) 22%, #8A6A3A 44%, #E9A94A 57%, #FFE2A0 61%,
       #E9A94A 66%, #8A6A3A 76%, color-mix(in srgb, #4E4A45 70%, transparent) 88%, transparent 100%);
   }
