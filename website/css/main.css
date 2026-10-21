@@ -119,26 +119,6 @@ html:not(.js) .preloader { display: none; }
   background: var(--gold); transform: scaleY(0); transform-origin: top center; z-index: 1;
 }
 
-/* ---------- Cursor ------------------------------------------------------ */
-/* a warm-white dot; its ring turns gold over links and buttons, and reads "View" over
-   the process diamond and the product photos (fine pointers, no reduced motion) */
-.cursor { display: none; position: fixed; left: 0; top: 0; z-index: 150; pointer-events: none; opacity: 0; transition: opacity .3s var(--ease); }
-.has-cursor .cursor { display: block; }
-.cursor.is-on { opacity: 1; }
-.cursor__dot, .cursor__ring { position: absolute; left: 0; top: 0; border-radius: 50%; will-change: transform; }
-.cursor__dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--text); transition: opacity .25s var(--ease); }
-/* GSAP moves .cursor__ring; the circle inside it carries the CSS scale (GSAP resets `scale` on what it moves) */
-.cursor__circle { display: grid; place-items: center; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%;
-  border: 1px solid var(--text); opacity: 0; scale: .35;
-  transition: scale .45s var(--ease), opacity .3s var(--ease), border-color .3s var(--ease), background-color .3s var(--ease); }
-.cursor__label { font-size: 11px; letter-spacing: .14em; color: var(--text); opacity: 0; transition: opacity .25s var(--ease); }
-.cursor.is-link .cursor__circle { opacity: 1; scale: .6; border-color: var(--gold); box-shadow: 0 0 12px color-mix(in srgb, var(--gold) 35%, transparent); }
-.cursor.is-view .cursor__circle { opacity: 1; scale: 1; border-color: var(--gold); background: color-mix(in srgb, var(--night) 55%, transparent); }
-.cursor.is-view .cursor__label { opacity: 1; }
-.cursor.is-link .cursor__dot, .cursor.is-view .cursor__dot { opacity: 0; }
-.has-cursor, .has-cursor * { cursor: none !important; }
-.has-cursor input, .has-cursor textarea { cursor: text !important; }
-
 /* ---------- Nav --------------------------------------------------------- */
 .nav {
   --nu: max(var(--u), .72px);

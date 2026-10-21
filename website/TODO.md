@@ -23,7 +23,7 @@ Built on the `dark-theme` branch (not merged: `main` auto-deploys). Preview scre
 - [x] Re-rendered `streetlight-fallback.webp` and `panel-static.webp` with dusk lighting and the LED on.
 - [x] Scanline art: CTA skyline, footer landscape (via `tools/optimize-svg.py`) and the flag sky (duotone filters, since it is a raster) recoloured, with glowing lamps and gold horizons.
 - [x] Interim images: product cut-outs + grade + lamp glows, warm-white blueprints (`tools/cutout-products.py`), graded mission mosaic and project photo (its flag stays true colour), logos on warm-white chips.
-- [x] Nav, preloader, and the custom cursor from §4/§12.6, which had never been built and is now added in the dusk colours.
+- [x] Nav and preloader. (The §4/§12.6 custom cursor was tried and removed at the client's request: the site uses the native cursor.)
 
 ### Confirm with the client
 
