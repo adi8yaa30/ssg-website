@@ -9,12 +9,13 @@
 - [ ] **Form backend.** "Request a Quote" / "Enquire Now" open a modal whose Send button composes an email to shyaminfratech.co.in@gmail.com (`mailto:`). Replace it with the client's form endpoint or CRM (`js/main.js`, the `form.addEventListener('submit', …)` handler).
 - [ ] **Divisions page.** The nav "Divisions" link points at the National Flag section for now. Confirm where it should go.
 
-## Dark theme (Blue Hour, see `../instructions.md` §12)
+## Dark theme (Golden Dusk, see `../instructions.md` §12)
 
-- [ ] **Dusk versions of all six product photos** on continuous grass: blue-hour sky, LED switched on, warm glow on the grass, no white background. Until then, use the interim cut-out and grade from §12.7.
+- [ ] **Brand blue decision:** gold and slate replace `#2744DF` everywhere by default. Ask the client whether the blue must stay visible; if so, it is used only on the primary "Request a Quote" button (§12.3).
+- [ ] **Dusk versions of all six product photos** on continuous grass, matching `client-colour-reference.png`: muted slate sky, gold horizon, LED switched on, no white background. Until then, use the interim cut-out and grade from §12.7.
 - [ ] **Dusk versions of the Mission mosaic photo and the flag project photo** (the interim is a CSS grade).
-- [ ] Client sign-off on the hero gradient: amber horizon (default), or the blue-only fallback.
-- [ ] Re-render `streetlight-fallback.webp` and `panel-static.webp` with night lighting and the LED on.
+- [ ] Client sign-off on the hero gradient (slate → thin gold horizon).
+- [ ] Re-render `streetlight-fallback.webp` and `panel-static.webp` with dusk lighting and the LED on.
 
 ## Asset issues found in the export
 

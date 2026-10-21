@@ -4,8 +4,8 @@
 > **Goal:** An Awwwards-level, animation-heavy, single-page home page built **pixel-faithfully** from the Figma design.
 > **Read this whole file before writing any code.**
 
-> ### ⚠️ THEME UPDATE (Oct 2026): the site is now DARK, "Blue Hour"
-> The client asked for a darker website with a **pre-sunrise / post-sunset** mood. **§12 "Dark theme: Blue Hour" overrides every colour, gradient and background instruction in this file**, including the light colours shown in the Figma images. Layout, copy, assets and motion stay the same. Where a section below says "white" or "solid blue" background, use the §12 mapping instead.
+> ### ⚠️ THEME UPDATE (Oct 2026): the site is now DARK, "Golden Dusk"
+> The client asked for a darker website with a **pre-sunrise / post-sunset** mood, and supplied a colour reference (`client-colour-reference.png`). **§12 "Dark theme: Golden Dusk" overrides every colour, gradient and background instruction in this file**, including the light colours shown in the Figma images. Layout, copy, assets and motion stay the same. Where a section below says "white" or "solid blue" background, use the §12 mapping instead.
 
 ---
 
@@ -107,8 +107,8 @@ Use fluid sizing (`clamp()`), e.g. hero headline `clamp(64px, 9vw, 180px)`, line
 
 ### Buttons
 Two styles exist in the design (recoloured for the dark theme, see §12):
-- **Outline:** 1px border with an inner 1px offset border (double-line look). On dark: `--ice` border and text. Example: "Explore Products".
-- **Solid:** `--blue` fill, `--ice` text, the same double-border look. Example: "Request a Quote". On hover, add a soft `--amber` outer glow.
+- **Outline:** 1px border with an inner 1px offset border (double-line look). On dark: `--text` border and text, turning `--gold` on hover. Example: "Explore Products".
+- **Solid:** `--gold` fill with `--night` text (8.8:1), the same double-border look. Example: "Request a Quote". On hover, add `--gold-glow`. (If the client keeps brand blue, this one button becomes `--brand-blue` with `--text`, see §12.3.)
 
 Hover: the inner border slides/expands to fill, text shifts 2px, and arrow icons nudge right.
 
@@ -401,18 +401,18 @@ Every slide CTA: **Enquire Now** → opens the CTA/contact section with the prod
 ---
 
 ## 7. Section order + background rhythm
-**Dark theme (current).** Alternate between two dark tones instead of white and blue, so sections still read as distinct:
+**Dark theme (current).** Alternate between two slate tones instead of white and blue, so sections still read as distinct:
 
-1. Hero → `--hero-gradient` (pre-sunrise, amber horizon at the bottom)
-2. Why SSG → `--why-gradient` (blue hour back down to night)
-3. Our Products → `--night` (`#070B1F`)
-4. Our Mission → `--midnight` (`#0E1638`)
+1. Hero → `--hero-gradient` (slate fading to a thin gold horizon)
+2. Why SSG → `--why-gradient` (mid slate back down to night)
+3. Our Products → `--night` (`#12171E`)
+4. Our Mission → `--deep` (`#1E2630`)
 5. National Flag → `--night` (z 30, **must stay opaque**)
 6. Powered by the Sun → `--sun-gradient` (the one warm section)
-7. Proudly Associated With → `--midnight`
+7. Proudly Associated With → `--deep`
 8. SSG's Process → `--night`
-9. CTA → `--midnight`
-10. Footer → `--night`
+9. CTA → `--deep`
+10. Footer → `--night` fading to `--earth`
 
 Section transitions: when a section enters, its top edge reveals with a slight clip-path curve (`inset(8% 0 0 0 round 40px 40px 0 0)` → `inset(0)`), so sections feel stacked like cards.
 
@@ -475,111 +475,120 @@ Section transitions: when a section enters, its top edge reveals with a slight c
 
 ---
 
-## 12. Dark theme: "Blue Hour" (overrides all colour guidance above)
+## 12. Dark theme: "Golden Dusk" (overrides all colour guidance above)
 
 ### 12.1 Concept
-The client asked for a darker site with a **pre-sunrise / post-sunset** mood. The whole page lives in the minutes just before sunrise and just after sunset: a deep navy sky, a thin amber glow on the horizon, and **street lights switched on**. This is **one consistent mood**, not a day-to-night scroll story. The sky does **not** change as you scroll.
+The client asked for a darker site with a **pre-sunrise / post-sunset** mood, and supplied a colour reference: **`client-colour-reference.png`** (repo root). It shows solar panels over misty hills at dusk, a **muted slate sky**, warm grey haze at the horizon, a low sun, and **thin glowing gold wave lines**. **Take every colour from this image.** (`PHOTO-2026-10-12-22-23-23.jpg` is the same scene at full brightness, so use it only to see the detail.)
 
-Mood reference: `PHOTO-2026-10-12-22-23-23.jpg` in the repo root (solar panels at golden hour over misty hills, with glowing amber light streaks). Take the colour and the light streaks from it. Don't use the photo itself on the site unless asked.
+The mood is **muted, desaturated and premium**: slate and charcoal, not inky royal blue, with gold as the only bright colour. It is **one consistent mood**, not a day-to-night scroll story. The sky does **not** change as you scroll. And **the street lights are switched on**.
 
 Layout, copy, assets and motion from §0–§11 all stay. **Only colours, lighting and some image treatments change.**
 
 ### 12.2 Tokens (replace the colour block in `css/tokens.css`)
 ```css
 :root {
-  /* Base */
-  --night:      #070B1F;   /* main page background */
-  --midnight:   #0E1638;   /* alternate sections, cards, panels */
-  --bluehour:   #1A2A6C;   /* lifted surfaces, gradient mid-tones */
-  --blue:       #2744DF;   /* brand accent: lines, buttons, icons, fills (NOT body text) */
+  /* Base: slates sampled from the reference sky */
+  --night:      #12171E;   /* main page background (darkest sky) */
+  --deep:       #1E2630;   /* alternate sections, cards, panels (upper sky) */
+  --dusk:       #2E3742;   /* lifted surfaces, hover fills (mid sky) */
+  --haze:       #4E4A45;   /* warm grey: borders, dividers, the horizon haze */
+  --earth:      #2D2820;   /* ground tones: grass/tree shadows, footer base */
 
-  /* Light */
-  --amber:      #F5A524;   /* horizon glow, light pulses, lamp glow, hover glows */
-  --ember:      #E8743B;   /* warm edge, used sparingly (horizon base only) */
-  --sun:        #F5DB68;   /* hero sun semicircle (unchanged) */
-  --callout:    #F5DB68;   /* hero callout outline + leader lines (unchanged) */
+  /* Light: the only bright colours on the site */
+  --gold:       #E9A94A;   /* PRIMARY ACCENT: lines, buttons, icons, pulses, highlights */
+  --amber:      #B9772E;   /* deep gold: shadow side of lines, pressed states */
+  --sun:        #FFE2A0;   /* sun core, LED glow tint, brightest highlights */
 
   /* Text */
-  --ice:        #EEF1FF;   /* primary text on dark */
-  --ice-muted:  #9AA6D6;   /* secondary text, mono labels */
+  --text:       #F2EEE6;   /* warm white: never pure #FFF */
+  --ash:        #A4A7AD;   /* secondary text, mono labels */
+
+  /* Brand blue: RESTRICTED, see 12.3 */
+  --brand-blue: #2744DF;
 
   /* Lines & glass */
-  --ice-30:     rgba(238, 241, 255, .30);  /* grid lines, card borders */
-  --ice-10:     rgba(238, 241, 255, .10);  /* glass card fill */
-  --amber-glow: 0 0 24px rgba(245, 165, 36, .45);
+  --line:       rgba(242, 238, 230, .14);  /* grid lines, card borders */
+  --glass:      rgba(242, 238, 230, .05);  /* glass card fill */
+  --gold-glow:  0 0 18px rgba(233, 169, 74, .45);
 
   /* Gradients */
   --hero-gradient: linear-gradient(180deg,
-      #070B1F 0%, #0E1638 45%, #1A2A6C 72%, #2744DF 86%, #F5A524 94%, #E8743B 100%);
-  --why-gradient:  linear-gradient(180deg, #1A2A6C 0%, #070B1F 100%);
-  --sun-gradient:  linear-gradient(180deg, #0E1638 0%, #1A2A6C 55%, #2744DF 80%, #F5A524 100%);
+      #12171E 0%, #1E2630 35%, #2E3742 62%, #4E4A45 80%, #8A6A3A 92%, #E9A94A 97%, #FFE2A0 100%);
+  --why-gradient:  linear-gradient(180deg, #2E3742 0%, #1E2630 40%, #12171E 100%);
+  --sun-gradient:  linear-gradient(180deg, #12171E 0%, #2E3742 55%, #4E4A45 80%, #8A6A3A 94%, #E9A94A 100%);
 }
 ```
 
 **Hero gradient (Figma stops, Linear, top → bottom):**
-| Stop | Colour |
-|---|---|
-| 0% | `#070B1F` |
-| 45% | `#0E1638` |
-| 72% | `#1A2A6C` |
-| 86% | `#2744DF` |
-| 94% | `#F5A524` |
-| 100% | `#E8743B` |
+| Stop | Colour | Taken from |
+|---|---|---|
+| 0% | `#12171E` | Darkest top of the sky |
+| 35% | `#1E2630` | Upper sky |
+| 62% | `#2E3742` | Mid sky |
+| 80% | `#4E4A45` | Warm haze above the hills |
+| 92% | `#8A6A3A` | Horizon glow |
+| 97% | `#E9A94A` | Gold sunrise line |
+| 100% | `#FFE2A0` | Sun core |
 
-- **This is a change from §3:** the hero and Why SSG are **no longer one shared gradient**. The hero gets `--hero-gradient` on its own, so the **amber horizon sits directly behind the grass island**. Why SSG then continues with `--why-gradient` (blue hour fading back to night). The join between them must be seamless: the hero ends warm, so overlap a ~120px soft fade from `#E8743B` into `#1A2A6C` at the top of Why SSG.
-- Keep the amber band **thin**. If it reads too wide, move the `#F5A524` stop to 96%.
-- **Fallback (if the client finds the orange too strong):** use `linear-gradient(180deg, #070B1F 0%, #0E1638 55%, #1A2A6C 85%, #2744DF 100%)` for the hero. Build this as a one-line token swap.
+- **The hero and Why SSG are not one shared gradient** (a change from §3). The hero gets `--hero-gradient` on its own, so the **gold horizon sits directly behind the grass island**. Why SSG then starts with `--why-gradient`. To make the join seamless, overlap a ~120px soft fade from the hero's warm base into `#2E3742` at the top of Why SSG.
+- Keep the gold band **thin**. If it reads too wide, move the `#E9A94A` stop to 98%.
 
-### 12.3 Contrast rules
-- **Never set body text in `--blue` on dark backgrounds.** It fails WCAG contrast. Text is `--ice` or `--ice-muted`. `--blue` is for lines, buttons, fills and icons.
-- Headings that were blue in the Figma become `--ice`. Use `--blue` or `--amber` only for small accents (an underline, one highlighted word).
-- Check every text/background pair is at least **4.5:1** (body) or **3:1** (large headings).
+### 12.3 Colour rules
+- **Gold is the primary accent, not brand blue.** The reference image has no saturated blue, and `#2744DF` next to these slates looks out of place. It also fails contrast on dark (2.5:1 on `--night`).
+- **`--brand-blue` is restricted** until the client confirms. Default: **don't use it anywhere.** If the client wants the blue kept, use it **only** as the fill of the single primary CTA button ("Request a Quote"), with `--text` on top (6.1:1 contrast). Never for text, lines or backgrounds. → Logged in `TODO.md`.
+- The SSG logo is gold and orange, so it already fits this palette. Use `logo.png` / `logo-new.png` as-is.
+- **Text:** body in `--text`, secondary in `--ash`. Headings that were blue in the Figma become `--text`. Use `--gold` only for small accents (one highlighted word, a mono label, a number).
+- **Gold on dark is ~8.8:1**, so it's safe for small text and icons. `--amber` (4.9:1 on `--night`) is for large elements and lines only.
+- **No pure white, no pure black** anywhere. Use `--text` and `--night`.
+- Check every text/background pair is at least **4.5:1** (body) or **3:1** (large headings). Verified ratios on `--night`: `--text` 15.5, `--ash` 7.5, `--gold` 8.8.
 
-### 12.4 Signature element: the amber light line
-Taken from the light streaks in the reference photo: a **thin glowing amber line** (1–1.5px `--amber` + `--amber-glow`). Use it for:
-- the hero callout leader lines (they can stay `--callout` yellow, or switch to amber; pick one and apply it everywhere),
-- the Why SSG circuit lines and the **light pulses** that travel along them,
-- the dashed connector in the Process exploded row,
-- thin section dividers where sections meet.
+### 12.4 Signature element: glowing gold wave lines
+Taken straight from the reference: **thin, flowing gold lines** (1–1.5px `--gold`, with `--gold-glow`, fading to transparent at both ends) that curve like the waves at the bottom of the image.
+- **Section dividers:** 2–3 gently curved gold lines at the seams between sections, drawn with SVG paths and animated with DrawSVG as the seam enters the viewport. They drift slowly (a small path morph or translate, a 6–10s loop).
+- **Hero:** two long gold streaks arc across the upper-left sky, like in the reference, drawing in after the headline.
+- **Why SSG circuit lines** and the **light pulses** travelling along them are gold.
+- The **hero callout leader lines and box outlines** become `--gold` (replacing the yellow `#F5DB68`).
+- The **dashed connector** in the Process exploded row is gold.
+- Keep it disciplined: thin lines and small glows only, never big gold fills.
 
-### 12.5 The 3D street light at night (`js/scene.js`)
-This is the biggest visual win of the dark theme. **The light is ON.**
-- **LED on:** set `M_LED` emissive to a warm white (`#FFE7B0`), `emissiveIntensity` ≈ 3–4, and add a **soft cone of light** onto the grass. Use a `SpotLight` from the lamp head pointing down, warm colour, with a soft penumbra. Add a subtle bloom (`UnrealBloomPass`, low strength ~0.6, threshold ~0.85) so only the LED glows.
-- **Night lighting:** replace the daylight key light with a **cool moonlight key** (`#9FB4FF`, low intensity) from the top-left, plus a **warm rim light** (`--amber`) from low behind the model, to echo the horizon glow. Lower the environment map intensity to ~0.4 so metal reflects the dark sky, not a bright studio.
-- **Load-in:** the LED **flickers on** (2 quick blinks, then steady) as the model finishes rising. Turn the LED on before the panel detaches.
-- **Panel:** the cells (`M_Cells`) catch a **warm amber specular sweep** as the panel travels (§5.4 State B), like the first sun hitting the glass.
-- **Powered by the Sun (§5.4 State E):** as the panel lands, a warm light from below brightens it slightly, so the panel "catches first light" against `--sun-gradient`.
-- Re-render the fallbacks (`streetlight-fallback.webp`, `panel-static.webp`) with the night lighting and the LED on.
+### 12.5 The 3D street light at dusk (`js/scene.js`)
+**The light is ON.** This is the biggest visual win of the dark theme.
+- **LED on:** set `M_LED` emissive to `--sun` (`#FFE2A0`), `emissiveIntensity` ≈ 3–4, and add a **soft warm cone of light** onto the grass: a `SpotLight` from the lamp head pointing down, colour `#FFD58A`, soft penumbra. Add a subtle bloom (`UnrealBloomPass`, strength ~0.6, threshold ~0.85) so only the LED glows.
+- **Dusk lighting:** a **low warm key light** from the horizon side (colour `#E9A94A`, low angle, as if from the setting sun), a **cool slate fill** from above (`#8C9AAD`, low intensity), and a gold **rim light** from behind. Lower the environment map intensity to ~0.35 so the metal reflects a dim sky, not a bright studio.
+- **Load-in:** the LED **flickers on** (2 quick blinks, then steady) as the model finishes rising. Reduced motion: it's simply on.
+- **Panel:** the cells (`M_Cells`) catch a **gold specular sweep** as the panel travels (§5.4 State B), like the low sun hitting the glass in the reference. The panel's aluminium frame picks up a gold edge highlight.
+- **Powered by the Sun (§5.4 State E):** as the panel lands, a warm light from below brightens it, so it "catches first light" against `--sun-gradient`.
+- Re-render the fallbacks (`streetlight-fallback.webp`, `panel-static.webp`) with this lighting and the LED on.
 
 ### 12.6 Section-by-section changes
 | Section | Background | Changes |
 |---|---|---|
-| **Hero** | `--hero-gradient` | Headline in `--ice`. Subline in `--ice-muted`. The **sun semicircle** sits low, like a dawn sun just cresting the horizon, with a soft `--amber` glow around it. The callout boxes keep their yellow outline, with `--ice` text on a `--ice-10` glass fill. The background grid lines and diamonds use `--ice-30`. |
-| **Why SSG** | `--why-gradient` | Dark glass cards (`--ice-10` fill, `--ice-30` border, blur 20px). The circuit lines and pulses are **amber** (§12.4). Card titles in `--ice`, body in `--ice-muted`. Icons in `--ice`, turning `--amber` when their pulse arrives. |
-| **Our Products** | `--night` | Product name in `--ice`. Spec card in `--midnight` with an `--ice-30` border (it was solid blue). Mono tags in `--ice-muted`. **Blueprints:** invert them to ice lines on a transparent background (CSS `filter: invert(1) hue-rotate(180deg)` plus `mix-blend-mode: screen`, or re-export them). **Product photos: see §12.7.** |
-| **Our Mission** | `--midnight` | Text in `--ice`. Stats: numbers in `--ice`, dividers in `--ice-30`. **Mosaic photos:** apply a blue-hour grade (§12.7). |
-| **National Flag** | `--night` (opaque, z 30) | "BUILT FOR PRIDE." in `--ice`. **Scanline sky:** recolour to `--bluehour` lines on `--night`, with clouds near the horizon tinted `--amber` at low opacity. **The flag stays in true colours, never tinted**, with a soft warm uplight glow behind it. The project photo gets the §12.7 grade, but the flag in it stays true colour. |
-| **Powered by the Sun** | `--sun-gradient` | The **one warm section**. The heading in `--ice` sits on the amber end, so check contrast; move the heading up into the blue part if needed. Grid lines in `--ice-30`. |
-| **Proudly Associated With** | `--midnight` | Place each logo on a **small ice-white chip** (`#EEF1FF`, radius 12px, padding 16px). Most logos have coloured or white backgrounds, and government seals **must not be recoloured or inverted**. |
-| **SSG's Process** | `--night` | Diamond quadrants in `--midnight` with `--ice-30` borders. Labels in `--ice`. Hover: the active half fills `--bluehour`. The **hover line-art SVGs** (filled `#2744DF` traces on a white rect): remove the white background rect and recolour the fill to `--ice`. The exploded parts are already white strokes; keep them and make the dashed connector `--amber`. |
-| **CTA** | `--midnight` | Heading in `--ice`. **Scanline skyline:** lines in `--bluehour` → `--blue`, and every lamp head gets a **glowing `--amber` dot**, so the skyline is lit at night. This is the closing image, so make the glow obvious. Buttons per §3 (dark variants). |
-| **Footer** | `--night` | **Scanline landscape:** `--bluehour` lines on `--night`, with a faint `--amber` horizon line and the small solar light glowing. The contact card becomes `--midnight` with `--ice` text (it was white). Links in `--ice-muted`, `--ice` on hover. |
-| **Nav** | `--night` at 80% + blur | The notched bar becomes `--midnight` with an `--ice-30` hairline. Links in `--ice-muted`, `--ice` on hover/active. |
-| **Preloader** | `--night` | The battery bar fills with `--amber`. |
-| **Cursor** | — | `--ice` dot. The ring glows `--amber` over buttons. |
+| **Hero** | `--hero-gradient` | Headline in `--text`. Subline in `--ash`. The **sun semicircle** becomes `--sun` with a soft gold glow, sitting low like a sun cresting the horizon. Callout boxes: `--gold` outline, `--text` on a `--glass` fill. Grid lines and diamonds in `--line`. Two gold streaks arc across the sky (§12.4). |
+| **Why SSG** | `--why-gradient` | Glass cards (`--glass` fill, `--line` border, blur 20px). The circuit lines and pulses are **gold**. Card titles in `--text`, body in `--ash`. Icons in `--text`, turning `--gold` when their pulse arrives. |
+| **Our Products** | `--night` | Product name in `--text`. Spec card in `--deep` with a `--line` border (it was solid blue), and spec numbers in `--gold`. Mono tags in `--ash`. **Blueprints:** convert to warm-white lines on transparent (CSS `filter: invert(1) sepia(.15)` plus `mix-blend-mode: screen`, or re-export). **Product photos: see §12.7.** |
+| **Our Mission** | `--deep` | Text in `--text`. Stat numbers in `--gold`, labels in `--ash`, dividers in `--line`. **Mosaic photos:** dusk grade (§12.7). |
+| **National Flag** | `--night` (opaque, z 30) | "BUILT FOR PRIDE." in `--text`. **Scanline sky:** recolour to `--dusk` lines on `--night`, with the clouds near the horizon warming to `--haze` and a faint `--gold` line along the horizon. **The flag stays in true colours, never tinted**, with a soft warm uplight glow behind it. The project photo gets the §12.7 grade (the flag in it stays true colour). |
+| **Powered by the Sun** | `--sun-gradient` | The **one warm section**, closest to the reference image. The heading sits in the slate part (top-right) in `--text`. Grid lines in `--line`. The gold wave lines run along the bottom edge. |
+| **Proudly Associated With** | `--deep` | Place each logo on a **small warm-white chip** (`--text` fill, radius 12px, padding 16px). Government seals **must not be recoloured or inverted**. |
+| **SSG's Process** | `--night` | Diamond quadrants in `--deep` with `--line` borders. Labels in `--text`, numbers in `--gold`. Hover: the active half fills `--dusk`. **Hover line-art SVGs** (filled `#2744DF` traces on a white rect): remove the white rect and recolour the fill to `--text`. The exploded parts become `--text` strokes, with the dashed connector in `--gold`. |
+| **CTA** | `--deep` | Heading in `--text`. **Scanline skyline:** `--dusk` lines rising to `--haze` at the tops, and every lamp head gets a **glowing `--gold` dot**, so the skyline is lit at dusk. This is the closing image, so make the glow obvious. Buttons per §3 (dark variants). |
+| **Footer** | `--night` → `--earth` at the very bottom | **Scanline landscape:** `--dusk` lines on `--night`, a `--gold` horizon line, and the small solar light glowing. The contact card becomes `--deep` with `--text`. Links in `--ash`, `--gold` on hover. |
+| **Nav** | `--night` at 80% + blur | The notched bar becomes `--deep` with a `--line` hairline. Links in `--ash`, `--text` on hover, and the active link gets a small gold underline. |
+| **Preloader** | `--night` | The battery bar fills with `--gold`, and the logo's sun gets a soft glow. |
+| **Cursor** | — | A `--text` dot. The ring turns `--gold` over buttons and links. |
 
 ### 12.7 Image treatments (assets made for the light theme)
 1. **Product photos (`02-products/*/photo.webp`):** they have white backgrounds and **daytime grass**, so they'll look pasted on.
-   - **Preferred:** regenerate all six at dusk using the same continuous-grass composition, with the prompt addition *"blue hour just after sunset, deep navy sky, the LED lamp switched on with a warm glow on the grass, soft amber horizon glow, no white background"*. Add this to `TODO.md` as a client and design task.
-   - **Interim:** cut out the white background (the products and grass to transparent), place them on `--night`, and grade them: CSS `filter: brightness(.72) saturate(.85)` plus a `--bluehour` overlay at 25% in `color` blend mode. Then add a **warm glow at each lamp head** (a radial-gradient `--amber` div, 30% opacity, blurred).
-2. **Mission mosaic (`image.jpg`) and the flag project photo:** daytime shots. Grade them with a `--bluehour` overlay (`soft-light`, ~40%) and `brightness(.8)`. Request dusk versions as a TODO.
-3. **Scanline SVGs (CTA, footer, flag sky):** recolour through CSS variables or `fill` rewrites in `tools/optimize-svg.py`. Don't edit the source exports in `/assets`.
-4. **Blueprints:** invert as described in §12.6.
+   - **Preferred:** regenerate all six at dusk using the same continuous-grass composition, with the prompt addition *"golden dusk just after sunset, muted slate-blue sky, warm haze and a thin gold horizon glow, the LED lamp switched on casting a warm glow on the grass, colours matching the attached reference"* (attach `client-colour-reference.png`). Logged in `TODO.md`.
+   - **Interim:** cut out the white background (the products and grass to transparent), place them on `--night`, and grade them: CSS `filter: brightness(.7) saturate(.75) sepia(.12)`, plus a warm glow at each lamp head (a radial-gradient `--sun` div, 30% opacity, blurred).
+2. **Mission mosaic (`image.jpg`) and the flag project photo:** daytime shots. Grade them to match the reference: `brightness(.72) saturate(.7) sepia(.15)` plus a `--night` overlay at ~25%. Request dusk versions (TODO).
+3. **Scanline SVGs (CTA, footer, flag sky):** recolour through CSS variables or `fill` rewrites in `tools/optimize-svg.py`. Never edit the source exports in `/assets`.
+4. **Blueprints:** convert as described in §12.6.
 
 ### 12.8 Implementation notes
-- Do this on a **separate branch** (e.g. `dark-theme`). `main` auto-deploys to GitHub Pages, so only merge after the client approves the preview.
-- Almost all changes go through `css/tokens.css`. Search `main.css` for hard-coded `#fff`, `#FFFFFF`, `white`, `#2744DF` and `rgba(255,255,255…)` and replace them with tokens.
-- Update the scanline colours in `js/scanlines.js` and `js/flag.js` if they set colours in JS.
+- Do this on the **`dark-theme` branch**. `main` auto-deploys to GitHub Pages, so only merge after the client approves the preview.
+- Almost everything goes through `css/tokens.css`. Then search `main.css` and the JS for hard-coded `#fff`, `#FFFFFF`, `white`, `#2744DF`, `#F5DB68` and `rgba(255,255,255…)` and replace them with tokens. **Any leftover `#2744DF` is a bug** unless it's the one approved CTA (§12.3).
+- Update the colours in `js/scanlines.js`, `js/flag.js` and `js/process.js` if they set colours in JS.
 - Re-run `tools/embed-local-assets.py` after changing any embedded SVG or the GLB fallbacks.
-- **Reduced motion:** the LED is simply on (no flicker), and the light pulses are static amber lines.
-- After the swap, run a full contrast pass (§12.3) and compare each section against the Figma for layout. The colours will intentionally differ.
+- **Reduced motion:** the LED is simply on (no flicker), the gold lines are drawn and static, and the pulses are hidden.
+- **QA:** put `client-colour-reference.png` next to the hero screenshot. Both should feel like the same evening. Then do a contrast pass (§12.3) and a layout comparison against the Figma (the colours will intentionally differ).
