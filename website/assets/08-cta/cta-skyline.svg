@@ -2,7 +2,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="1672" height="941" viewBox="0 0 1672 941">
 <title>Editable lighting infrastructure scanline skyline</title>
 <desc>Vector traced from the supplied graphic. Transparent background. Each connected scanline shape is an editable path.</desc>
-<g id="blue-scanlines" fill="#2744DF" fill-rule="evenodd">
+<defs><linearGradient id="cta-dusk" gradientUnits="userSpaceOnUse" x1="0" y1="941" x2="0" y2="200"><stop offset="0" stop-color="#2E3742"/><stop offset=".55" stop-color="#2E3742"/><stop offset="1" stop-color="#4E4A45"/></linearGradient></defs>
+<g id="blue-scanlines" fill="url(#cta-dusk)" fill-rule="evenodd">
 <path d="M1522 192.91L1524 192.67L1525 192.81L1526 193.46L1528 193.95L1529.39 195L1530.13 196L1530.36 197L1529 198.53L1518 198.47L1516.92 197L1517.56 196L1520 193.71L1521 193.47Z"/>
 <path d="M1516 200.71L1521 200.98L1524 200.81L1525 200.94L1526 201.46L1532 201.53L1532.47 202L1532.52 206L1531 207.54L1525 207.54L1524 208.36L1523 207.54L1516 207.51L1514.53 206L1513.98 205L1513.81 204L1513.93 203L1514.49 202Z"/>
 <path d="M112 209.78L131 209.78L132 210.46L133.51 212L133.49 215L132 216.53L110 216.5L108.61 215L108.69 213L111 210.48Z"/>

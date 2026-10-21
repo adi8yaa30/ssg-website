@@ -12,6 +12,9 @@ const CTA_HEADS = [
   [1320, 527], [1420, 594], [1329, 718], [1455, 436], [1587, 550],
 ];
 
+// The small solar lights in the footer landscape (SVG units, 2048 × 768): their lamps glow at dusk
+const FOOTER_LAMPS = [[1879, 561], [1603, 604]];
+
 async function inline(container) {
   const src = container.dataset.svgSrc;
   let text;
@@ -111,9 +114,12 @@ async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, while
     container.appendChild(d);
     return d;
   });
+  const shimmerWrap = document.createElement('span');
+  shimmerWrap.className = 'cta__shimmer-wrap';
   const shimmer = document.createElement('span');
   shimmer.className = 'cta__shimmer';
-  container.appendChild(shimmer);
+  shimmerWrap.appendChild(shimmer);
+  container.appendChild(shimmerWrap);
 
   if (reduced) {
     gsap.set(glows, { opacity: 1, scale: 1 });
@@ -132,7 +138,7 @@ async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, while
       // the shimmer band and the glows are their own GPU layers, so these loops never repaint
       // the skyline; they also stop while the section is off screen
       whileVisible(section, gsap.fromTo(shimmer, { xPercent: -160 }, { xPercent: 260, duration: 5, ease: 'sine.inOut', repeat: -1, repeatDelay: 1.5, force3D: true }));
-      whileVisible(section, gsap.to(glows, { opacity: 0.55, duration: 1.8, ease: 'sine.inOut', repeat: -1, yoyo: true, stagger: { each: 0.25, from: 'random' } }));
+      whileVisible(section, gsap.to(glows, { opacity: 0.75, duration: 1.8, ease: 'sine.inOut', repeat: -1, yoyo: true, stagger: { each: 0.25, from: 'random' } }));
       // transforms are only needed for the intro; drop them so the ripple groups stay cheap
       gsap.set(order.map((o) => o.el), { clearProps: 'transform' });
     });
@@ -170,7 +176,20 @@ async function initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer, 
   container.appendChild(clouds);
   const rest = all.filter((it) => !cloudItems.includes(it));
 
-  if (reduced) return;
+  // lamp glows, in a layer with the artwork's own aspect ratio (the SVG is bottom-anchored)
+  const lampLayer = document.createElement('span');
+  lampLayer.style.cssText = `position:absolute;left:0;bottom:0;width:100%;aspect-ratio:${vb.width}/${vb.height};pointer-events:none`;
+  const lamps = FOOTER_LAMPS.map(([x, y]) => {
+    const d = document.createElement('span');
+    d.className = 'cta__glow';
+    d.style.left = `${(x / vb.width) * 100}%`;
+    d.style.top = `${(y / vb.height) * 100}%`;
+    lampLayer.appendChild(d);
+    return d;
+  });
+  container.appendChild(lampLayer);
+
+  if (reduced) { gsap.set(lamps, { opacity: 1, scale: 1 }); return; }
 
   // lines reveal from the bottom up
   const groups = bucket(svg, rest, 6, 'g[id]');
@@ -179,7 +198,8 @@ async function initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer, 
   gsap.set(clouds, { opacity: 0 });
   const tl = gsap.timeline({ paused: true })
     .to(sorted.map((r) => r.g), { opacity: 1, y: 0, duration: 1.6, stagger: { each: 1.3 / sorted.length } })
-    .to(clouds, { opacity: 1, duration: 1.6 }, '-=0.6');
+    .to(clouds, { opacity: 1, duration: 1.6 }, '-=0.6')
+    .to(lamps, { opacity: 1, scale: 1, duration: 0.45, stagger: 0.2 }, '-=0.8');
   ScrollTrigger.create({ trigger: container, start: 'top 85%', once: true, onEnter: () => tl.play() });
 
   whileVisible(footer, gsap.to(clouds, { xPercent: (26 / vb.width) * 100, duration: 9, ease: 'sine.inOut', repeat: -1, yoyo: true, force3D: true }));

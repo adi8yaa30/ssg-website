@@ -504,9 +504,19 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
 /* the banner and its inner layer slide in opposite directions to reveal it (a GPU-only mask) */
 .flag__banner { position: absolute; left: calc(496 * var(--u)); top: calc(396 * var(--u)); width: calc(1197 * var(--u)); height: calc(551 * var(--u)); overflow: hidden; pointer-events: none; }
 .flag__banner-inner { position: absolute; inset: 0; overflow: hidden; background: var(--night); }
-.flag__sky { width: 104%; height: 100%; max-width: none; margin-left: -2%; object-fit: cover; object-position: center bottom; will-change: transform; }
+.flag__sky { width: 104%; height: 100%; max-width: none; margin-left: -2%; object-fit: cover; object-position: center bottom; will-change: transform; filter: url(#duo-dusk); }
+/* the same sky, warmed to --haze, fades in towards the horizon (§12.6) */
+.flag__sky--warm { position: absolute; left: 0; top: 0; filter: url(#duo-warm);
+  -webkit-mask-image: linear-gradient(180deg, transparent 42%, #000 82%); mask-image: linear-gradient(180deg, transparent 42%, #000 82%); }
+.flag__horizon { position: absolute; left: 6%; right: 6%; top: 73%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold) 20%, var(--sun) 50%, var(--gold) 80%, transparent);
+  box-shadow: var(--gold-glow); opacity: .7; }
 .flag__flag { position: absolute; left: calc(620 * var(--u)); top: calc(13 * var(--u)); width: calc(621 * var(--u)); height: calc(934 * var(--u)); }
 .flag__img, .flag__gl { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* a soft warm uplight behind the cloth; the flag itself is never tinted */
+.flag__flag { isolation: isolate; }
+.flag__flag::before { content: ""; position: absolute; z-index: -1; inset: -6% -10% 30% -10%; pointer-events: none;
+  background: radial-gradient(ellipse 55% 45% at 45% 40%, color-mix(in srgb, var(--gold) 28%, transparent), transparent 70%); }
 .flag__gl { opacity: 0; }
 .flag.has-gl .flag__gl { opacity: 1; }
 .flag.has-gl .flag__img { opacity: 0; }
@@ -614,7 +624,10 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
 .cta__skyline > img, .cta__skyline > svg { width: 100%; height: 100%; overflow: visible; }
 .cta__skyline path { transform-box: fill-box; }
 /* glows and shimmer are their own GPU layers, so their loops never repaint the skyline under them */
-.cta__glow { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 6px 2px var(--sun), 0 0 18px 6px color-mix(in srgb, var(--gold) 85%, transparent); opacity: 0; transform: scale(0); pointer-events: none; will-change: transform, opacity; }
+.cta__glow { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 6px 2px var(--sun), 0 0 18px 6px color-mix(in srgb, var(--gold) 85%, transparent), 0 0 56px 22px color-mix(in srgb, var(--gold) 28%, transparent); opacity: 0; transform: scale(0); pointer-events: none; will-change: transform, opacity; }
+/* the shimmer only lights the skyline's lines: its wrapper is masked by the artwork itself */
+.cta__shimmer-wrap { position: absolute; inset: 0; pointer-events: none;
+  -webkit-mask: url("../assets/08-cta/cta-skyline.svg") center bottom / contain no-repeat; mask: url("../assets/08-cta/cta-skyline.svg") center bottom / contain no-repeat; }
 .cta__shimmer { position: absolute; top: 0; bottom: 0; left: 0; width: 50%; pointer-events: none; background: linear-gradient(100deg, transparent 0%, color-mix(in srgb, var(--sun) 30%, transparent) 50%, transparent 100%); mix-blend-mode: screen; opacity: 0; transform: translateX(-160%); will-change: transform; }
 
 /* ---------- Footer ------------------------------------------------------ */
@@ -647,6 +660,8 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
 .footer__landscape { position: relative; height: calc(589 * var(--u)); margin-top: calc(-60 * var(--u)); }
 .footer__landscape > img, .footer__landscape > svg { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; overflow: visible; }
 .footer__clouds { pointer-events: none; will-change: transform; }
+.footer__landscape .cta__glow { width: 6px; height: 6px; margin: -3px 0 0 -3px; }
+#footer-horizon-line { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--gold) 80%, transparent)); }
 .footer__legal {
   display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
   padding: max(14px, calc(20 * var(--u))) calc(48 * var(--u));
