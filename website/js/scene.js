@@ -50,6 +50,11 @@ const LIGHT_TILT = 22 * DEG;     // camera looks down onto the panel and the isl
 const WHY_ROLL = -5 * DEG;
 const SUN_ROLL = 12.8 * DEG;
 
+// Dusk (§12.5): the LED is on, lit by a low warm sun with a cool slate sky fill
+const LED_ON = 3.5;              // M_LED emissiveIntensity when the light is on
+const SPOT_ON = 240;              // warm cone from the lamp head onto the grass (at LED_ON)
+const BLOOM = { strength: 0.6, radius: 0.35, threshold: 0.85 };
+
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const smooth = (t) => t * t * (3 - 2 * t);
@@ -58,17 +63,49 @@ const backOut = (t, s = 1.4) => 1 + (s + 1) * Math.pow(t - 1, 3) + s * Math.pow(
 
 // three.js is loaded on demand (via the import map), so phones and no-WebGL visitors never download it
 async function createScene(opts) {
-  const [THREE, { GLTFLoader }, { DRACOLoader }, { RoomEnvironment }] = await Promise.all([
+  const [THREE, { GLTFLoader }, { DRACOLoader }, { RoomEnvironment }, { EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
     import('three'),
     import('three/addons/loaders/GLTFLoader.js'),
     import('three/addons/loaders/DRACOLoader.js'),
     import('three/addons/environments/RoomEnvironment.js'),
+    import('three/addons/postprocessing/EffectComposer.js'),
+    import('three/addons/postprocessing/RenderPass.js'),
+    import('three/addons/postprocessing/UnrealBloomPass.js'),
+    import('three/addons/postprocessing/OutputPass.js'),
   ]);
-  return buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, opts);
+  return buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment, EffectComposer, RenderPass, UnrealBloomPass, OutputPass }, opts);
 }
 window.SSG.createScene = createScene;
 
-function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canvas, anchors, reducedMotion = false, onProgress = () => {}, onHeroPoints = () => {} }) {
+// Colours come from the CSS tokens so the 3D always matches the page
+function token(THREE, name, fallback) {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return new THREE.Color(v || fallback);
+}
+
+/* Bloom on a transparent canvas: three's blur shaders write alpha = 1, and the bloom is added
+   on top, which would turn the whole canvas opaque. Give each blurred texel an alpha equal to
+   its brightness instead (a valid premultiplied colour), so only the glow itself covers the
+   page. Written against three@0.169.0 (pinned in the import map). */
+function makeBloomComposer({ THREE, EffectComposer, RenderPass, UnrealBloomPass, OutputPass }, renderer, scene, camera, w, h) {
+  const target = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType });
+  const composer = new EffectComposer(renderer, target);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(w, h), BLOOM.strength, BLOOM.radius, BLOOM.threshold);
+  bloom.separableBlurMaterials.forEach((m) => {
+    m.fragmentShader = m.fragmentShader.replace(
+      'gl_FragColor = vec4(diffuseSum/weightSum, 1.0);',
+      'vec3 c = diffuseSum/weightSum; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b)));'
+    );
+    m.needsUpdate = true;
+  });
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+  return composer;
+}
+
+function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress = () => {}, onHeroPoints = () => {} }) {
+  const { THREE, GLTFLoader, DRACOLoader, RoomEnvironment } = libs;
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.setClearColor(0x000000, 0);
@@ -80,27 +117,41 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 400);
   camera.position.set(0, 0, CAM_Z);
 
-  // Environment for metal / glass reflections
+  const GOLD = token(THREE, '--gold', '#E9A94A');
+  const SUN = token(THREE, '--sun', '#FFE2A0');
+
+  // Environment for metal / glass reflections: dimmed so metal reflects a dusk sky, not a studio
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
   scene.environment = envRT.texture;
-  scene.environmentIntensity = 0.85;
+  scene.environmentIntensity = 0.35;
   scene.environmentRotation = new THREE.Euler(0, 0, 0);
 
-  // Soft key from top-left + subtle cool rim
-  const key = new THREE.DirectionalLight(0xffffff, 2.1);
-  key.position.set(-6, 9, 8);
+  // Dusk lighting: a low warm key from the horizon side (the sun sets on the right of the hero),
+  // a cool slate fill from above and a gold rim from behind
+  const key = new THREE.DirectionalLight(GOLD, 2.6);
+  key.position.set(9, 1.6, 6);
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0xc9d4ff, 1.3);
-  rim.position.set(7, 4, -7);
+  const rim = new THREE.DirectionalLight(GOLD, 2.2);
+  rim.position.set(-6, 5, -8);
   scene.add(rim);
-  const fill = new THREE.HemisphereLight(0xffffff, 0x7f8ee8, 0.55);
+  const fill = new THREE.HemisphereLight(0x8c9aad, token(THREE, '--earth', '#2D2820'), 0.45);
   scene.add(fill);
-  // Moving specular highlight across the cells while the panel travels
-  const sweep = new THREE.PointLight(0xffffff, 0, 0, 2);
+  // Moving gold specular highlight across the cells while the panel travels (the low sun on the glass)
+  const sweep = new THREE.PointLight(GOLD, 0, 0, 2);
   scene.add(sweep);
-  const glintLight = new THREE.PointLight(0xfff4d6, 0, 0, 2);
+  const glintLight = new THREE.PointLight(SUN, 0, 0, 2);
   scene.add(glintLight);
+  // Powered by the Sun: warm light from below as the panel lands, so it catches first light
+  const firstLight = new THREE.PointLight(GOLD, 0, 0, 2);
+  scene.add(firstLight);
+
+  let composer = null;
+  try {
+    composer = makeBloomComposer(libs, renderer, scene, camera, window.innerWidth, window.innerHeight);
+  } catch (e) {
+    console.warn('[SSG] bloom unavailable', e);
+  }
 
   // Rig hierarchy: lightPivot (anchor + scale + sway) > lightTilt > model
   const lightPivot = new THREE.Group();
@@ -114,7 +165,7 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
       detach: 0,                      // 0..1 state B
       sun: 0,                         // 0..1 state E
       sunMode: false,
-      ledGlow: 0.6,
+      ledGlow: reducedMotion ? LED_ON : 0,   // off until the load-in flicker (main.js)
       pointerX: 0,
       pointerY: 0,
     },
@@ -122,10 +173,12 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
     renderer,
     glint,
     capturePanel,
+    captureStreetlight,
     dispose,
   };
 
-  let model, panelRig, ledMat, contact;
+  let model, panelRig, ledMat, contact, spot;
+  const panelMats = [];
   const rigRest = new THREE.Matrix4();
   const modelSize = new THREE.Vector3();
   const modelCenter = new THREE.Vector3();
@@ -177,8 +230,9 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
       }
     });
     if (ledMat) {
-      ledMat.emissive = new THREE.Color(0xfff2d0);
+      ledMat.emissive = SUN.clone();
       ledMat.emissiveIntensity = api.state.ledGlow;
+      ledMat.toneMapped = false; // stays bright enough to pass the bloom threshold
     }
 
     // Model bounds at rest (all parents are identity here, so world == model space)
@@ -208,6 +262,16 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
     model.updateMatrixWorld(true);
     panelRig.attach(panel);
     fixings.forEach((f) => panelRig.attach(f));
+    // the glass and frame keep a brighter reflection than the dimmed scene, so the face-on
+    // panel reads as glass catching the dusk sky rather than a black slab
+    panelRig.traverse((o) => {
+      if (o.isMesh && o.material && !o.material.envMap) {
+        o.material = o.material.clone();
+        o.material.envMap = envRT.texture;
+        o.material.envMapIntensity = 0.8;
+        panelMats.push(o.material);
+      }
+    });
     rigRest.copy(panelRig.matrix); // pose relative to the model
 
     // Pivot the light around its bounding-box centre
@@ -222,6 +286,13 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
     contact.position.set(0, box.min.y - modelCenter.y + 0.02, 0);
     lightTilt.add(contact);
 
+    // Warm cone from the lamp head down onto the grass (lives in model space, so it sways with the light)
+    spot = new THREE.SpotLight(0xffd58a, 0, 0, 30 * DEG, 0.9, 2);
+    spot.position.set((ledBox.min.x + ledBox.max.x) / 2, ledBox.min.y, (ledBox.min.z + ledBox.max.z) / 2);
+    // aimed down and back towards the pole, so the pool of light falls on the island
+    spot.target.position.set(lerp(spot.position.x, (poleBox.min.x + poleBox.max.x) / 2, 0.45), box.min.y, lerp(spot.position.z, (poleBox.min.z + poleBox.max.z) / 2, 0.45));
+    model.add(spot, spot.target);
+
     api.ready = true;
     resize();
     renderer.compile(scene, camera);
@@ -232,9 +303,10 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
     c.width = c.height = 128;
     const g = c.getContext('2d');
     const grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-    grd.addColorStop(0, 'rgba(10,20,70,0.55)');
-    grd.addColorStop(0.55, 'rgba(10,20,70,0.18)');
-    grd.addColorStop(1, 'rgba(10,20,70,0)');
+    const night = token(THREE, '--night', '#12171E').getStyle(THREE.SRGBColorSpace).replace('rgb(', '').replace(')', '');
+    grd.addColorStop(0, `rgba(${night},0.6)`);
+    grd.addColorStop(0.55, `rgba(${night},0.2)`);
+    grd.addColorStop(1, `rgba(${night},0)`);
     g.fillStyle = grd;
     g.fillRect(0, 0, 128, 128);
     const tex = new THREE.CanvasTexture(c);
@@ -258,6 +330,8 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
     vw = window.innerWidth;
     vh = window.innerHeight;
     renderer.setSize(vw, vh, false);
+    composer?.setPixelRatio(renderer.getPixelRatio());
+    composer?.setSize(vw, vh);
     camera.aspect = vw / vh;
     camera.updateProjectionMatrix();
     visH = 2 * CAM_Z * Math.tan((FOV / 2) * DEG);
@@ -329,6 +403,7 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
     lightTilt.rotation.set((s.baseTilt ?? LIGHT_TILT) + swayPitch, (s.baseYaw ?? LIGHT_YAW) + yaw, 0);
     lightPivot.updateMatrixWorld(true);
     if (ledMat) ledMat.emissiveIntensity = s.ledGlow;
+    if (spot) spot.intensity = SPOT_ON * (s.ledGlow / LED_ON) * scale * scale;
 
     // --- panel: attached pose
     mTmp.multiplyMatrices(model.matrixWorld, rigRest);
@@ -358,8 +433,13 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
       panelRig.scale.setScalar(scaleS);
       const panelRect = { top: rS.top + offsetPx - rS.height, bottom: rS.bottom + offsetPx + rS.height, left: rS.left, right: rS.right };
       panelRig.visible = onScreen(panelRect);
-      sweepK = Math.sin(clamp01(s.sun) * Math.PI) * 0.8;
+      sweepK = Math.max(Math.sin(clamp01(s.sun) * Math.PI) * 0.8, 0.15 * clamp01(s.sun));
+      const span = panelWidth * scaleS;
+      firstLight.position.copy(pS).add(tmp3.set(0, -span * 0.9, span * 0.7));
+      firstLight.distance = span * 3;
+      firstLight.intensity = smooth(clamp01((s.sun - 0.55) / 0.45)) * 22 * scaleS * scaleS;
     } else {
+      firstLight.intensity = 0;
       const p = reducedMotion ? 0 : clamp01(s.detach);
       // lift + wobble (0–15%)
       const lift = smooth(clamp01(p / 0.15));
@@ -392,6 +472,8 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
       panelRig.quaternion.copy(qT);
       panelRig.scale.setScalar(sc);
 
+      // once landed, a faint gold sheen keeps drifting across the cells
+      if (p > 0.7) sweepK = Math.max(sweepK, 0.15);
       const whyVisible = onScreen(rW, rW.height);
       panelRig.visible = p < 0.15 ? lightVisible : (whyVisible || lightVisible);
     }
@@ -420,7 +502,8 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
 
     model.visible = lightVisible;
     if (visible) {
-      renderer.render(scene, camera);
+      if (composer) composer.render(dt);
+      else renderer.render(scene, camera);
       lastVisible = true;
     } else if (lastVisible || needsRender) {
       renderer.clear();
@@ -465,8 +548,20 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
     contact.visible = false;
     const pm = new THREE.PMREMGenerator(rt);
     scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+    // the page's env map lives in the page's WebGL context: give the panel this renderer's copy
+    panelMats.forEach((m) => { m.envMap = scene.environment; });
+    // the faint gold sheen the landed panel has on the page
+    const savedSweep = sweep.intensity;
+    const span = size.x * panelRig.scale.x;
+    sweep.position.set(-0.25 * span, span * 0.3, span * 1.1);
+    sweep.distance = span * 3;
+    sweep.intensity = 0.1 * 14 * panelRig.scale.x * panelRig.scale.x;
     rt.render(scene, cam);
     const blob = await new Promise((r) => rt.domElement.toBlob(r, 'image/webp', 0.9));
+    sweep.intensity = savedSweep;
+    panelMats.forEach((m) => { m.envMap = envRT.texture; });
+    pm.dispose();
+    needsRender = true;
     Object.assign(panelRig.position, saved.p);
     panelRig.quaternion.copy(saved.q);
     panelRig.scale.copy(saved.s);
@@ -475,6 +570,59 @@ function buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment }, { canva
     contact.visible = true;
     scene.environment = saved.env;
     rt.dispose();
+    return blob;
+  }
+
+  // Dev helper: render the whole street light (LED on, bloom, dusk lighting) to a transparent
+  // WebP the size of #anchor-streetlight's aspect, for the mobile / no-WebGL / reduced-motion fallback
+  async function captureStreetlight(w = 800, h = 1375) {
+    const rt = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
+    rt.setPixelRatio(1);
+    rt.setSize(w, h, false);
+    rt.setClearColor(0, 0);
+    rt.outputColorSpace = THREE.SRGBColorSpace;
+    rt.toneMapping = renderer.toneMapping;
+    rt.toneMappingExposure = renderer.toneMappingExposure;
+    const cam = new THREE.PerspectiveCamera(FOV, w / h, 0.1, 400);
+    cam.position.set(0, 0, CAM_Z);
+    const vH = 2 * CAM_Z * Math.tan((FOV / 2) * DEG);
+    const saved = {
+      p: lightPivot.position.clone(), s: lightPivot.scale.clone(), r: lightTilt.rotation.clone(),
+      led: ledMat?.emissiveIntensity, spot: spot.intensity, mv: model.visible, rv: panelRig.visible, sweep: sweep.intensity, env: scene.environment,
+      rp: panelRig.position.clone(), rq: panelRig.quaternion.clone(), rs: panelRig.scale.clone(),
+    };
+    // the rest pose the hero shows once the load-in has finished
+    lightPivot.position.set(0, 0, 0);
+    lightPivot.scale.setScalar(vH / modelSize.y);
+    lightTilt.rotation.set(LIGHT_TILT, LIGHT_YAW, 0);
+    lightPivot.updateMatrixWorld(true);
+    mTmp.multiplyMatrices(model.matrixWorld, rigRest).decompose(panelRig.position, panelRig.quaternion, panelRig.scale);
+    model.visible = panelRig.visible = true;
+    if (ledMat) ledMat.emissiveIntensity = LED_ON;
+    spot.intensity = SPOT_ON * lightPivot.scale.x * lightPivot.scale.x;
+    sweep.intensity = 0;
+    const pm = new THREE.PMREMGenerator(rt);
+    scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+    panelMats.forEach((m) => { m.envMap = scene.environment; });
+    const comp = makeBloomComposer(libs, rt, scene, cam, w, h);
+    comp.render();
+    const blob = await new Promise((r) => rt.domElement.toBlob(r, 'image/webp', 0.92));
+    lightPivot.position.copy(saved.p);
+    lightPivot.scale.copy(saved.s);
+    lightTilt.rotation.copy(saved.r);
+    if (ledMat) ledMat.emissiveIntensity = saved.led;
+    spot.intensity = saved.spot;
+    model.visible = saved.mv;
+    panelRig.visible = saved.rv;
+    panelRig.position.copy(saved.rp);
+    panelRig.quaternion.copy(saved.rq);
+    panelRig.scale.copy(saved.rs);
+    sweep.intensity = saved.sweep;
+    scene.environment = saved.env;
+    panelMats.forEach((m) => { m.envMap = envRT.texture; });
+    pm.dispose();
+    rt.dispose();
+    needsRender = true;
     return blob;
   }
 

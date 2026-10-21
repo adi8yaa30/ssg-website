@@ -241,7 +241,7 @@ function buildHeroIntro() {
   const split = SplitText.create('.hero__line', { type: 'chars', mask: 'chars' });
   gsap.set('.hero__title', { opacity: 1 });
   tl.from(split.chars, { yPercent: 110, duration: 1.6, stagger: 0.025, onComplete: () => split.revert() }, 0)
-    .fromTo('.hero__sun', { clipPath: 'inset(100% -20% 0% -20%)', y: 40 }, { clipPath: 'inset(-50% -20% 0% -20%)', y: 0, duration: 1.6 }, 0.15)
+    .fromTo('.hero__sun', { clipPath: 'inset(100% -240px 0% -240px)', y: 40 }, { clipPath: 'inset(-100% -240px 0% -240px)', y: 0, duration: 1.6 }, 0.15)
     .from('.hero__sub', { y: 26, opacity: 0, duration: 1.6 }, 0.45)
     .from('.hero__ctas .btn', { y: 20, opacity: 0, duration: 1.6, stagger: 0.08 }, 0.6)
     .add(() => whileVisible(hero, gsap.to('.hero__sun', { y: -8, duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1 })), 1.7);
@@ -249,8 +249,12 @@ function buildHeroIntro() {
   if (sceneApi) {
     tl.to(canvas, { opacity: 1, duration: 0.7 }, 0.05)
       .to(sceneApi.state, { intro: 1, duration: 1.6 }, 0.05)
-      .to(sceneApi.state, { ledGlow: 3.4, duration: 0.45 }, 1.05)
-      .to(sceneApi.state, { ledGlow: 0.9, duration: 1.3 }, 1.5);
+      // the street light switches on as it finishes rising: two quick blinks, then steady
+      .to(sceneApi.state, { keyframes: [
+        { ledGlow: 3.5, duration: 0.05, ease: 'none' }, { ledGlow: 0, duration: 0.09, ease: 'none' },
+        { ledGlow: 3.5, duration: 0.05, ease: 'none' }, { ledGlow: 0.3, duration: 0.14, ease: 'none' },
+        { ledGlow: 3.5, duration: 0.35, ease: 'power2.out' },
+      ] }, 1.25);
   } else {
     tl.from('#anchor-streetlight img', { y: 40, opacity: 0, duration: 1.6 }, 0.1);
   }
