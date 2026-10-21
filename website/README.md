@@ -14,7 +14,7 @@ cd website && python3 -m http.server 5173
 
 Then open http://localhost:5173.
 
-If you change `ssg-streetlight.web.glb`, `cta-skyline.svg`, `footer-landscape.svg` or `national-flag.webp`, regenerate the embedded copies:
+If you change `ssg-streetlight.web.glb`, `cta-skyline.svg`, `footer-landscape.svg`, `national-flag.webp` or the four process step drawings in `assets/07-process/`, regenerate the embedded copies:
 
 ```bash
 cd website && python3 tools/embed-local-assets.py

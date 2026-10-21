@@ -214,8 +214,10 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
   let artsReady;
   function loadArts() {
     artsReady ||= Promise.all(STEPS.map(async (s, i) => {
-      const res = await fetch(`assets/07-process/${s.art}.svg`);
-      const doc = new DOMParser().parseFromString(await res.text(), 'image/svg+xml');
+      // opened from disk (file://), fetch() is blocked: read the embedded copy instead
+      const src = `assets/07-process/${s.art}.svg`;
+      const text = window.SSG.isFile ? await window.SSG.readLocal(src) : await (await fetch(src)).text();
+      const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
       const art = doc.getElementById('lineart');   // skips the file's white background rect
       if (!art) return;
       const node = document.importNode(art, true);

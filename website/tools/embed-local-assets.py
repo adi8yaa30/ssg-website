@@ -10,7 +10,8 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-TEXT = ["assets/08-cta/cta-skyline.svg", "assets/09-footer/footer-landscape.svg"]
+TEXT = ["assets/08-cta/cta-skyline.svg", "assets/09-footer/footer-landscape.svg",
+        *(f"assets/07-process/{n}.svg" for n in ("site-survey", "configuration", "quality-check", "installation"))]
 BINARY = ["assets/01-hero/model/ssg-streetlight.web.glb", "assets/04-flag/national-flag.webp"]
 
 def write(path, value):
