@@ -336,6 +336,7 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
     const first = !open;
     open = true;
     current = i;
+    diamond.classList.add('is-open');
     gsap.to(state, { t: 1, duration: 0.55 * D, onUpdate: render, overwrite: true });
     showText(i, first ? 0.3 : 0);
     showArt(i, first ? 0.25 : 0.05);
@@ -346,6 +347,7 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
     if (!open) return;
     open = false;
     current = -1;
+    diamond.classList.remove('is-open');
     gsap.killTweensOf(lineEl);
     gsap.to(lineEl, { opacity: 0, duration: 0.2 * D });
     if (shown >= 0) gsap.to(artGroups[shown], { opacity: 0, duration: 0.25 * D, overwrite: true });
