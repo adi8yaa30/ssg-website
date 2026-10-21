@@ -343,6 +343,13 @@ html:not(.js) .preloader { display: none; }
           mask-image: linear-gradient(90deg, transparent 0, #000 calc(var(--S) * var(--over)));
 }
 .slide__photo img { display: block; width: 100%; height: auto; }
+/* interim dusk grade for the daytime product photos (cut out onto --night, §12.7) */
+.slide__photo img, .slide__land img, .pview__photo img { filter: brightness(.7) saturate(.75) sepia(.12); }
+/* the lamp in each photo is switched on: a soft warm glow at its head */
+.slide__lamp { position: absolute; left: calc(var(--lx) * 100%); top: calc(var(--ly) * 100%); width: 9%; aspect-ratio: 1;
+  translate: -50% -50%; border-radius: 50%; pointer-events: none; opacity: .3; filter: blur(6px);
+  background: radial-gradient(circle, var(--sun) 0%, color-mix(in srgb, var(--gold) 60%, transparent) 35%, transparent 68%); }
+.slide__lamp--ring { width: 15%; aspect-ratio: 2 / 1; }
 /* one product at a time (desktop): every product is a full-width page laid
    out on the 1728 design centred in it; only the current one's details show */
 .products.is-paged { --gut: calc((100vw - var(--S)) / 2); --fade: calc(var(--S) * .05); }
@@ -414,7 +421,8 @@ html:not(.js) .preloader { display: none; }
 
 .slide__right { left: calc(1258 * var(--pu)); top: calc(221 * var(--pu)); width: calc(420 * var(--pu)); }
 .slide__blueprint { width: calc(393 * var(--pu)); }
-.slide__blueprint img { width: 100%; height: auto; mix-blend-mode: multiply; }
+/* blueprint-dusk.webp: warm-white lines on transparent (tools/cutout-products.py, §12.6) */
+.slide__blueprint img { width: 100%; height: auto; }
 .slide__iconrow { display: flex; align-items: center; gap: calc(28 * var(--pu)); margin-top: calc(40 * var(--pu)); min-height: calc(85 * var(--pu)); }
 .slide__blueprint--wide + .slide__iconrow { margin-top: calc(155 * var(--pu)); }
 .slide__icon--layers { width: calc(142 * var(--pu)); height: calc(85 * var(--pu)); }
@@ -482,7 +490,9 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
   width: calc(1185 * var(--u)); height: calc(888 * var(--u));
   background: center / 100% 100% no-repeat;
   will-change: transform;
+  filter: brightness(.72) saturate(.7) sepia(.15);
 }
+.tile::after { content: ""; position: absolute; inset: 0; background: var(--night); opacity: .25; pointer-events: none; }
 .mission__head { position: absolute; right: calc(32 * var(--u)); top: calc(196 * var(--u)); width: calc(380 * var(--u)); text-align: right; }
 .mission__title { font-size: calc(37 * var(--u)); font-weight: 400; line-height: 1.2; margin-right: calc(6 * var(--u)); }
 .mission__text { margin-top: calc(20 * var(--u)); font-size: calc(22.5 * var(--u)); line-height: calc(29 * var(--u)); }
@@ -530,7 +540,10 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
 .flag__dimension .dim__line { stroke-dasharray: 6 5; }
 .flag__dimension > span { font-size: max(11px, calc(15 * var(--u))); white-space: nowrap; }
 .flag__project { position: absolute; left: calc(80 * var(--u)); top: calc(603 * var(--u)); width: calc(381 * var(--u)); }
-.flag__project img { width: 100%; height: calc(343 * var(--u)); object-fit: cover; }
+.flag__project img { width: 100%; height: calc(343 * var(--u)); object-fit: cover; filter: brightness(.72) saturate(.7) sepia(.15); }
+.flag__project-shade { position: absolute; left: 0; top: 0; width: 100%; height: calc(343 * var(--u)); background: var(--night); opacity: .25; pointer-events: none; }
+.flag__project img.flag__project-true { position: absolute; left: 0; top: 0; filter: none;
+  -webkit-mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 901" preserveAspectRatio="none"%3E%3Cfilter id="f"%3E%3CfeGaussianBlur stdDeviation="2"/%3E%3C/filter%3E%3Cpolygon points="444,58 458,62 475,95 500,150 525,205 548,250 570,290 590,330 607,362 596,364 575,352 552,335 538,300 520,262 498,245 470,228 447,222" filter="url%28%23f%29"/%3E%3C/svg%3E') 0 0 / 100% 100% no-repeat; mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 901" preserveAspectRatio="none"%3E%3Cfilter id="f"%3E%3CfeGaussianBlur stdDeviation="2"/%3E%3C/filter%3E%3Cpolygon points="444,58 458,62 475,95 500,150 525,205 548,250 570,290 590,330 607,362 596,364 575,352 552,335 538,300 520,262 498,245 470,228 447,222" filter="url%28%23f%29"/%3E%3C/svg%3E') 0 0 / 100% 100% no-repeat; }
 .flag__project figcaption { margin-top: calc(16 * var(--u)); width: calc(240 * var(--u)); font-size: max(10px, calc(16.5 * var(--u))); line-height: calc(20 * var(--u)); }
 .flag__project figcaption span { display: block; }
 .flag__project figcaption { color: var(--ash); }
@@ -552,8 +565,8 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
 .logos__title { position: absolute; left: 0; right: 0; top: calc(38 * var(--u)); text-align: center; font-size: calc(40 * var(--u)); font-weight: 400; line-height: 1.2; }
 .logos__viewport { position: absolute; left: calc(103 * var(--u)); right: calc(78 * var(--u)); top: calc(112 * var(--u)); }
 .logos__row { display: flex; justify-content: space-between; }
-.logo { width: calc(179 * var(--u)); height: calc(179 * var(--u)); transition: transform .5s var(--ease), opacity .4s var(--ease); }
-.logo img { width: 100%; height: 100%; }
+.logo { width: calc(179 * var(--u)); height: calc(179 * var(--u)); padding: 16px; background: var(--text); border-radius: 12px; transition: transform .5s var(--ease), opacity .4s var(--ease); }
+.logo img { width: 100%; height: 100%; object-fit: contain; }
 .logos__row:hover .logo { opacity: .5; }
 .logos__row.is-marquee { justify-content: flex-start; width: max-content; gap: calc(60 * var(--u)); }
 .logos__viewport:has(.is-marquee) { overflow: hidden; left: 0; right: 0; }
@@ -706,7 +719,7 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
 .pview__desc { font-size: 15px; line-height: 1.45; color: var(--ash); }
 .pview__specs { display: grid; gap: 4px; padding: 14px 16px; background: var(--night); border: 1px solid var(--line); color: var(--text); font-size: 13px; }
 .pview__tags { display: grid; gap: 4px; font-size: 12px; color: var(--ash); }
-.pview__blueprint img { width: 100%; max-height: 150px; object-fit: contain; object-position: left; mix-blend-mode: multiply; }
+.pview__blueprint img { width: 100%; max-height: 150px; object-fit: contain; object-position: left; }
 .pview__chem, .pview__lines { font-size: 12px; line-height: 1.5; }
 .pview__chem:empty, .pview__lines:empty { display: none; }
 .pview__quote { justify-self: start; margin-top: 6px; }
@@ -841,8 +854,9 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
   .flag__flag { position: relative; order: 3; left: auto; top: auto; width: 62vw; height: 93vw; margin: 10px 0 -52vw 6vw; z-index: 1; }
   .flag__banner { position: relative; left: auto; top: auto; width: 100%; height: 52vw; order: 4; }
   .flag__dimension { display: none; }
-  .flag__project { order: 5; }
+  .flag__project { order: 5; position: relative; }
   .flag__project img { height: auto; aspect-ratio: 1000 / 901; }
+  .flag__project-shade { height: auto; aspect-ratio: 1000 / 901; }
   .flag__project figcaption { width: auto; font-size: 12px; line-height: 1.4; }
   .flag__cta { order: 6; align-self: flex-start; }
 
