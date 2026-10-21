@@ -5,16 +5,36 @@
    below), so `calc(N * var(--u))` reproduces the design at any desktop size.
    ========================================================================== */
 :root {
-  /* Colour */
-  --blue:        #2744DF;   /* primary brand blue: section bgs, headings, buttons */
-  --white:       #FFFFFF;
-  --sun:         #F5DB68;   /* hero semicircle sun */
-  --callout:     #F5DB68;   /* hero callout outline + leader lines */
-  --ink:         #0E1424;
-  --blue-10:     rgba(39, 68, 223, .10);
-  --white-30:    rgba(255, 255, 255, .30);
-  --white-10:    rgba(255, 255, 255, .10);
-  --hero-gradient: linear-gradient(180deg, #FFFFFF 0%, #2744DF 100%);
+  /* Colour: dark "Golden Dusk" theme (build instructions §12.2) */
+  /* Base: slates sampled from the reference sky */
+  --night:      #12171E;   /* main page background (darkest sky) */
+  --deep:       #1E2630;   /* alternate sections, cards, panels (upper sky) */
+  --dusk:       #2E3742;   /* lifted surfaces, hover fills (mid sky) */
+  --haze:       #4E4A45;   /* warm grey: borders, dividers, the horizon haze */
+  --earth:      #2D2820;   /* ground tones: grass/tree shadows, footer base */
+
+  /* Light: the only bright colours on the site */
+  --gold:       #E9A94A;   /* PRIMARY ACCENT: lines, buttons, icons, pulses, highlights */
+  --amber:      #B9772E;   /* deep gold: shadow side of lines, pressed states */
+  --sun:        #FFE2A0;   /* sun core, LED glow tint, brightest highlights */
+
+  /* Text */
+  --text:       #F2EEE6;   /* warm white: never pure #FFF */
+  --ash:        #A4A7AD;   /* secondary text, mono labels */
+
+  /* Brand blue: RESTRICTED, see 12.3 */
+  --brand-blue: #2744DF;
+
+  /* Lines & glass */
+  --line:       rgba(242, 238, 230, .14);  /* grid lines, card borders */
+  --glass:      rgba(242, 238, 230, .05);  /* glass card fill */
+  --gold-glow:  0 0 18px rgba(233, 169, 74, .45);
+
+  /* Gradients */
+  --hero-gradient: linear-gradient(180deg,
+      #12171E 0%, #1E2630 35%, #2E3742 62%, #4E4A45 80%, #8A6A3A 92%, #E9A94A 97%, #FFE2A0 100%);
+  --why-gradient:  linear-gradient(180deg, #2E3742 0%, #1E2630 40%, #12171E 100%);
+  --sun-gradient:  linear-gradient(180deg, #12171E 0%, #2E3742 55%, #4E4A45 80%, #8A6A3A 94%, #E9A94A 100%);
 
   /* Type */
   --f-display: "Unbounded", "Helvetica Neue", Arial, sans-serif;

@@ -21,7 +21,8 @@ const STEPS = [
 
 // ---- Scene loops: small moments that play on repeat while a step is open ----
 // Coordinates are in each drawing's own viewBox units.
-const SUN = '#F5DB68';
+const css = getComputedStyle(document.documentElement);
+const SUN = css.getPropertyValue('--gold').trim() || '#E9A94A';
 const glow = (parent, x, y, r) => el('circle', { cx: x, cy: y, r, fill: 'url(#diamond-glow)', opacity: 0 }, parent);
 const SCENES = [
   // 01 site survey: the total station's beam sweeps to the planned pole, which glows into place
@@ -163,7 +164,7 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
   render();
 
   // idle pulse halo for quadrant 01
-  const halo = el('path', { d: quadPaths[0].getAttribute('d'), fill: 'none', stroke: '#fff', 'stroke-width': 2, opacity: 0, class: 'diamond__halo' });
+  const halo = el('path', { d: quadPaths[0].getAttribute('d'), fill: 'none', stroke: SUN, 'stroke-width': 2, opacity: 0, class: 'diamond__halo' });
   quadsG.parentNode.insertBefore(halo, quadsG);
 
   // rotated labels + numbers

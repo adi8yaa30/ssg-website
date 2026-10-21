@@ -322,6 +322,7 @@ function buildChoreography() {
   gsap.set(pulses, { drawSVG: '0% 0%', opacity: 0 });
   const icons = cards.map((c) => $$('.card__icon path', c));
   gsap.set(icons.flat(), { drawSVG: '0%', fillOpacity: 0 });
+  gsap.set(cards, { '--on': 0 }); // icon + status dot turn gold when the pulse arrives
 
   const tlC = gsap.timeline({
     scrollTrigger: { trigger: why, start: () => whyPin.start + innerHeight * 0.5, end: () => whyPin.end - innerHeight * 0.05, scrub: 1 },
@@ -337,7 +338,7 @@ function buildChoreography() {
       .to(card, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.5 }, at + 0.7)
       .to(icons[i], { drawSVG: '100%', duration: 0.5, stagger: 0.05, ease: 'none' }, at + 0.8)
       .to(icons[i], { fillOpacity: 1, duration: 0.3 }, at + 1.2)
-      .to(card.querySelector('.card__status'), { backgroundColor: '#F5DB68', boxShadow: '0 0 10px 2px rgba(245,219,104,.8)', duration: 0.2 }, at + 1.1);
+      .to(card, { '--on': 1, duration: 0.2 }, at + 1.1);
   });
   tlC.to({}, { duration: 0.4 });
 
