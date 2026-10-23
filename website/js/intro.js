@@ -22,9 +22,9 @@ const SEEN_KEY = 'ssg-intro-seen';
 
 const DEG = Math.PI / 180;
 const FOV = 35;            // architectural framing for the establishing shot
-const FOV_FAST = 47;       // widens through the doorway for a sense of speed
+const FOV_FAST = 47;       // widens as the light takes over, for a sense of speed
+const FOV_INSIDE = 40;     // a little wider inside the showroom
 const MIN_HFOV = 38;       // narrow windows widen the lens so the store still fits
-const ENTER_AT = 0.9;      // scroll progress at which the transition into the site commits
 const PR_SLOW = 1.75;
 const PR_FAST = 1.25;      // pixel ratio while the camera is moving fast
 
@@ -33,14 +33,36 @@ const EXPOSURE = 0.95;
 const BLOOM = { strength: 0.42, radius: 0.55, threshold: 1.0 };
 const DOWNLIGHT = 2.6;       // candela per interior downlight (the GLB's Blender values are ~4900)
 
-// Camera path: wide shot across the lawn -> eye level at the doors -> through the doorway
-const PATH = [
-  [0, 3.0, 23.5], [0.3, 2.55, 16.5], [0.15, 2.0, 12.5], [0, 1.66, 8.8], [0, 1.6, 7.5], [0, 1.62, 1.6], [0, 1.68, -2.6],
+/* The visit, in stages of progress p (0..1). Scrolling sets where the camera is heading; it gets
+   there no faster than each stage's minimum duration, so even one hard trackpad swipe plays the
+   whole visit (~8.5 s). At ENTER_AT the transition into the site commits (one way). */
+const STAGES = [
+  // [name, from, to, minimum seconds]
+  ['approach', 0, 0.40, 2.8],     // across the lawn to the doors, easing down to eye level
+  ['doors', 0.40, 0.55, 1.8],     // the glass doors slide apart, the interior brightens
+  ['inside', 0.55, 0.85, 2.8],    // walk through the doorway into the showroom
+  ['wall', 0.85, 0.95, 1.2],      // settle in front of the SSG feature wall
 ];
-const Z_ENTRANCE = 8.8;    // where the camera arrives (55%)
-const Z_HOLD = 7.5;        // where it has crept to while the doors finish opening (65%)
+const ENTER_AT = 0.95;     // then the light takes over (0.95 → 1 plays on a clock after the commit)
+const pace = (p) => {
+  const st = STAGES.find(([, a, b]) => p < b) || STAGES[STAGES.length - 1];
+  return (st[2] - st[1]) / st[3];   // progress per second
+};
+// the warm glow overlay before the commit: a hint of it as the camera settles at the wall
+const preGlow = (p) => 0.18 * smooth(range(p, 0.9, ENTER_AT));
+
+// Camera path: wide shot across the lawn -> eye level at the doors -> through the doorway -> the wall
+const PATH = [
+  [0, 3.0, 23.5], [0.3, 2.55, 16.5], [0.15, 2.0, 12.5], [0, 1.66, 8.8], [0, 1.6, 7.6],
+  [0, 1.6, 4.6], [0, 1.62, 1.9], [0, 1.66, 1.1], [0, 1.72, -3.2],
+];
+const Z_DOOR = 8.8;        // the camera stops here as the doors start to open
+const Z_DOOR_HOLD = 7.6;   // and creeps to here while they finish
+const Z_INSIDE = 1.9;     // inside the showroom
+const Z_WALL = 1.1;       // settled in front of the feature wall (the light push continues to the end)
 const LOOK_WIDE = [0, 2.0, 3];
-const LOOK_IN = [0, 1.62, -5.5];
+const LOOK_DOOR = [0, 1.65, -5.5];
+const LOOK_WALL = [0, 2.05, -5.5];   // the SSG logo on the timber wall
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -329,16 +351,22 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     }
     return best;
   };
-  const U_E = uAtZ(Z_ENTRANCE);
-  const U_H = uAtZ(Z_HOLD);
+  const U_DOOR = uAtZ(Z_DOOR);
+  const U_HOLD = uAtZ(Z_DOOR_HOLD);
+  const U_IN = uAtZ(Z_INSIDE);
+  const U_WALL = uAtZ(Z_WALL);
   const lookWide = new THREE.Vector3(...LOOK_WIDE);
-  const lookIn = new THREE.Vector3(...LOOK_IN);
+  const lookDoor = new THREE.Vector3(...LOOK_DOOR);
+  const lookWall = new THREE.Vector3(...LOOK_WALL);
 
+  // each stage eases in and out, so the camera slows into the doors and settles at the wall
   function pathU(p) {
-    if (p <= 0.55) return U_E * sineInOut(p / 0.55);                    // dolly to the doors, eye level
-    if (p <= 0.65) return lerp(U_E, U_H, (p - 0.55) / 0.1);             // creep while the doors open
-    const t = range(p, 0.65, 1);
-    return lerp(U_H, 1, t * t * (1.6 - 0.6 * t));                        // accelerate through the doorway
+    if (p <= 0.40) return U_DOOR * sineInOut(p / 0.40);
+    if (p <= 0.55) return lerp(U_DOOR, U_HOLD, inOut(range(p, 0.40, 0.55)));
+    if (p <= 0.85) return lerp(U_HOLD, U_IN, sineInOut(range(p, 0.55, 0.85)));
+    if (p <= ENTER_AT) return lerp(U_IN, U_WALL, sineInOut(range(p, 0.85, ENTER_AT)));
+    const t = range(p, ENTER_AT, 1);
+    return lerp(U_WALL, 1, t * t);                                       // pushed into the light
   }
 
   const camPos = new THREE.Vector3();
@@ -387,25 +415,30 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     camPos.x += Math.sin(t * 0.21) * 0.06 * drift;
     camPos.y += Math.sin(t * 0.17 + 1.3) * 0.03 * drift;
     camPos.z += Math.cos(t * 0.13) * 0.05 * drift;
-    look.copy(lookWide).lerp(lookIn, sineInOut(range(p, 0.0, 0.58)));
+    look.copy(lookWide).lerp(lookDoor, sineInOut(range(p, 0.0, 0.42)));
+    look.lerp(lookWall, sineInOut(range(p, 0.55, 0.85)));
+    // walking in, the eye drifts across the showroom (a glance right, then back to the wall)
+    look.x += Math.sin(range(p, 0.58, 0.88) * Math.PI) * 0.9;
     look.x += Math.sin(t * 0.19 + 0.6) * 0.03 * drift;
     camera.position.copy(camPos);
     camera.lookAt(look);
-    camera.fov = lerp(fovBase, fovBase + (FOV_FAST - FOV), Math.pow(range(p, 0.65, 1), 1.6));
+    camera.fov = fovBase + (FOV_INSIDE - FOV) * sineInOut(range(p, 0.55, 0.85)) + (FOV_FAST - FOV_INSIDE) * Math.pow(range(p, ENTER_AT, 1), 1.6);
     camera.updateProjectionMatrix();
     sky.position.copy(camera.position);
     ridges.position.set(camera.position.x, 0, camera.position.z);
 
-    // doors slide apart 45–70 %
-    const open = inOut(range(p, 0.45, 0.7));
+    // doors slide apart
+    const open = inOut(range(p, 0.40, 0.55));
     if (doorL) {
       doorL.position.x = doorL.userData.x0 - 1.2 * open;
       doorR.position.x = doorR.userData.x0 + 1.2 * open;
     }
 
-    // the interior brightens as the doors open, then light and bloom swell through the doorway
-    const swell = smooth(range(p, 0.68, 1));
-    const interior = 0.62 + 0.38 * open + 1.6 * swell;
+    // the interior brightens as the doors open and a touch more inside; light and bloom only swell
+    // once the visit is over and the light takes over
+    const inside = smooth(range(p, 0.55, 0.85));
+    const swell = smooth(range(p, ENTER_AT, 1)) + 0.15 * smooth(range(p, 0.85, ENTER_AT));
+    const interior = 0.62 + 0.38 * open + 0.15 * inside + 1.6 * swell;
     downlights.forEach((l) => { l.intensity = DOWNLIGHT * interior; });
     spill.intensity = 2.5 * open + 6 * swell;
     ['M_EmitCeiling', 'M_EmitGlow'].forEach((n) => { if (mats[n]) mats[n].emissiveIntensity = mats[n].userData.base * interior; });
@@ -554,6 +587,7 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
   let store = null;
   let tick = null;
   let scrub = null;
+  let follow = null;
   let committed = false;
   let resolveEntered;
   const entered = new Promise((r) => { resolveEntered = r; });
@@ -575,21 +609,36 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
   // ---- Start: called once the preloader has opened onto the intro
   function start() {
     if (mode === '3d') {
-      tick = (_t, dt) => store.frame(Math.min(dt, 50) / 1000);
-      gsap.ticker.add(tick);
-      // scroll 0 → 100 % of 250vh drives the flight; at 90 % the transition commits (one way)
-      scrub = gsap.to(store.state, {
+      // scroll (400vh, pinned) sets where the camera is heading; the camera follows at the visit's
+      // pace, so a fast swipe still walks the whole route instead of jumping to the site
+      const target = { p: 0 };
+      scrub = gsap.to(target, {
         p: 1, ease: 'none',
         scrollTrigger: {
-          trigger: el, start: 'top top', end: () => `+=${window.innerHeight * 2.5}`, scrub: 1, pin: stage, anticipatePin: 1,
-        },
-        onUpdate: () => {
-          const p = store.state.p;
-          gsap.set([label, hint], { opacity: 1 - smooth(range(p, 0, 0.05)) });
-          gsap.set(glow, { opacity: 0.88 * smooth(range(p, 0.76, ENTER_AT)) });
-          if (p >= ENTER_AT) commit();
+          trigger: el, start: 'top top', end: () => `+=${window.innerHeight * 4}`, scrub: 0.4, pin: stage, anticipatePin: 1,
         },
       });
+      follow = { target, paused: false };
+      let shownLabels = -1, shownGlow = -1;
+      tick = (_t, ms) => {
+        const dt = Math.min(ms, 50) / 1000;
+        const st = store.state;
+        if (!committed && !follow.paused) {
+          const rate = pace(st.p);
+          // ease towards the scroll position, never faster than the stage allows (a little faster back)
+          const step = (target.p - st.p) * Math.min(1, dt * 3.2);
+          st.p = Math.min(ENTER_AT, st.p + Math.max(-1.5 * rate * dt, Math.min(rate * dt, step)));
+          if (st.p >= ENTER_AT - 0.002) commit();
+        }
+        const labels = 1 - smooth(range(st.p, 0, 0.04));
+        if (labels !== shownLabels) { label.style.opacity = hint.style.opacity = labels; shownLabels = labels; }
+        if (!committed) {
+          const g = preGlow(st.p);
+          if (g !== shownGlow) { glow.style.opacity = g; shownGlow = g; }
+        }
+        store.frame(dt);
+      };
+      gsap.ticker.add(tick);
     } else {
       // video / static: the page doesn't scroll yet; the first scroll, swipe, key or tap enters
       const go = (e) => {
@@ -647,8 +696,8 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
         st?.kill(false);
       }
       // keep flying forward into the light (faster when skipped from the establishing shot)
-      tl.to(store.state, { p: 1, duration: skipped ? 1.1 : 0.7, ease: skipped ? 'power2.inOut' : 'power1.in' }, 0);
-      tl.to(glow, { opacity: 1, duration: skipped ? 0.9 : 0.6, ease: 'power2.in' }, skipped ? 0.2 : 0.1);
+      tl.to(store.state, { p: 1, duration: skipped ? 1.1 : 1.2, ease: skipped ? 'power2.inOut' : 'power1.in' }, 0);
+      tl.to(glow, { opacity: 1, duration: skipped ? 0.9 : 1.0, ease: 'power2.in' }, skipped ? 0.2 : 0.2);
     } else {
       tl.to(glow, { opacity: 1, duration: skipped ? 0.5 : 0.35, ease: 'power1.in' }, 0);
     }
@@ -713,11 +762,18 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
   const api = { mode, loaded, entered, start, commit, teardown, reveal, abort, get store() { return store; } };
   if (debug) {
     // QA helpers: pose the live scene, measure the GPU cost, compare glass materials
-    api.setProgress = (p) => { if (store) store.state.p = p; gsap.set(glow, { opacity: 0.88 * smooth(range(p, 0.76, ENTER_AT)) }); };
+    // pose the visit at p and hold it there (QA screenshots); setProgress(null) hands control back to the scroll
+    api.setProgress = (p) => {
+      if (!store || !follow) return;
+      follow.paused = p !== null;
+      if (p !== null) { store.state.p = p; glow.style.opacity = preGlow(p); }
+    };
   }
   return api;
 }
 
 window.SSG.createIntro = createIntro;
+// shared with tools/render-intro-media.mjs, so the fallback video keeps the live visit's pacing
+window.SSG.introPacing = { STAGES, ENTER_AT, pace, preGlow };
 window.SSG.paintIntroGlow = paintGlow;
 })();

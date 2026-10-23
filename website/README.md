@@ -37,7 +37,9 @@ The `dark-theme` branch has the **dark "Golden Dusk" theme** (post-sunset, muted
 
 ## Store intro
 
-The first thing a visitor sees is the SSG store at dusk (`js/intro.js`). Scrolling (250vh, pinned) flies the camera over the paving to the entrance, the glass doors slide open, the camera passes through, and the warm interior light collapses onto the hero's gold horizon line, which sweeps away to reveal the home page. It is one-way: the intro is removed from the DOM and its GPU resources are disposed, so scrolling back up stays on the hero.
+The first thing a visitor sees is the SSG store at dusk (`js/intro.js`). Scrolling (400vh, pinned) walks the camera over the paving to the entrance, the glass doors slide open, the camera steps through into the showroom and settles in front of the glowing SSG wall; then the warm light takes over and collapses onto the hero's gold horizon line, which sweeps away to reveal the home page.
+
+- **Pacing.** Scrolling sets where the camera is heading, but it travels there no faster than each stage allows (`STAGES` in `intro.js`: approach 2.8 s, doors 1.8 s, inside 2.8 s, the wall 1.2 s). A hard trackpad swipe therefore still plays the whole visit (~10 s) instead of jumping to the site; a slow scroll is followed as it goes. Scrolling back up walks back out (until the visit is entered). It is one-way: the intro is removed from the DOM and its GPU resources are disposed, so scrolling back up stays on the hero.
 
 - **Once per session.** A `sessionStorage` flag (`ssg-intro-seen`) skips it for the rest of the session. `?intro` forces it, `?nointro` skips it, and `?intro=3d|video|static` forces a version (QA).
 - **Skip.** The `SKIP INTRO` button or Esc goes straight to the transition.
@@ -51,7 +53,7 @@ The first thing a visitor sees is the SSG store at dusk (`js/intro.js`). Scrolli
 cd website/tools && npm install && node optimize-store.mjs && node render-intro-media.mjs
 ```
 
-- **Performance** (measured on a 2019 MacBook Pro, Radeon Pro 5300M, Chrome, 1440×900 at 2× rendering at 1.75 = 2520×1575): 60 fps through the fly-in (median and p95 16.7 ms; 2 of 418 frames over 20 ms). The pixel ratio drops to 1.25 while the camera moves fast. MSAA is off at Retina ratios (4× MSAA dropped ~15 % of frames) and on (4×) at 1×. Transmission glass cost 10–12 ms a frame near the doors, so the glass is a cheap reflective material instead (< 1 ms). The render loop stops and the scene is disposed after the transition. Not measured on an M1 Air.
+- **Performance** (measured on a 2019 MacBook Pro, Radeon Pro 5300M, Chrome, 1440×900 at 2× rendering at 1.75 = 2520×1575): 60 fps through the visit (median and p95 16.7–16.8 ms; 9 of 804 frames over 20 ms). The pixel ratio drops to 1.25 while the camera moves fast. MSAA is off at Retina ratios (4× MSAA dropped ~15 % of frames) and on (4×) at 1×. Transmission glass cost 10–12 ms a frame near the doors, so the glass is a cheap reflective material instead (< 1 ms). The render loop stops and the scene is disposed after the transition. Not measured on an M1 Air.
 - **Debugging.** With `?debug`, `window.__ssg.intro` exposes `setProgress(p)` (pose the flight), `store.bench(n, p)` (GPU-synced ms per frame), `store.setGlass('cheap' | 'transmission')`, `store.state.adaptive` (pixel-ratio switching) and `store.tune` (lights, materials and bloom, for live tuning); `?msaa=0|2|4` overrides the MSAA choice, and the console logs the intro → hero hand-off timings.
 
 ## Structure

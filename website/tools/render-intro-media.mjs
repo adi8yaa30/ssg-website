@@ -27,21 +27,28 @@ const VARIANTS = [
   { name: 'portrait', poster: [1080, 2340], video: [720, 1560], crf: 27 },   // 9:19.5 phones; shorter ones crop sky/lawn
 ];
 
-// The fly-in on a clock: a beat on the establishing shot, the scroll-driven flight (0 → 0.9, eased like
-// a steady scroll with scrub), then the committed push into the light (0.9 → 1) as the glow takes over
-const HOLD = 0.5, FLY = 4.4, PUSH = 0.8;
-const DURATION = HOLD + FLY + PUSH;
-const sineInOut = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
+// The fly-in on a clock, paced exactly like the live visit when the visitor scrolls straight through
+// (each stage at its minimum duration, from window.SSG.introPacing), then the committed push into the
+// light: p ENTER_AT → 1 over 1.2 s (power1.in) while the glow rises to full over 1 s.
+const HOLD = 0.6, PUSH = 1.2, AFTER = 0.25;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
-const smooth = (t) => t * t * (3 - 2 * t);
-function at(t) {
-  if (t < HOLD) return { p: 0, glow: 0 };
-  if (t < HOLD + FLY) {
-    const p = 0.9 * sineInOut((t - HOLD) / FLY);
-    return { p, glow: 0.88 * smooth(clamp01((p - 0.76) / 0.14)) };
+function timeline({ STAGES, ENTER_AT, preGlowAt }) {
+  const frames = [];
+  for (let i = 0; i < Math.round(HOLD * FPS); i++) frames.push({ p: 0, glow: 0 });
+  let p = 0;
+  while (p < ENTER_AT - 1e-6) {
+    const st = STAGES.find(([, a, b]) => p < b) || STAGES[STAGES.length - 1];
+    p = Math.min(ENTER_AT, p + (st[2] - st[1]) / st[3] / FPS);
+    frames.push({ p, glow: preGlowAt(p) });
   }
-  const k = clamp01((t - HOLD - FLY) / PUSH);
-  return { p: 0.9 + 0.1 * k * k, glow: 0.88 + 0.12 * smooth(k) };
+  const g0 = preGlowAt(ENTER_AT);
+  for (let i = 1; i <= Math.round((PUSH + AFTER) * FPS); i++) {
+    const t = i / FPS;
+    const k = clamp01(t / PUSH);
+    const gk = clamp01((t - 0.2) / 1.0);
+    frames.push({ p: ENTER_AT + (1 - ENTER_AT) * k * k, glow: g0 + (1 - g0) * gk * gk });
+  }
+  return frames;
 }
 
 const dataToFile = (dataUrl, file) => fs.writeFileSync(file, Buffer.from(dataUrl.split(',')[1], 'base64'));
@@ -51,6 +58,10 @@ const page = await (await browser.newContext({ viewport: { width: 1280, height: 
 page.on('pageerror', (e) => console.error('[page]', e.message));
 await page.goto(URL);
 await page.waitForFunction(() => window.__ssg?.intro?.store?.ready && !document.getElementById('preloader'), null, { timeout: 90000 });
+const pacing = await page.evaluate(() => ({ STAGES: window.SSG.introPacing.STAGES, ENTER_AT: window.SSG.introPacing.ENTER_AT }));
+const glowTable = await page.evaluate(() => Array.from({ length: 1001 }, (_, i) => window.SSG.introPacing.preGlow(i / 1000)));
+const FRAMES = timeline({ ...pacing, preGlowAt: (p) => glowTable[Math.round(p * 1000)] });
+const DURATION = FRAMES.length / FPS;
 
 for (const v of VARIANTS) {
   // poster: the establishing shot at rest
@@ -63,10 +74,10 @@ for (const v of VARIANTS) {
   // video frames
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `ssg-intro-${v.name}-`));
   await page.evaluate(([w, h]) => window.__ssg.intro.store.capture.begin(w, h), v.video);
-  const n = Math.round(DURATION * FPS);
+  const n = FRAMES.length - 1;
   for (let i = 0; i <= n; i++) {
     const t = i / FPS;
-    const { p, glow } = at(t);
+    const { p, glow } = FRAMES[i];
     const jpg = await page.evaluate((o) => window.__ssg.intro.store.capture.shot(o), { p, t, glow, type: 'image/jpeg', quality: 0.93 });
     dataToFile(jpg, path.join(dir, `f${String(i).padStart(4, '0')}.jpg`));
   }
