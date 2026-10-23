@@ -821,6 +821,8 @@ async function boot() {
   const mode = introMode();
   if (mode && await runIntro(mode)) return;
   root.classList.remove('intro-active');
+  $('#intro')?.remove();
+  $('#intro-glow')?.remove();
 
   // no intro (seen this session): the street light GLB drives the preloader
   await Promise.all([fontsReady, load3D()]);
@@ -877,12 +879,6 @@ async function runIntro(mode) {
   tm?.push(['buildPage', performance.now()]);
   start3D();
   tm?.push(['start3D', performance.now()]);
-  if (tm && scene) {
-    scene.frame(0);
-    tm.push(['hero frame', performance.now()]);
-    sceneApi.renderer.getContext().finish();
-    tm.push(['gl.finish', performance.now()]);
-  }
   if (tm) {
     requestAnimationFrame(() => requestAnimationFrame(() => {
       tm.push(['2 frames', performance.now()]);
@@ -894,7 +890,16 @@ async function runIntro(mode) {
   gsap.set(nav, { yPercent: -100, opacity: 0 });
   // the page's first layout, paint and 3D frame are heavy: let them land while the glow still
   // covers everything, so the reveal below plays from its first frame instead of jumping
-  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await new Promise((resolve) => {
+    const t0 = performance.now();
+    let prev = t0;
+    const settle = (t) => {
+      const calm = t - prev < 34 && t - t0 > 50;
+      prev = t;
+      if (calm || t - t0 > 1000) resolve(); else requestAnimationFrame(settle);
+    };
+    requestAnimationFrame(settle);
+  });
   await intro.reveal({
     horizonY: heroHorizonY(),
     onLine: () => {

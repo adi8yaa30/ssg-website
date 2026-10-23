@@ -23,7 +23,7 @@ const SEEN_KEY = 'ssg-intro-seen';
 const DEG = Math.PI / 180;
 const FOV = 35;            // architectural framing for the establishing shot
 const FOV_FAST = 47;       // widens through the doorway for a sense of speed
-const MIN_HFOV = 34;       // narrow windows widen the lens so the store still fits
+const MIN_HFOV = 38;       // narrow windows widen the lens so the store still fits
 const ENTER_AT = 0.9;      // scroll progress at which the transition into the site commits
 const PR_SLOW = 1.75;
 const PR_FAST = 1.25;      // pixel ratio while the camera is moving fast
@@ -176,7 +176,12 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   scene.add(spill);
 
   // ---- Post: bloom on the HDR buffer, then tone mapping in the OutputPass
-  const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+  // MSAA on the HDR buffer is the biggest GPU cost at Retina sizes (2520×1575 on a 1440 screen: 4× drops
+  // ~15 % of frames on a Radeon 5300M); there the 1.75× pixel ratio already smooths edges, so it's off.
+  // ?msaa=0|2|4 overrides it for QA.
+  const msaa = new URLSearchParams(location.search).get('msaa');
+  const samples = msaa !== null ? +msaa : Math.min(window.devicePixelRatio || 1, PR_SLOW) >= 1.5 ? 0 : 4;
+  const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples });
   const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), BLOOM.strength, BLOOM.radius, BLOOM.threshold);
@@ -184,7 +189,7 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   composer.addPass(new OutputPass());
 
   // ---- State
-  const state = { p: 0, glass: 'cheap' };
+  const state = { p: 0, glass: 'cheap', adaptive: true, switches: 0 };
   const time = { value: 0 };
   let model = null;
   let doorL = null, doorR = null;
@@ -204,12 +209,10 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   const loader = new GLTFLoader(manager).setDRACOLoader(draco);
 
   const loaded = new Promise((resolve, reject) => {
-    const done = (gltf) => { window.__t?.push(['parsed', performance.now()]); try { setup(gltf); window.__t?.push(['setup', performance.now()]); resolve(); } catch (e) { reject(e); } };
+    const done = (gltf) => { try { setup(gltf); resolve(); } catch (e) { reject(e); } };
     if (isFile) reject(new Error('store GLB is not embedded for file://'));
     else {
-      window.__t = [['load', performance.now()]];
       loader.load(`${STORE_URL}?v=${STORE_VERSION}`, done, (e) => {
-        if (e.loaded === e.total) window.__t.push(['bytes', performance.now()]);
         if (e.lengthComputable) { bytes = e.loaded / e.total; report(); }
       }, reject);
     }
@@ -355,6 +358,7 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   function setRatio(next) {
     if (Math.abs(next - pr) < 0.01) return;
     pr = next;
+    state.switches++;
     renderer.setPixelRatio(pr);
     renderer.setSize(vw, vh, false);
     composer.setPixelRatio(pr);
@@ -427,7 +431,7 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     pose(state.p, clock);
     const speed = lastPos.z > 900 ? 0 : camPos.distanceTo(lastPos) / Math.max(dt, 1 / 240);
     lastPos.copy(camPos);
-    if (speed > 2.2) { fastFor = 0.45; setRatio(Math.min(window.devicePixelRatio || 1, PR_FAST)); }
+    if (!state.adaptive) { /* fixed ratio (QA) */ } else if (speed > 2.2) { fastFor = 0.45; setRatio(Math.min(window.devicePixelRatio || 1, PR_FAST)); }
     else if ((fastFor -= dt) <= 0) setRatio(Math.min(window.devicePixelRatio || 1, PR_SLOW));
     render(dt);
   }
