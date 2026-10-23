@@ -51,7 +51,8 @@ The first thing a visitor sees is the SSG store at dusk (`js/intro.js`). Scrolli
 cd website/tools && npm install && node optimize-store.mjs && node render-intro-media.mjs
 ```
 
-- **Debugging.** With `?debug`, `window.__ssg.intro` exposes `setProgress(p)` (pose the flight), `store.bench(n, p)` (GPU-synced ms per frame), `store.setGlass('cheap' | 'transmission')` and `store.tune` (lights, materials and bloom, for live tuning).
+- **Performance** (measured on a 2019 MacBook Pro, Radeon Pro 5300M, Chrome, 1440×900 at 2× rendering at 1.75 = 2520×1575): 60 fps through the fly-in (median and p95 16.7 ms; 2 of 418 frames over 20 ms). The pixel ratio drops to 1.25 while the camera moves fast. MSAA is off at Retina ratios (4× MSAA dropped ~15 % of frames) and on (4×) at 1×. Transmission glass cost 10–12 ms a frame near the doors, so the glass is a cheap reflective material instead (< 1 ms). The render loop stops and the scene is disposed after the transition. Not measured on an M1 Air.
+- **Debugging.** With `?debug`, `window.__ssg.intro` exposes `setProgress(p)` (pose the flight), `store.bench(n, p)` (GPU-synced ms per frame), `store.setGlass('cheap' | 'transmission')`, `store.state.adaptive` (pixel-ratio switching) and `store.tune` (lights, materials and bloom, for live tuning); `?msaa=0|2|4` overrides the MSAA choice, and the console logs the intro → hero hand-off timings.
 
 ## Structure
 
