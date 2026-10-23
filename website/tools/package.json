@@ -1,0 +1,13 @@
+{
+  "name": "ssg-tools",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only: builds assets/00-intro/ssg-store.web.glb (optimize-store.mjs). Not used by the page.",
+  "devDependencies": {
+    "@gltf-transform/core": "^4.2.1",
+    "@gltf-transform/extensions": "^4.2.1",
+    "@gltf-transform/functions": "^4.2.1",
+    "draco3dgltf": "^1.5.7",
+    "sharp": "^0.34.4"
+  }
+}
