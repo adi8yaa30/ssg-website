@@ -1,6 +1,5 @@
 .DS_Store
 website/tools/backups/
 
-# dev-only tool deps and the 30 MB source copy (the original lives in ../assets/)
+# dev-only tool deps
 website/tools/node_modules/
-website/assets/00-intro/ssg-store-hq.glb

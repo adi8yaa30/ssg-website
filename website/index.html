@@ -16,7 +16,7 @@
 
   <link rel="stylesheet" href="css/reset.css?v=34">
   <link rel="stylesheet" href="css/tokens.css?v=dusk-b">
-  <link rel="stylesheet" href="css/main.css?v=store-2">
+  <link rel="stylesheet" href="css/main.css?v=store-3">
 
   <script type="importmap">
   {
@@ -41,7 +41,7 @@
       var http = location.protocol !== 'file:';
       var desktop = matchMedia('(min-width: 768px)').matches;
       var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var href = intro ? (desktop && !still ? 'assets/00-intro/ssg-store.web.glb?v=store-2' : '') : 'assets/01-hero/model/ssg-streetlight.web.glb?v=landscape-4';
+      var href = intro ? (desktop && !still ? 'assets/00-intro/ssg-store-hq.glb?v=store-3' : '') : 'assets/01-hero/model/ssg-streetlight.web.glb?v=landscape-4';
       if (http && desktop && href) {
         var l = document.createElement('link');
         l.rel = 'preload'; l.as = 'fetch'; l.crossOrigin = 'anonymous';
@@ -713,13 +713,13 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/CustomEase.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js" defer></script>
-<script src="js/scene.js?v=store-2" defer></script>
-<script src="js/intro.js?v=store-2" defer></script>
+<script src="js/scene.js?v=store-3" defer></script>
+<script src="js/intro.js?v=store-3" defer></script>
 <script src="js/products.js?v=dusk-a" defer></script>
 <script src="js/process.js?v=dusk-fix1" defer></script>
 <script src="js/flag.js?v=dusk-a" defer></script>
 <script src="js/scanlines.js?v=dusk-f" defer></script>
-<script src="js/main.js?v=store-2" defer></script>
+<script src="js/main.js?v=store-3" defer></script>
 <script>
   // Safety net: never leave visitors on the preloader if a script fails to load
   setTimeout(function () {

@@ -16,8 +16,8 @@
 (function () {
 window.SSG = window.SSG || {};
 
-const STORE_URL = 'assets/00-intro/ssg-store.web.glb';
-const STORE_VERSION = 'store-2';
+const STORE_URL = 'assets/00-intro/ssg-store-hq.glb';   // the original model, as delivered (30 MB)
+const STORE_VERSION = 'store-3';
 const SEEN_KEY = 'ssg-intro-seen';
 
 const DEG = Math.PI / 180;
@@ -239,9 +239,9 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     const done = (gltf) => { try { setup(gltf); resolve(); } catch (e) { reject(e); } };
     if (isFile) reject(new Error('store GLB is not embedded for file://'));
     else {
-      // QA (?debug&store=hq|<name>): load the 30 MB source or another build to compare quality
+      // QA (?debug&store=<name>): load assets/00-intro/ssg-store.<name>.glb instead, e.g. a build from tools/optimize-store.mjs
       const variant = debug && new URLSearchParams(location.search).get('store');
-      const url = variant ? `assets/00-intro/${variant === 'hq' ? 'ssg-store-hq' : `ssg-store.${variant}`}.glb` : `${STORE_URL}?v=${STORE_VERSION}`;
+      const url = variant ? `assets/00-intro/ssg-store.${variant}.glb` : `${STORE_URL}?v=${STORE_VERSION}`;
       loader.load(url, done, (e) => {
         if (e.lengthComputable) { bytes = e.loaded / e.total; report(); }
       }, reject);
