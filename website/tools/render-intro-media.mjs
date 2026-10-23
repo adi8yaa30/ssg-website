@@ -24,7 +24,7 @@ const FPS = 30;
 
 const VARIANTS = [
   { name: 'landscape', poster: [1920, 1080], video: [1280, 720], crf: 27 },
-  { name: 'portrait', poster: [1080, 1920], video: [720, 1280], crf: 27 },
+  { name: 'portrait', poster: [1080, 2340], video: [720, 1560], crf: 27 },   // 9:19.5 phones; shorter ones crop sky/lawn
 ];
 
 // The fly-in on a clock: a beat on the establishing shot, the scroll-driven flight (0 → 0.9, eased like
