@@ -61,9 +61,11 @@ const smooth = (t) => t * t * (3 - 2 * t);
 const inOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 const backOut = (t, s = 1.4) => 1 + (s + 1) * Math.pow(t - 1, 3) + s * Math.pow(t - 1, 2);
 
-// three.js is loaded on demand (via the import map), so phones and no-WebGL visitors never download it
-async function createScene(opts) {
-  const [THREE, { GLTFLoader }, { DRACOLoader }, { RoomEnvironment }, { EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
+// three.js is loaded on demand (via the import map), so phones and no-WebGL visitors never download it.
+// The store intro (intro.js) and the hero share these modules and one renderer: never two WebGL contexts.
+let libsPromise = null;
+function loadThree() {
+  libsPromise = libsPromise || Promise.all([
     import('three'),
     import('three/addons/loaders/GLTFLoader.js'),
     import('three/addons/loaders/DRACOLoader.js'),
@@ -72,9 +74,36 @@ async function createScene(opts) {
     import('three/addons/postprocessing/RenderPass.js'),
     import('three/addons/postprocessing/UnrealBloomPass.js'),
     import('three/addons/postprocessing/OutputPass.js'),
-  ]);
-  return buildScene({ THREE, GLTFLoader, DRACOLoader, RoomEnvironment, EffectComposer, RenderPass, UnrealBloomPass, OutputPass }, opts);
+  ]).then(([THREE, { GLTFLoader }, { DRACOLoader }, { RoomEnvironment }, { EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }]) => (
+    { THREE, GLTFLoader, DRACOLoader, RoomEnvironment, EffectComposer, RenderPass, UnrealBloomPass, OutputPass }
+  ));
+  return libsPromise;
 }
+
+// The page's one WebGL renderer (on #scene). Defaults are the hero's; the intro overrides
+// exposure / pixel ratio while it runs and restores them when it is disposed.
+const PIXEL_RATIO = 1.75;
+let sharedRenderer = null;
+function createRenderer(THREE, canvas) {
+  if (sharedRenderer) return sharedRenderer;
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, PIXEL_RATIO));
+  renderer.setClearColor(0x000000, 0);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  sharedRenderer = renderer;
+  return renderer;
+}
+
+async function createScene(opts) {
+  const libs = await loadThree();
+  return buildScene(libs, opts);
+}
+window.SSG.loadThree = loadThree;
+window.SSG.createRenderer = createRenderer;
+window.SSG.PIXEL_RATIO = PIXEL_RATIO;
+window.SSG.DRACO_PATH = DRACO_PATH;
 window.SSG.createScene = createScene;
 
 // Colours come from the CSS tokens so the 3D always matches the page
@@ -106,12 +135,7 @@ function makeBloomComposer({ THREE, EffectComposer, RenderPass, UnrealBloomPass,
 
 function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress = () => {}, onHeroPoints = () => {} }) {
   const { THREE, GLTFLoader, DRACOLoader, RoomEnvironment } = libs;
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
-  renderer.setClearColor(0x000000, 0);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  const renderer = createRenderer(THREE, canvas);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 400);
@@ -174,6 +198,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     glint,
     capturePanel,
     captureStreetlight,
+    warm,
     dispose,
   };
 
@@ -295,7 +320,9 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
 
     api.ready = true;
     resize();
-    renderer.compile(scene, camera);
+    // parallel compile where supported, so a hero that finishes loading during the intro doesn't stall it
+    if (renderer.compileAsync) renderer.compileAsync(scene, camera).catch(() => {});
+    else renderer.compile(scene, camera);
   }
 
   function makeContactShadow() {
@@ -624,6 +651,26 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     rt.dispose();
     needsRender = true;
     return blob;
+  }
+
+  // Upload the model's textures to the GPU ahead of its first visible frame. `budgetMs` spreads the
+  // uploads over frames (the store intro calls this while its camera is idle); resolves when done.
+  function warm(budgetMs = Infinity) {
+    const textures = new Set();
+    scene.traverse((o) => {
+      const list = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+      list.forEach((m) => Object.values(m).forEach((v) => { if (v && v.isTexture) textures.add(v); }));
+    });
+    const queue = [...textures];
+    return new Promise((resolve) => {
+      const step = () => {
+        const t0 = performance.now();
+        while (queue.length && performance.now() - t0 < budgetMs) renderer.initTexture(queue.shift());
+        if (queue.length) requestAnimationFrame(step);
+        else resolve();
+      };
+      step();
+    });
   }
 
   function dispose() {

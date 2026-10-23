@@ -61,5 +61,6 @@
   --z-over: 30;
   --z-nav: 50;
   --z-modal: 80;
+  --z-intro: 150;          /* store intro: canvas, then its overlay, then the glow (preloader above all) */
   --z-preloader: 200;
 }

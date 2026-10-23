@@ -35,6 +35,24 @@ The `dark-theme` branch has the **dark "Golden Dusk" theme** (post-sunset, muted
 - Interim product images come from the daytime ones: `python3 tools/cutout-products.py` writes `photo-dusk.webp` (white sky cut out) and `blueprint-dusk.webp` (warm-white lines on transparent) next to the originals. The dusk grade is CSS. When the client's dusk photos arrive, replace the `photo-dusk.webp` files and drop the `filter` on `.slide__photo img`.
 - Re-render the static 3D fallbacks from the page itself: open `http://localhost:5173/?debug` and run `await window.__ssg.sceneApi.captureStreetlight(800, 1375)` (→ `assets/01-hero/streetlight-fallback.webp`) and `await window.__ssg.sceneApi.capturePanel(1030, 626)` (→ `assets/01-hero/panel-static.webp`). Each returns a WebP `Blob` with the dusk lighting, the LED on and bloom.
 
+## Store intro
+
+The first thing a visitor sees is the SSG store at dusk (`js/intro.js`). Scrolling (250vh, pinned) flies the camera over the paving to the entrance, the glass doors slide open, the camera passes through, and the warm interior light collapses onto the hero's gold horizon line, which sweeps away to reveal the home page. It is one-way: the intro is removed from the DOM and its GPU resources are disposed, so scrolling back up stays on the hero.
+
+- **Once per session.** A `sessionStorage` flag (`ssg-intro-seen`) skips it for the rest of the session. `?intro` forces it, `?nointro` skips it, and `?intro=3d|video|static` forces a version (QA).
+- **Skip.** The `SKIP INTRO` button or Esc goes straight to the transition.
+- **Versions** (picked in `main.js`): live 3D on desktop with WebGL; a poster plus a pre-rendered fly-in video (played on scroll or tap) on phones, low-power devices and `file://`; and the poster with a gentle fade for reduced motion or no WebGL.
+- **If the store can't load** within 20 s, the visitor gets the normal preloader and hero.
+- **Loading order.** The store GLB loads first (it drives the preloader's battery bar). The street light GLB loads in the background only after that, and its textures are uploaded a few ms per frame while the intro plays. Both scenes share the page's one WebGL renderer (`SSG.createRenderer` in `scene.js`).
+- **Model.** `assets/00-intro/ssg-store.web.glb` is built from `../assets/ssg-store-hq.glb` by `tools/optimize-store.mjs`. The vegetation is thinned (it is single triangles and two-triangle blades, so it can't be simplified), textures are WebP ≤ 2048 and geometry is Draco. Node names (`Door_L`, `Door_R`, `Glass`) and materials are kept.
+- **Fallback media.** The posters and fly-in videos are rendered from the live scene by `tools/render-intro-media.mjs` (it needs the dev server, Google Chrome and ffmpeg). Re-run it after changing the scene:
+
+```bash
+cd website/tools && npm install && node optimize-store.mjs && node render-intro-media.mjs
+```
+
+- **Debugging.** With `?debug`, `window.__ssg.intro` exposes `setProgress(p)` (pose the flight), `store.bench(n, p)` (GPU-synced ms per frame), `store.setGlass('cheap' | 'transmission')` and `store.tune` (lights, materials and bloom, for live tuning).
+
 ## Structure
 
 ```
@@ -43,9 +61,11 @@ index.html          all sections, inline icons and the exploded-parts SVG
 css/reset.css
 css/tokens.css      colours, fonts, the --u Figma-pixel unit, z-index layers
 css/main.css        section styles, plus tablet, mobile and reduced-motion rules
-js/main.js          (loads last) Lenis + GSAP setup, preloader, hero, panel choreography wiring,
-                    section reveals, nav, cursor, quote modal (asset mapping at the top)
-js/scene.js         Three.js scene, panelRig, DOM-anchored poses (states A–E)
+js/main.js          (loads last) Lenis + GSAP setup, preloader, store intro boot, hero, panel
+                    choreography wiring, section reveals, nav, quote modal (asset mapping at the top)
+js/intro.js         store intro: the store scene at dusk, the scroll fly-in, skip, fallbacks
+js/scene.js         Three.js scene, panelRig, DOM-anchored poses (states A–E); also the shared
+                    three.js loader and the page's one WebGL renderer
 js/products.js      pinned horizontal slider on continuous grass
 js/process.js       diamond hover states and the exploded components row
 js/flag.js          WebGL wave on the national flag
@@ -53,7 +73,8 @@ js/scanlines.js     CTA skyline and footer landscape row animations
 assets/             web-ready copies of the provided assets (kebab-case),
                     plus *.js embedded copies used when opened from disk
 tools/              embed-local-assets.py (regenerates those embedded copies),
-                    optimize-svg.py (rebuilds the light scanline SVGs from the exports)
+                    optimize-svg.py (rebuilds the light scanline SVGs from the exports),
+                    optimize-store.mjs + render-intro-media.mjs (store intro model and media, see below)
 TODO.md             missing assets and things to confirm with the client
 ```
 

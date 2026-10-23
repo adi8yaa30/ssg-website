@@ -1,10 +1,13 @@
 /* ==========================================================================
-   SSG home page: Lenis + GSAP setup, preloader, nav and section
-   timelines. The 3D street light lives in scene.js and is only loaded on
-   desktop with WebGL; mobile and no-WebGL use static images.
+   SSG home page: Lenis + GSAP setup, preloader, store intro, nav and section
+   timelines. The store intro lives in intro.js, the 3D street light in
+   scene.js (they share one renderer); the street light is only loaded on
+   desktop with WebGL, and mobile and no-WebGL use static images.
 
    Asset mapping (provided folder -> web-safe folder used here)
    --------------------------------------------------------------------------
+   assets/ssg-store-hq.glb                                 -> assets/00-intro/ssg-store.web.glb
+        (tools/optimize-store.mjs: vegetation thinned, WebP <= 2048, Draco; 30 MB -> 4 MB)
    assets/1. Hero-Section/ssg-streetlight-realistic.glb   -> assets/01-hero/model/ssg-streetlight.web.glb
         (gltf-transform optimize: Draco + WebP 2048, palette/simplify off so
          node + material names such as Panel and M_LED survive; 34.6 MB -> 1.95 MB)
@@ -89,10 +92,16 @@ function whileVisible(el, anim) {
   return anim;
 }
 
+let softwareGL = false;
 function hasWebGL() {
   try {
     const c = document.createElement('canvas');
-    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    const gl = c.getContext('webgl2') || c.getContext('webgl');
+    if (!gl) return false;
+    const info = gl.getExtension('WEBGL_debug_renderer_info');
+    softwareGL = /swiftshader|llvmpipe|software|microsoft basic/i.test(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : '');
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    return true;
   } catch { return false; }
 }
 const use3D = !mobile && hasWebGL();
@@ -139,6 +148,12 @@ function setProgress(p) {
 }
 
 const fontsReady = (document.fonts ? document.fonts.ready : Promise.resolve()).catch(() => {});
+// While the store intro plays the page is display:none, so the browser never asks for its faces and
+// fonts.ready resolves early; load them explicitly before SplitText measures the hero
+const pageFonts = () => (document.fonts ? Promise.all(
+  ['400 1em Unbounded', '400 1em "Instrument Sans"', '500 1em "Instrument Sans"', '400 1em "Space Mono"'].map((f) => document.fonts.load(f))
+).catch(() => {}) : Promise.resolve());
+if (debug) window.__ssg = { gsap, ScrollTrigger, lenis };
 
 // ---------------------------------------------------------------------------
 // 3D scene (desktop + WebGL only)
@@ -148,12 +163,13 @@ let sceneApi = null;
 const anchors = { streetlight: $('#anchor-streetlight'), why: $('#anchor-panel-why'), sun: $('#anchor-panel-sun') };
 const heroPoints = { pole: null, led: null };
 
-async function load3D() {
+// `quiet`: loading in the background behind the store intro (the preloader has gone)
+async function load3D({ quiet = false } = {}) {
   if (!use3D) {
     // no GLB: let the bar follow the hero image instead
     const img = $('#anchor-streetlight img');
     await new Promise((r) => (img.complete ? r() : (img.onload = img.onerror = r)));
-    setProgress(0.9);
+    if (!quiet) setProgress(0.9);
     return;
   }
   try {
@@ -161,21 +177,31 @@ async function load3D() {
       canvas,
       anchors,
       reducedMotion: reduced,
-      onProgress: (p) => setProgress(p * 0.95),
+      onProgress: (p) => { if (!quiet) setProgress(p * 0.95); },
       onHeroPoints: (pts) => { heroPoints.pole = pts.pole; heroPoints.led = pts.led; },
     });
     sceneApi = scene.api;
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('GLB load timeout')), 15000));
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('GLB load timeout')), quiet ? 30000 : 15000));
     await Promise.race([scene.loaded, timeout]);
-    gsap.set(canvas, { opacity: reduced ? 1 : 0 });
-    gsap.ticker.add((t, dt) => scene.frame(Math.min(dt, 50) / 1000));
-    if (debug) window.__ssg = { scene, sceneApi, gsap, ScrollTrigger };
+    if (debug) Object.assign(window.__ssg, { scene, sceneApi });
   } catch (err) {
-    console.warn('[SSG] 3D disabled:', err);
-    sceneApi = null;
-    canvas.style.display = 'none';
-    root.classList.add('no-webgl', 'static-panels');
+    disable3D(err);
   }
+}
+function disable3D(err) {
+  console.warn('[SSG] 3D disabled:', err);
+  sceneApi = null;
+  scene = null;
+  // the store intro may still be drawing on the shared canvas: it is hidden once the intro is torn down
+  if (!root.classList.contains('intro-active')) canvas.style.display = 'none';
+  root.classList.add('no-webgl', 'static-panels');
+}
+// the hero scene starts drawing (it fades in with the hero load-in)
+function start3D() {
+  if (!scene || !sceneApi?.ready) return;
+  scene.resize();
+  gsap.set(canvas, { opacity: reduced ? 1 : 0 });
+  gsap.ticker.add((t, dt) => scene.frame(Math.min(dt, 50) / 1000));
 }
 
 // ---------------------------------------------------------------------------
@@ -699,12 +725,36 @@ document.addEventListener('click', (e) => {
 });
 
 // ---------------------------------------------------------------------------
-// Boot
-async function boot() {
-  setProgress(0.04);
-  await Promise.all([fontsReady, load3D()]);
-  setProgress(1);
+// Store intro: which version plays (see intro.js). Null when it has been seen this session.
+const isFile = location.protocol === 'file:';
+function introMode() {
+  if (root.dataset.intro !== 'on' || !window.SSG.createIntro) return null;
+  const forced = new URLSearchParams(location.search).get('intro');   // QA: ?intro=3d|video|static
+  if (['3d', 'video', 'static'].includes(forced)) return forced;
+  if (reduced || !hasWebGL()) return 'static';
+  const lowPower = softwareGL || (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) < 4;
+  if (mobile || isFile || lowPower) return 'video';
+  return '3d';
+}
 
+const withTimeout = (promise, ms, what) => Promise.race([
+  promise, new Promise((_, rej) => setTimeout(() => rej(new Error(`${what} timeout`)), ms)),
+]);
+
+// The viewport y of the hero's gold horizon line, where the intro's glow collapses to
+function heroHorizonY() {
+  if (mobile) {
+    // phones: the band tied to the street light (::before, top 72% + 61% of its 32% height)
+    const r = $('#anchor-streetlight').getBoundingClientRect();
+    return r.top + r.height * (0.72 + 0.32 * 0.61);
+  }
+  const r = hero.getBoundingClientRect();
+  return r.top + r.height * 0.885;   // #FFE2A0 stop of --hero-gradient
+}
+
+// ---------------------------------------------------------------------------
+// Boot
+function buildPage() {
   const heroIntro = buildHeroIntro();
   buildChoreography();
   buildReveals();
@@ -721,21 +771,29 @@ async function boot() {
   near('.cta', () => initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, whileVisible }));
   near('.footer', () => initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer, whileVisible }));
   ScrollTrigger.refresh();
+  return heroIntro;
+}
 
-  // preloader out: the logo bows out, a seam draws down the middle and the screen splits open like two doors
-  await new Promise((r) => setTimeout(r, 450));
-  const out = gsap.timeline({
-    onComplete: () => {
-      preloader.remove();
-      document.body.classList.remove('is-loading');
-      lenis?.start();
-      ScrollTrigger.refresh();
-    },
-  });
-  if (reduced) {
-    out.to(preloader, { opacity: 0, duration: 0.3 });
-    if (sceneApi) gsap.set(canvas, { opacity: 1 });
-  } else {
+// preloader out: the logo bows out, a seam draws down the middle and the screen splits open like two doors.
+// `onStart` runs as it begins (so the intro is already drawing underneath), `onOpen` once it has parted.
+function openPreloader({ onStart = () => {}, onOpen = () => {} } = {}) {
+  return new Promise((resolve) => {
+    const out = gsap.timeline({
+      onComplete: () => {
+        preloader.remove();
+        document.body.classList.remove('is-loading');
+        ScrollTrigger.refresh();
+        // the intro's pin spacer appears after Lenis last measured the page
+        lenis?.resize();
+        lenis?.start();
+        resolve();
+      },
+    });
+    onStart();
+    if (reduced) {
+      out.to(preloader, { opacity: 0, duration: 0.3 }).add(onOpen);
+      return;
+    }
     // the logo and battery bow out in one piece, then the empty screen splits open
     const inner = $('.preloader__inner', preloader);
     const panels = ['l', 'r'].map((side) => {
@@ -754,12 +812,107 @@ async function boot() {
       .to(panels[0], { xPercent: -100, duration: 1.6 }, 0.7)
       .to(panels[1], { xPercent: 100, duration: 1.6 }, 0.7)
       .to(seam, { opacity: 0, duration: 0.25 }, 0.75)
-      .add(() => heroIntro.play(), 1);
+      .add(onOpen, 1);
+  });
+}
+
+async function boot() {
+  setProgress(0.04);
+  const mode = introMode();
+  if (mode && await runIntro(mode)) return;
+  root.classList.remove('intro-active');
+
+  // no intro (seen this session): the street light GLB drives the preloader
+  await Promise.all([fontsReady, load3D()]);
+  setProgress(1);
+  const heroIntro = buildPage();
+  start3D();
+  await new Promise((r) => setTimeout(r, 450));
+  await openPreloader({ onOpen: () => { if (!reduced) heroIntro.play(); } });
+}
+
+// Plays the store intro, then boots the page behind its glow. False if the intro couldn't load.
+async function runIntro(mode) {
+  let intro = null;
+  let fontsForPage = null;
+  try {
+    intro = window.SSG.createIntro({ mode, gsap, lenis, canvas, debug, onProgress: (p) => setProgress(p) });
+    fontsForPage = pageFonts();
+    if (debug) window.__ssg.intro = intro;
+    // the store comes first; if it can't load in time, the visitor gets the normal hero instead
+    await withTimeout(Promise.all([intro.loaded, fontsReady]), mode === '3d' ? 20000 : 10000, 'intro');
+  } catch (err) {
+    console.warn('[SSG] intro skipped:', err);
+    intro?.abort();
+    return false;
   }
+  setProgress(1);
+  await new Promise((r) => setTimeout(r, 350));
+
+  // the street light loads in the background only once the store is in, so it doesn't slow the intro
+  let heroReady = null;
+  await openPreloader({
+    onStart: () => {
+      intro.start();
+      // …and its textures go up to the GPU a few ms per frame, so its first frame after the glow is cheap
+      heroReady = load3D({ quiet: true }).then(() => sceneApi?.warm(4));
+    },
+  });
+
+  await intro.entered;
+  // never hold the visitor in the glow: without the street light in time, the hero uses its image
+  try { await withTimeout(heroReady, 8000, 'street light'); } catch (err) { disable3D(err); }
+
+  try { await withTimeout(fontsForPage, 3000, 'fonts'); } catch { /* build with the fallback faces */ }
+
+  // behind the glow: drop the intro, show the page at the top, build it
+  const tm = debug ? [['start', performance.now()]] : null;
+  intro.teardown();
+  tm?.push(['teardown', performance.now()]);
+  if (!sceneApi) canvas.style.display = 'none';
+  window.scrollTo(0, 0);
+  lenis?.resize();
+  lenis?.scrollTo(0, { immediate: true, force: true });
+  const heroIntro = buildPage();
+  tm?.push(['buildPage', performance.now()]);
+  start3D();
+  tm?.push(['start3D', performance.now()]);
+  if (tm && scene) {
+    scene.frame(0);
+    tm.push(['hero frame', performance.now()]);
+    sceneApi.renderer.getContext().finish();
+    tm.push(['gl.finish', performance.now()]);
+  }
+  if (tm) {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      tm.push(['2 frames', performance.now()]);
+      window.__ssg.handoff = tm.map(([k, t], i) => `${k} +${(t - (tm[i - 1] || tm[0])[1]).toFixed(0)}ms`).join(', ');
+      console.log('[SSG] hand-off', window.__ssg.handoff);
+    }));
+  }
+  const nav = $('#nav');
+  gsap.set(nav, { yPercent: -100, opacity: 0 });
+  // the page's first layout, paint and 3D frame are heavy: let them land while the glow still
+  // covers everything, so the reveal below plays from its first frame instead of jumping
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await intro.reveal({
+    horizonY: heroHorizonY(),
+    onLine: () => {
+      heroIntro.play();
+      gsap.to(nav, { yPercent: 0, opacity: 1, duration: 1.2, delay: 0.5, clearProps: 'transform,opacity' });
+    },
+  });
+  ScrollTrigger.refresh();
+  lenis?.resize();
+  lenis?.start();
+  return true;
 }
 
 boot().catch((err) => {
   staticFallback(err);
+  document.getElementById('intro')?.remove();
+  document.getElementById('intro-glow')?.remove();
+  root.classList.remove('intro-active', 'intro-fading');
   lenis?.start();
 });
 })();

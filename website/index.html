@@ -16,7 +16,7 @@
 
   <link rel="stylesheet" href="css/reset.css?v=34">
   <link rel="stylesheet" href="css/tokens.css?v=dusk-b">
-  <link rel="stylesheet" href="css/main.css?v=dusk-nocursor">
+  <link rel="stylesheet" href="css/main.css?v=store-1">
 
   <script type="importmap">
   {
@@ -27,14 +27,28 @@
   }
   </script>
   <script>
-    document.documentElement.classList.add('js');
-    // Warm up the GLB on desktop when served over http(s) (file:// uses an embedded copy instead)
-    if (location.protocol !== 'file:' && matchMedia('(min-width: 768px)').matches) {
-      var l = document.createElement('link');
-      l.rel = 'preload'; l.as = 'fetch'; l.crossOrigin = 'anonymous';
-      l.href = 'assets/01-hero/model/ssg-streetlight.web.glb?v=landscape-4';
-      document.head.appendChild(l);
-    }
+    (function () {
+      var root = document.documentElement;
+      root.classList.add('js');
+      // Store intro: plays once per session (?intro forces it, ?nointro skips it). main.js picks
+      // the mode (live 3D, video or a still poster); this only hides the page from the first paint.
+      var q = location.search, seen = false;
+      try { seen = sessionStorage.getItem('ssg-intro-seen') === '1'; } catch (e) {}
+      var intro = /[?&]intro\b/.test(q) || (!seen && !/[?&]nointro\b/.test(q));
+      if (intro) { root.dataset.intro = 'on'; root.classList.add('intro-active'); }
+      // Warm up the first GLB on desktop over http(s): the store when the live intro will run
+      // (the street light then loads in the background), otherwise the street light itself
+      var http = location.protocol !== 'file:';
+      var desktop = matchMedia('(min-width: 768px)').matches;
+      var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var href = intro ? (desktop && !still ? 'assets/00-intro/ssg-store.web.glb?v=store-1' : '') : 'assets/01-hero/model/ssg-streetlight.web.glb?v=landscape-4';
+      if (http && desktop && href) {
+        var l = document.createElement('link');
+        l.rel = 'preload'; l.as = 'fetch'; l.crossOrigin = 'anonymous';
+        l.href = href;
+        document.head.appendChild(l);
+      }
+    })();
   </script>
 </head>
 <body>
@@ -105,6 +119,18 @@
   </div>
 </div>
 
+
+<!-- ============ STORE INTRO (removed from the DOM once entered) ============ -->
+<section class="intro" id="intro" aria-label="Intro: the SSG store at dusk">
+  <div class="intro__stage">
+    <img class="intro__poster" alt="The SSG store at dusk: a glass storefront with a glowing sign, stone paving across the lawn and trees on either side" data-landscape="assets/00-intro/store-poster-landscape.webp?v=store-1" data-portrait="assets/00-intro/store-poster-portrait.webp?v=store-1" decoding="async">
+    <video class="intro__video" muted playsinline preload="none" aria-hidden="true" data-landscape="assets/00-intro/store-flyin-landscape.mp4?v=store-1" data-portrait="assets/00-intro/store-flyin-portrait.mp4?v=store-1"></video>
+    <p class="intro__label mono">// SHREE SHYAM GROUP — GUWAHATI</p>
+    <p class="intro__hint mono" aria-hidden="true">SCROLL TO ENTER <span class="intro__arrow">↓</span></p>
+    <button class="intro__skip mono" type="button">SKIP INTRO</button>
+  </div>
+</section>
+<div class="intro-glow" id="intro-glow" aria-hidden="true"><span class="intro-glow__line"></span></div>
 
 <!-- ============ NAV ============ -->
 <header class="nav" id="nav">
@@ -687,18 +713,21 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/CustomEase.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js" defer></script>
-<script src="js/scene.js?v=dusk-e7" defer></script>
+<script src="js/scene.js?v=store-1" defer></script>
+<script src="js/intro.js?v=store-1" defer></script>
 <script src="js/products.js?v=dusk-a" defer></script>
 <script src="js/process.js?v=dusk-fix1" defer></script>
 <script src="js/flag.js?v=dusk-a" defer></script>
 <script src="js/scanlines.js?v=dusk-f" defer></script>
-<script src="js/main.js?v=dusk-nocursor" defer></script>
+<script src="js/main.js?v=store-1" defer></script>
 <script>
   // Safety net: never leave visitors on the preloader if a script fails to load
   setTimeout(function () {
     if (window.__ssgBooted) return;
     var p = document.getElementById('preloader');
     if (p) p.remove();
+    ['intro', 'intro-glow'].forEach(function (id) { var el = document.getElementById(id); if (el) el.remove(); });
+    document.documentElement.classList.remove('intro-active');
     document.body.classList.remove('is-loading');
     document.documentElement.classList.add('no-webgl', 'static-panels', 'reduced-motion');
   }, 12000);

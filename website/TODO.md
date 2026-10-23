@@ -33,6 +33,16 @@ Built on the `dark-theme` branch (not merged: `main` auto-deploys). Preview scre
 - [ ] **Sign-off on the hero gradient** (slate → thin gold horizon). Note: the gold line was raised from §12.2's 92–100% to ~87–91% of the hero so it glows behind the grass island (approved internally); on phones it is a band tied to the street light.
 - [ ] **Hero sun:** it is the brightest element on the first screen (flat `--sun`, Figma size), where the reference has a small, low sun. Confirm it reads as intended, or make it smaller / dimmer.
 
+## Store intro (`store-intro` branch)
+
+The first screen is the SSG store at dusk (`assets/ssg-store-hq.glb`); scrolling flies through its doors into the hero. See the README, "Store intro".
+
+### Confirm with the client
+
+- [ ] **The store fascia is brand blue** (`M_SSGBlue`, `M_SSGBluePlain` in the model). §12.3 keeps `#2744DF` off the site, but this is the physical store's branding, so it is left as modelled (at dusk it reads as deep navy). Confirm, or it can be shifted to slate in `js/intro.js`.
+- [ ] **Sign-off on the intro itself**: the establishing shot vs `client-colour-reference.png`, the length of the scroll (250vh), and the warm glow → gold horizon line transition.
+- [ ] **The far horizon is generated** (a tiled lawn field and two low hazy ridges, as in the reference), because the model's lawn ends ~12 m from the store. A wider modelled landscape would replace it.
+
 ### Follow-ups
 
 - [ ] Phones have a small (4 px) horizontal overflow that predates the dark theme (it is on `main` too).

@@ -119,6 +119,54 @@ html:not(.js) .preloader { display: none; }
   background: var(--gold); transform: scaleY(0); transform-origin: top center; z-index: 1;
 }
 
+/* ---------- Store intro -------------------------------------------------- */
+/* While it plays the page underneath is not rendered: the hero boots (and plays its load-in)
+   only once the intro has been entered. The canvas is the page's shared #scene canvas. */
+.intro { display: none; }
+.intro-active .intro { display: block; position: relative; z-index: calc(var(--z-intro) + 1); height: 100vh; height: 100svh; }
+.intro-active #main, .intro-active .nav, .intro-active #scene-alt { display: none; }
+.intro-active.intro-3d .scene { z-index: var(--z-intro); }
+.intro-active.intro-video body, .intro-active.intro-static body { overflow: hidden; }
+.intro-fading .intro { display: block; position: fixed; inset: 0; z-index: calc(var(--z-intro) + 1); }
+.intro__stage {
+  position: relative; height: 100vh; height: 100svh; overflow: hidden;
+  /* behind the canvas/poster: the establishing shot's sky, so nothing flashes while it loads */
+  background: linear-gradient(180deg, #12171E 0%, #1E2630 40%, #2E3742 62%, #4E4A45 76%, #8A6A3A 82%, #E9A94A 84%, #2D2820 86%);
+}
+.intro-3d .intro__stage { background: none; }
+/* a soft cinematic vignette: keeps the labels legible and settles the far edges of the lawn */
+.intro__stage::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(18, 23, 30, .45) 0%, rgba(18, 23, 30, 0) 18%, rgba(18, 23, 30, 0) 72%, rgba(18, 23, 30, .7) 100%),
+    radial-gradient(120% 90% at 50% 45%, rgba(18, 23, 30, 0) 60%, rgba(18, 23, 30, .35) 100%);
+}
+.intro__poster, .intro__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.intro-3d .intro__poster, .intro-3d .intro__video, .intro-static .intro__video { display: none; }
+.intro__label, .intro__hint, .intro__skip { position: absolute; z-index: 2; font-size: 12px; letter-spacing: .14em; color: var(--ash); text-transform: uppercase; }
+.intro__label { left: var(--m, 40px); top: 34px; color: var(--text); text-shadow: 0 1px 12px rgba(18, 23, 30, .7); }
+.intro__hint {
+  left: 50%; bottom: 34px; translate: -50% 0; margin: 0; color: var(--text);
+  display: flex; align-items: center; gap: 10px; text-shadow: 0 1px 12px rgba(18, 23, 30, .7);
+}
+.intro__arrow { color: var(--gold); display: inline-block; animation: intro-nudge 1.8s var(--ease) infinite; }
+@keyframes intro-nudge { 0%, 100% { transform: translateY(-2px); opacity: .6; } 50% { transform: translateY(4px); opacity: 1; } }
+.intro__skip {
+  right: var(--m, 40px); bottom: 26px; padding: 8px 2px; color: var(--ash);
+  border-bottom: 1px solid transparent; transition: color .4s var(--ease), border-color .4s var(--ease);
+}
+.intro__skip:hover, .intro__skip:focus-visible { color: var(--gold); border-color: var(--gold); }
+/* the warm light the flight ends in, which collapses onto the hero's gold horizon line */
+.intro-glow {
+  position: fixed; inset: 0; z-index: calc(var(--z-intro) + 5); pointer-events: none; opacity: 0;
+  background: radial-gradient(130% 120% at 50% 52%, #FFECC4 0%, var(--sun) 35%, var(--gold) 75%, var(--amber) 100%);
+}
+.intro-glow__line {
+  position: absolute; left: 0; right: 0; top: 50%; height: 2px; opacity: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 14%, var(--sun) 50%, var(--gold) 86%, transparent 100%);
+  box-shadow: 0 0 18px 2px color-mix(in srgb, var(--gold) 70%, transparent), 0 0 60px 6px color-mix(in srgb, var(--gold) 30%, transparent);
+}
+
 /* ---------- Nav --------------------------------------------------------- */
 .nav {
   --nu: max(var(--u), .72px);
@@ -753,6 +801,9 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
    ========================================================================== */
 @media (max-width: 767px) {
   :root { --m: 16px; }
+  .intro__label { top: 22px; font-size: 11px; }
+  .intro__hint { bottom: 64px; font-size: 11px; }
+  .intro__skip { left: 50%; right: auto; translate: -50% 0; bottom: 18px; font-size: 11px; }
 
   .nav { height: 56px; background: color-mix(in srgb, var(--night) 80%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); pointer-events: auto; }
   .nav__bar, .nav__list { display: none; }
