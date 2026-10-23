@@ -9,6 +9,7 @@
    (x ≈ 0, z 3 → 20), and every kept leaf/blade is enlarged about its own centre so the
    canopies and lawn keep their coverage. The store, glass, doors, sign and paving are
    untouched. Node names (Door_L, Door_R, Glass…) and materials survive: no join/flatten.
+   Textures are re-encoded per role (see below) rather than with one lossy quality.
 
    Run from website/tools:
      npm install          (once; see package.json)
@@ -16,7 +17,7 @@
 */
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { prune, dedup, draco, textureCompress } from '@gltf-transform/functions';
+import { prune, dedup, draco } from '@gltf-transform/functions';
 import draco3d from 'draco3dgltf';
 import sharp from 'sharp';
 import { fileURLToPath } from 'node:url';
@@ -29,9 +30,9 @@ const OUT = path.join(here, '../assets/00-intro/ssg-store.web.glb');
 // keep: share of components kept near the path (`near`) and far from it (`far`);
 // grow: enlargement of each kept component about its centre (xz only for blades)
 const THIN = {
-  'Fine natural lawn blades': { near: 0.2, far: 0.05, grow: 1.6, flat: true },
-  'Natural leafy canopies':   { near: 0.24, far: 0.15, grow: 1.9 },
-  'Foliage':                  { near: 0.6, far: 0.4, grow: 1.25, flat: true, only: /GrassBlade/ },
+  'Fine natural lawn blades': { near: 0.34, far: 0.07, grow: 1.4, flat: true },
+  'Natural leafy canopies':   { near: 0.34, far: 0.22, grow: 1.6 },
+  'Foliage':                  { near: 0.8, far: 0.55, grow: 1.12, flat: true, only: /GrassBlade/ },
 };
 
 // deterministic PRNG so rebuilds are identical
@@ -117,14 +118,37 @@ for (const node of doc.getRoot().listNodes()) {
   console.log(`${node.getName()}: ${before} -> ${after} triangles`);
 }
 
-// prune the now-unreferenced vertices, then textures: max 2048 for the store, 1024 for vegetation and ground
+// prune the now-unreferenced vertices
 await doc.transform(prune({ keepAttributes: true }), dedup());
-const VEG = /^(leaf_|M_Bark|T_Bark|M_Grass|T_Grass|M_Soil|T_Soil|M_Rock|M_Paving|T_Paving|M_Path|T_Path|M_Curb|concrete_)/;
-await doc.transform(
-  textureCompress({ encoder: sharp, targetFormat: 'webp', quality: 82, resize: [1024, 1024], pattern: VEG }),
-  textureCompress({ encoder: sharp, targetFormat: 'webp', quality: 85, resize: [2048, 2048], pattern: /^(?!leaf_|M_Bark|T_Bark|M_Grass|T_Grass|M_Soil|T_Soil|M_Rock|M_Paving|T_Paving|M_Path|T_Path|M_Curb|concrete_)/ }),
-  draco({ method: 'edgebreaker', quantizePosition: 14, quantizeNormal: 10, quantizeTexcoord: 12 }),
-);
+
+// Textures. The source's are near-lossless WebP (15.8 MB), and a blanket lossy re-encode (q82) left
+// several at 3–8 % of their data: visibly smeared wood, paving, cladding and leaves. Each map is
+// re-encoded for its role instead, and keeps the original bytes whenever that isn't smaller:
+//   colour maps     lossy WebP q94 (sRGB, what the eye sees)
+//   normal maps     near-lossless WebP (lossy compression breaks the encoded directions)
+//   roughness / AO  lossy WebP q90 (smooth data)
+// and nothing is larger than 2048 px (1024 for vegetation and ground, 512 for the unseen roof).
+const SMALL = /^(leaf_|M_Bark|T_Bark|M_Grass|T_Grass|M_Soil|T_Soil|M_Rock|M_Paving|T_Paving|M_Path|T_Path|M_Curb|concrete_)/;
+for (const tex of doc.getRoot().listTextures()) {
+  const name = tex.getName() || '';
+  const src = Buffer.from(tex.getImage());
+  // the flat roof is above the camera the whole visit, so its maps can be small
+  const max = /^roof_/.test(name) ? 512 : SMALL.test(name) ? 1024 : 2048;
+  let img = sharp(src);
+  const meta = await img.metadata();
+  if (Math.max(meta.width, meta.height) > max) img = img.resize(max, max, { fit: 'inside' });
+  const opts = /normal/i.test(name) ? { nearLossless: true, quality: 60, effort: 6 }
+    : /rough|AO/i.test(name) ? { quality: 90, effort: 6 }
+      : { quality: 94, smartSubsample: true, effort: 6 };
+  const out = await img.webp(opts).toBuffer();
+  const resized = Math.max(meta.width, meta.height) > max;
+  if (out.length < src.length || resized || tex.getMimeType() !== 'image/webp') {
+    tex.setImage(new Uint8Array(out)).setMimeType('image/webp');
+    if (tex.getURI()) tex.setURI(tex.getURI().replace(/\.\w+$/, '.webp'));
+  }
+}
+// geometry: 14-bit UVs (tiled paving and cladding span many repeats) and 12-bit normals (smooth shading)
+await doc.transform(draco({ method: 'edgebreaker', quantizePosition: 14, quantizeNormal: 12, quantizeTexcoord: 14 }));
 
 let total = 0;
 doc.getRoot().listMeshes().forEach((m) => { total += triCount(m); });

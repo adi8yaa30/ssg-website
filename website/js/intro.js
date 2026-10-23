@@ -17,7 +17,7 @@
 window.SSG = window.SSG || {};
 
 const STORE_URL = 'assets/00-intro/ssg-store.web.glb';
-const STORE_VERSION = 'store-1';
+const STORE_VERSION = 'store-2';
 const SEEN_KEY = 'ssg-intro-seen';
 
 const DEG = Math.PI / 180;
@@ -26,7 +26,7 @@ const FOV_FAST = 47;       // widens as the light takes over, for a sense of spe
 const FOV_INSIDE = 40;     // a little wider inside the showroom
 const MIN_HFOV = 38;       // narrow windows widen the lens so the store still fits
 const PR_SLOW = 1.75;
-const PR_FAST = 1.25;      // pixel ratio while the camera is moving fast
+const PR_STEPS = [1.75, 1.5, 1.25];   // full sharpness; dropped a step only while frames are actually slow
 
 // Dusk look (§12): exposure, bloom (threshold high so only emissives bloom) and light levels
 const EXPOSURE = 0.95;
@@ -197,10 +197,10 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   spill.position.set(0, 2.4, 3.6);
   scene.add(spill);
 
-  // ---- Post: bloom on the HDR buffer, then tone mapping in the OutputPass
+  // ---- Post: bloom on the HDR buffer, tone mapping in the OutputPass, then anti-aliasing.
   // MSAA on the HDR buffer is the biggest GPU cost at Retina sizes (2520×1575 on a 1440 screen: 4× drops
-  // ~15 % of frames on a Radeon 5300M); there the 1.75× pixel ratio already smooths edges, so it's off.
-  // ?msaa=0|2|4 overrides it for QA.
+  // ~15 % of frames on a Radeon 5300M), so there edges are smoothed by an SMAA pass on the final image
+  // instead (~1 ms); at 1× the buffer is small enough for 4× MSAA. ?msaa=0|2|4 overrides it for QA.
   const msaa = new URLSearchParams(location.search).get('msaa');
   const samples = msaa !== null ? +msaa : Math.min(window.devicePixelRatio || 1, PR_SLOW) >= 1.5 ? 0 : 4;
   const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples });
@@ -209,6 +209,11 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), BLOOM.strength, BLOOM.radius, BLOOM.threshold);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
+  if (!samples && new URLSearchParams(location.search).get('aa') !== '0') {   // ?aa=0: no SMAA (QA)
+    const { SMAAPass } = await import('three/addons/postprocessing/SMAAPass.js');
+    composer.addPass(new SMAAPass(1, 1));
+  }
+  const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
   // ---- State
   const state = { p: 0, glass: 'cheap', adaptive: true, switches: 0 };
@@ -234,7 +239,10 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     const done = (gltf) => { try { setup(gltf); resolve(); } catch (e) { reject(e); } };
     if (isFile) reject(new Error('store GLB is not embedded for file://'));
     else {
-      loader.load(`${STORE_URL}?v=${STORE_VERSION}`, done, (e) => {
+      // QA (?debug&store=hq|<name>): load the 30 MB source or another build to compare quality
+      const variant = debug && new URLSearchParams(location.search).get('store');
+      const url = variant ? `assets/00-intro/${variant === 'hq' ? 'ssg-store-hq' : `ssg-store.${variant}`}.glb` : `${STORE_URL}?v=${STORE_VERSION}`;
+      loader.load(url, done, (e) => {
         if (e.lengthComputable) { bytes = e.loaded / e.total; report(); }
       }, reject);
     }
@@ -258,7 +266,8 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
       list.forEach((m) => {
         if (!m) return;
         mats[m.name] = m;
-        if (m.map) m.map.anisotropy = 4;
+        // full anisotropic filtering: the paving and lawn are mostly seen at grazing angles
+        ['map', 'normalMap', 'roughnessMap', 'aoMap'].forEach((k) => { if (m[k]) m[k].anisotropy = maxAniso; });
         // leaves and foliage blades sway a little (vertex shader, no CPU work)
         if (/^Detailed natural leaf|^M_GrassBlade/.test(m.name) && !m.userData.sway) {
           m.userData.sway = true;
@@ -371,11 +380,10 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
 
   const camPos = new THREE.Vector3();
   const look = new THREE.Vector3();
-  const lastPos = new THREE.Vector3(0, 0, 999);
   let fovBase = FOV;
   let vw = window.innerWidth, vh = window.innerHeight;
-  let pr = Math.min(window.devicePixelRatio || 1, PR_SLOW);
-  let fastFor = 0;
+  const prPin = +new URLSearchParams(location.search).get('pr') || 0;   // QA: ?pr=1.5 pins the pixel ratio
+  let pr = Math.min(window.devicePixelRatio || 1, prPin || PR_SLOW);
 
   function fovFor(aspect) {
     // keep at least MIN_HFOV horizontally, so the storefront fits portrait / narrow windows
@@ -456,16 +464,29 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     composer.render(dt);
   }
 
-  // per-frame: pose, adapt the pixel ratio to camera speed, draw
+  // Dynamic resolution: render at full sharpness (1.75) and step the pixel ratio down only when the
+  // measured frame time stays above ~20 ms (a slow or busy GPU); step back up after 3 s of comfortable
+  // frames. Each switch reallocates the buffers (a hitch of its own), so a level the GPU has had to
+  // leave twice is not tried again during this visit.
+  let ema = 1 / 60, slowFor = 0, fastFor = 0, step = 0;
+  const drops = PR_STEPS.map(() => 0);
+  function adapt(dt) {
+    if (dt <= 0 || dt > 0.25) return;              // ignore stalls (tab switches, the first frames)
+    ema += (dt - ema) * 0.08;
+    slowFor = ema > 0.0205 ? slowFor + dt : 0;
+    fastFor = ema < 0.0172 ? fastFor + dt : 0;
+    if (slowFor > 0.5 && step < PR_STEPS.length - 1) { drops[step]++; step++; slowFor = 0; ema = 1 / 60; }
+    else if (fastFor > 3 && step > 0 && drops[step - 1] < 2) { step--; fastFor = 0; }
+    setRatio(Math.min(window.devicePixelRatio || 1, PR_STEPS[step]));
+  }
+
+  // per-frame: pose, adapt the resolution to the frame time, draw
   let clock = 0;
   function frame(dt) {
     if (!ready || capturing) return;
     clock += dt;
     pose(state.p, clock);
-    const speed = lastPos.z > 900 ? 0 : camPos.distanceTo(lastPos) / Math.max(dt, 1 / 240);
-    lastPos.copy(camPos);
-    if (!state.adaptive) { /* fixed ratio (QA) */ } else if (speed > 2.2) { fastFor = 0.45; setRatio(Math.min(window.devicePixelRatio || 1, PR_FAST)); }
-    else if ((fastFor -= dt) <= 0) setRatio(Math.min(window.devicePixelRatio || 1, PR_SLOW));
+    if (state.adaptive && !prPin) adapt(dt);
     render(dt);
   }
 

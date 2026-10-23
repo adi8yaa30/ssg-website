@@ -7,7 +7,7 @@
    Asset mapping (provided folder -> web-safe folder used here)
    --------------------------------------------------------------------------
    assets/ssg-store-hq.glb                                 -> assets/00-intro/ssg-store.web.glb
-        (tools/optimize-store.mjs: vegetation thinned, WebP <= 2048, Draco; 30 MB -> 4 MB)
+        (tools/optimize-store.mjs: vegetation thinned, textures re-encoded per role, Draco; 30 MB -> 9.1 MB)
    assets/1. Hero-Section/ssg-streetlight-realistic.glb   -> assets/01-hero/model/ssg-streetlight.web.glb
         (gltf-transform optimize: Draco + WebP 2048, palette/simplify off so
          node + material names such as Panel and M_LED survive; 34.6 MB -> 1.95 MB)

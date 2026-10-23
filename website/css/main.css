@@ -124,7 +124,7 @@ html:not(.js) .preloader { display: none; }
    only once the intro has been entered. The canvas is the page's shared #scene canvas. */
 .intro { display: none; }
 .intro-active .intro { display: block; position: relative; z-index: calc(var(--z-intro) + 1); height: 100vh; height: 100svh; }
-.intro-active #main, .intro-active .nav, .intro-active #scene-alt { display: none; }
+.intro-active #main, .intro-active .nav, .intro-active .footer, .intro-active #scene-alt { display: none; }
 .intro-active.intro-3d .scene { z-index: var(--z-intro); }
 .intro-active.intro-video body, .intro-active.intro-static body { overflow: hidden; }
 .intro-fading .intro { display: block; position: fixed; inset: 0; z-index: calc(var(--z-intro) + 1); }
