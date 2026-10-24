@@ -197,6 +197,43 @@
 .ab-val__text { color: var(--ash); font-size: clamp(15px, 1.05vw, 17px); line-height: 1.5; }
 .ab-val__num { position: absolute; right: 18px; top: 16px; font-size: 11px; letter-spacing: .14em; color: var(--ash); }
 
+/* ---------- 07 · Our Divisions --------------------------------------------- */
+.ab-divs__row { display: flex; gap: clamp(10px, 1.2vw, 18px); height: clamp(440px, 40vw, 600px); }
+.ab-div {
+  position: relative; flex: 1 1 0; min-width: 0; overflow: hidden; cursor: pointer; outline: none;
+  background: linear-gradient(180deg, var(--deep), var(--night)); border: 1px solid var(--line); border-radius: 4px;
+  transition: flex-grow .8s var(--ease), border-color .5s var(--ease);
+}
+.ab-div.is-active { flex-grow: 3.2; border-color: color-mix(in srgb, var(--gold) 45%, transparent); cursor: default; }
+.ab-div:focus-visible { outline: 2px solid var(--sun); outline-offset: 3px; }
+.ab-div__media { position: absolute; inset: 0 0 38% 0; display: grid; place-items: center; }
+.ab-div__img { position: relative; z-index: 1; width: 84%; height: 92%; object-fit: contain; opacity: 0; transform: scale(.86) translateY(14px); transition: opacity .7s var(--ease), transform 1s var(--ease); }
+.ab-div__img.ab-placeholder { width: 74%; height: 76%; border: 1px solid var(--line); }
+.ab-div__glow { /* pulsing warm glow under the image */
+  position: absolute; left: 50%; top: 58%; width: 60%; aspect-ratio: 2 / 1; translate: -50% -50%; border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, color-mix(in srgb, var(--gold) 40%, transparent), transparent 70%);
+  opacity: 0; transition: opacity .8s var(--ease);
+}
+.ab-div.is-active .ab-div__img { opacity: 1; transform: none; }
+.ab-div.is-active .ab-div__glow { opacity: 1; }
+.ab-div__body {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: clamp(20px, 2.2vw, 34px); display: grid; gap: 10px;
+  opacity: 0; transform: translateY(30px); transition: opacity .5s var(--ease), transform .8s var(--ease);
+}
+.ab-div.is-active .ab-div__body { opacity: 1; transform: none; transition-delay: .25s; }
+.ab-div__num { font-size: 11px; letter-spacing: .14em; color: var(--gold); }
+.ab-div__title { font-weight: 400; font-size: clamp(22px, 2vw, 34px); color: var(--text); white-space: nowrap; }
+.ab-div__text { color: var(--ash); font-size: clamp(15px, 1.05vw, 17px); line-height: 1.5; max-width: 44ch; }
+.ab-div__link { justify-self: start; margin-top: 6px; font-size: 12px; letter-spacing: .12em; color: var(--gold); border-bottom: 1px solid transparent; transition: border-color .4s var(--ease); }
+.ab-div__link:hover, .ab-div__link:focus-visible { border-color: var(--gold); }
+/* compressed panels show their title turned on its side */
+.ab-div__vtitle {
+  position: absolute; left: 50%; bottom: clamp(24px, 3vw, 44px); translate: -50% 0; margin: 0;
+  writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap;
+  font-size: clamp(18px, 1.6vw, 26px); color: var(--ash); transition: opacity .4s var(--ease);
+}
+.ab-div.is-active .ab-div__vtitle { opacity: 0; }
+
 /* ---------- Tablet --------------------------------------------------------- */
 @media (max-width: 1099px) and (min-width: 768px) {
   .ab-values__grid { grid-template-columns: 1fr 1fr; }
@@ -212,6 +249,13 @@
   .ab-dir__grid { grid-template-columns: 1fr; }
   .ab-dir__media { max-width: 360px; }
   .ab-values__grid { grid-template-columns: 1fr; }
+  /* divisions become stacked cards, all open */
+  .ab-divs__row { flex-direction: column; height: auto; }
+  .ab-div, .ab-div.is-active { flex: none; cursor: default; }
+  .ab-div__media { position: relative; inset: auto; height: 220px; }
+  .ab-div__img, .ab-div__glow { opacity: 1 !important; transform: none !important; }
+  .ab-div__body { position: relative; opacity: 1; transform: none; }
+  .ab-div__vtitle { display: none; }
   .ab-hero { --horizon: 78%; }
   .ab-hero__sun { right: 8vw; width: 44vw; }
 }

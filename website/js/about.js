@@ -272,6 +272,27 @@ function buildValues() {
   });
 }
 
+// ---------------------------------------------------------------------------
+// 07 · Our Divisions: the hovered (or focused) panel widens to ~60% and its image and text come in;
+// the others compress to a rotated title. Images float gently over a pulsing glow.
+function buildDivisions() {
+  const sec = $('.ab-divs');
+  const panels = $$('.ab-div', sec);
+  scrambleOnEnter($('.ab-label', sec));
+  const activate = (p) => panels.forEach((q) => q.classList.toggle('is-active', q === p));
+  panels.forEach((p) => {
+    p.addEventListener('pointerenter', () => { if (!mobile) activate(p); });
+    p.addEventListener('focus', () => activate(p));
+    p.addEventListener('click', () => activate(p));
+  });
+  if (reduced) return;
+  gsap.from(panels, { y: 50, opacity: 0, duration: 1.4, stagger: 0.1, scrollTrigger: { trigger: '.ab-divs__row', start: 'top 80%', toggleActions: toggle } });
+  panels.forEach((p, i) => {
+    whileVisible(sec, gsap.to($('.ab-div__media', p), { y: -10, duration: 3.2 + i * 0.4, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
+    whileVisible(sec, gsap.fromTo($('.ab-div__glow', p), { scale: 0.92 }, { scale: 1.08, duration: 2.4 + i * 0.3, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
+  });
+}
+
 // mono labels scramble in when they first scroll into view
 function scrambleOnEnter(el) {
   if (!el || reduced) return;
@@ -331,6 +352,7 @@ async function boot() {
   buildNumbers();
   buildDirector();
   buildValues();
+  buildDivisions();
   basicReveals();
   buildCta();
   buildProgress();
