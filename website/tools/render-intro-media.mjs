@@ -19,12 +19,13 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(here, '../assets/00-intro');
-const URL = 'http://localhost:5173/?intro=3d&debug';
+const URL = 'http://localhost:5173/?intro=3d&debug&msaa=4';   // offline: always 4× MSAA, whatever the GPU
 const FPS = 30;
 
+// Full HD video at CRF 20 (~5–8 Mbps: 720p at 1.2 Mbps was visibly blocky), posters at 2560 px
 const VARIANTS = [
-  { name: 'landscape', poster: [1920, 1080], video: [1280, 720], crf: 27 },
-  { name: 'portrait', poster: [1080, 2340], video: [720, 1560], crf: 27 },   // 9:19.5 phones; shorter ones crop sky/lawn
+  { name: 'landscape', poster: [2560, 1440], video: [1920, 1080], crf: 20 },
+  { name: 'portrait', poster: [1440, 2560], video: [1080, 1920], crf: 20 },
 ];
 
 // The fly-in on a clock, paced exactly like the live visit when the visitor scrolls straight through
@@ -64,7 +65,7 @@ const DURATION = FRAMES.length / FPS;
 for (const v of VARIANTS) {
   // poster: the establishing shot at rest
   await page.evaluate(([w, h]) => window.__ssg.intro.store.capture.begin(w, h), v.poster);
-  const poster = await page.evaluate(() => window.__ssg.intro.store.capture.shot({ p: 0, t: 0, type: 'image/webp', quality: 0.82 }));
+  const poster = await page.evaluate(() => window.__ssg.intro.store.capture.shot({ p: 0, t: 0, type: 'image/webp', quality: 0.92 }));
   const posterFile = path.join(OUT, `store-poster-${v.name}.webp`);
   dataToFile(poster, posterFile);
   await page.evaluate(() => window.__ssg.intro.store.capture.end());
@@ -76,15 +77,16 @@ for (const v of VARIANTS) {
   for (let i = 0; i <= n; i++) {
     const t = i / FPS;
     const { p, veil } = FRAMES[i];
-    const jpg = await page.evaluate((o) => window.__ssg.intro.store.capture.shot(o), { p, t, veil, type: 'image/jpeg', quality: 0.93 });
+    const jpg = await page.evaluate((o) => window.__ssg.intro.store.capture.shot(o), { p, t, veil, type: 'image/jpeg', quality: 0.98 });
     dataToFile(jpg, path.join(dir, `f${String(i).padStart(4, '0')}.jpg`));
   }
   await page.evaluate(() => window.__ssg.intro.store.capture.end());
   const videoFile = path.join(OUT, `store-flyin-${v.name}.mp4`);
   execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-framerate', String(FPS), '-i', path.join(dir, 'f%04d.jpg'),
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', String(v.crf), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', videoFile]);
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', String(v.crf), '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', videoFile]);
   fs.rmSync(dir, { recursive: true, force: true });
   const kb = (f) => `${(fs.statSync(f).size / 1024).toFixed(0)} KB`;
-  console.log(`${v.name}: poster ${kb(posterFile)}, video ${kb(videoFile)} (${n + 1} frames, ${DURATION.toFixed(1)} s)`);
+  const mbps = (fs.statSync(videoFile).size * 8 / DURATION / 1e6).toFixed(1);
+  console.log(`${v.name}: poster ${v.poster.join('×')} ${kb(posterFile)}, video ${v.video.join('×')} ${kb(videoFile)} (${mbps} Mbps, ${n + 1} frames, ${DURATION.toFixed(1)} s)`);
 }
 await browser.close();
