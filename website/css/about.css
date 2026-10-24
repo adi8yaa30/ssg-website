@@ -234,6 +234,32 @@
 }
 .ab-div.is-active .ab-div__vtitle { opacity: 0; }
 
+/* ---------- 08 · Our Journey ----------------------------------------------- */
+.ab-journey { --node-y: 58%; }
+.ab-journey__pin { position: relative; height: 100vh; height: 100svh; min-height: 620px; display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); padding-top: clamp(80px, 12vh, 140px); overflow: hidden; }
+.ab-journey__land { position: absolute; left: -10%; bottom: 0; width: 130%; max-width: none; height: auto; opacity: .22; pointer-events: none; will-change: transform;
+  -webkit-mask: linear-gradient(180deg, transparent 0%, #000 45%); mask: linear-gradient(180deg, transparent 0%, #000 45%); }
+.ab-journey__viewport { position: relative; }
+.ab-journey__list { position: relative; display: flex; height: 100%; padding-left: var(--gut); padding-right: 30vw; width: max-content; will-change: transform; }
+.ab-journey__rail { position: absolute; left: 0; right: 0; top: var(--node-y); height: 1px; background: var(--line); list-style: none; }
+.ab-journey__fill { position: absolute; inset: 0; background: var(--gold); box-shadow: 0 0 10px var(--gold); transform: scaleX(0); transform-origin: 0 50%; }
+.ab-ms { position: relative; width: clamp(300px, 34vw, 560px); height: 100%; list-style: none; }
+.ab-ms__year {
+  position: absolute; left: 0; bottom: calc(100% - var(--node-y) + 34px); font-size: clamp(64px, 9vw, 160px); line-height: .9;
+  color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--text) 30%, transparent);
+  transition: color .7s var(--ease), -webkit-text-stroke-color .7s var(--ease), text-shadow .7s var(--ease);
+}
+.ab-ms.is-on .ab-ms__year { color: var(--gold); -webkit-text-stroke-color: var(--gold); text-shadow: 0 0 30px color-mix(in srgb, var(--gold) 35%, transparent); }
+.ab-ms__year[data-todo-year] { letter-spacing: .02em; }
+.ab-ms__node {
+  position: absolute; left: 0; top: var(--node-y); width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+  background: var(--night); border: 1px solid color-mix(in srgb, var(--text) 35%, transparent);
+  transition: background-color .5s var(--ease), border-color .5s var(--ease), box-shadow .5s var(--ease), transform .5s var(--ease);
+}
+.ab-ms.is-on .ab-ms__node { background: var(--sun); border-color: var(--gold); box-shadow: 0 0 0 6px color-mix(in srgb, var(--gold) 18%, transparent), 0 0 22px var(--gold); transform: scale(1.15); }
+.ab-ms__text { position: absolute; left: 0; top: calc(var(--node-y) + 30px); max-width: 26ch; color: var(--ash); font-size: clamp(16px, 1.3vw, 21px); line-height: 1.45; transition: color .6s var(--ease); }
+.ab-ms.is-on .ab-ms__text { color: var(--text); }
+
 /* ---------- Tablet --------------------------------------------------------- */
 @media (max-width: 1099px) and (min-width: 768px) {
   .ab-values__grid { grid-template-columns: 1fr 1fr; }
@@ -256,6 +282,16 @@
   .ab-div__img, .ab-div__glow { opacity: 1 !important; transform: none !important; }
   .ab-div__body { position: relative; opacity: 1; transform: none; }
   .ab-div__vtitle { display: none; }
+  /* the timeline turns vertical, with the gold track on the left */
+  .ab-journey__pin { height: auto; min-height: 0; padding-block: var(--sec); }
+  .ab-journey__land { display: none; }
+  .ab-journey__list { flex-direction: column; width: auto; height: auto; padding: 0 var(--gut) 0 calc(var(--gut) + 28px); gap: 44px; }
+  .ab-journey__rail { left: calc(var(--gut) + 6px); right: auto; top: 0; bottom: 0; width: 1px; height: auto; }
+  .ab-journey__fill { transform: scaleY(0); transform-origin: 50% 0; }
+  .ab-ms { width: auto; height: auto; display: grid; gap: 8px; }
+  .ab-ms__year, .ab-ms__text, .ab-ms__node { position: relative; inset: auto; bottom: auto; }
+  .ab-ms__year { font-size: 52px; }
+  .ab-ms__node { position: absolute; left: -22px; top: 22px; margin: 0; }
   .ab-hero { --horizon: 78%; }
   .ab-hero__sun { right: 8vw; width: 44vw; }
 }

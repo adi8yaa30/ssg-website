@@ -293,6 +293,42 @@ function buildDivisions() {
   });
 }
 
+// ---------------------------------------------------------------------------
+// 08 · Our Journey: pinned horizontal scroll. The gold track draws ahead of the reader, nodes ignite
+// as they're reached, the huge outlined years fill with gold; the scanline landscape drifts behind.
+// Phones: a vertical timeline, the track filling down the left edge.
+let journeyST = null;
+function buildJourney() {
+  const sec = $('.ab-journey');
+  const list = $('.ab-journey__list', sec);
+  const fill = $('.ab-journey__fill', sec);
+  const items = $$('.ab-ms', sec);
+  scrambleOnEnter($('.ab-label', sec));
+  if (reduced) { items.forEach((i) => i.classList.add('is-on')); gsap.set(fill, { scaleX: 1, scaleY: 1 }); return; }
+  if (!desktopMotion) {
+    gsap.to(fill, { scaleY: 1, ease: 'none', scrollTrigger: { trigger: list, start: 'top 70%', end: 'bottom 60%', scrub: true } });
+    items.forEach((it) => ScrollTrigger.create({ trigger: it, start: 'top 65%', onToggle: (self) => it.classList.toggle('is-on', self.isActive || self.progress === 1), end: 'max' }));
+    return;
+  }
+  const dist = () => Math.max(0, list.scrollWidth - window.innerWidth);
+  const nodesX = () => items.map((it) => it.offsetLeft);
+  let xs = nodesX();
+  const tween = gsap.to(list, { x: () => -dist(), ease: 'none' });
+  // the track runs ahead of the viewport's 70% line; a node ignites once it passes 55%
+  const update = (progress) => {
+    const shift = progress * dist();
+    const head = shift + window.innerWidth * 0.7;
+    gsap.set(fill, { scaleX: Math.min(1, head / list.scrollWidth) });
+    items.forEach((it, i) => it.classList.toggle('is-on', xs[i] - shift < window.innerWidth * 0.55));
+  };
+  journeyST = ScrollTrigger.create({
+    trigger: sec, start: 'top top', end: () => `+=${dist()}`, pin: true, scrub: 0.6, animation: tween, invalidateOnRefresh: true,
+    onRefresh: (self) => { xs = nodesX(); update(self.progress); },
+    onUpdate: (self) => update(self.progress),
+  });
+  gsap.fromTo('.ab-journey__land', { xPercent: 0 }, { xPercent: -8, ease: 'none', scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${dist()}`, scrub: true } });
+}
+
 // mono labels scramble in when they first scroll into view
 function scrambleOnEnter(el) {
   if (!el || reduced) return;
@@ -353,6 +389,7 @@ async function boot() {
   buildDirector();
   buildValues();
   buildDivisions();
+  buildJourney();
   basicReveals();
   buildCta();
   buildProgress();
