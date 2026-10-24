@@ -143,6 +143,50 @@ function buildNumbers() {
   });
 }
 
+// ---------------------------------------------------------------------------
+// 05 · From the Director: a gold scan line reveals the portrait (scanlines first, resolving to the
+// photo); the quote types in behind a blinking gold caret; portrait and panel follow the mouse
+function buildDirector() {
+  const sec = $('.ab-dir');
+  const portrait = $('.ab-dir__portrait', sec);
+  scrambleOnEnter($('.ab-label', sec));
+  if (reduced) return;
+  gsap.set(portrait, { '--hide': '100%', '--scan': 0 });
+  gsap.set('.ab-dir__lines', { opacity: 0 });
+  // the quote types in with the caret riding just after the last character typed
+  const quote = $('[data-typequote]', sec);
+  const caret = $('.ab-dir__caret', sec);
+  const box = quote.parentElement;
+  const chars = SplitText.create(quote, { type: 'words,chars', charsClass: 'type-char' }).chars;
+  gsap.set(chars, { autoAlpha: 0 });
+  const placeCaret = (ch) => {
+    const b = box.getBoundingClientRect();
+    const r = ch.getBoundingClientRect();
+    gsap.set(caret, { x: r.right - b.left, y: r.bottom - b.top });
+  };
+  placeCaret(chars[0]);
+  const typing = gsap.timeline({ paused: true });
+  chars.forEach((ch, i) => typing.call(() => { gsap.set(ch, { autoAlpha: 1 }); placeCaret(ch); }, null, i * 0.028));
+  gsap.timeline({ scrollTrigger: { trigger: portrait, start: 'top 75%', toggleActions: 'play none none none' } })
+    .to('.ab-dir__lines', { opacity: 1, duration: 0.5, ease: 'power1.out' }, 0)
+    .to(portrait, { '--scan': 1, duration: 0.2 }, 0.3)
+    .to(portrait, { '--hide': '0%', duration: 1.8, ease: 'power2.inOut' }, 0.35)
+    .to(portrait, { '--scan': 0, duration: 0.4 }, 2.05)
+    .to('.ab-dir__lines', { opacity: 0, duration: 0.8 }, 1.4)
+    .add(() => typing.play(), 0.6);
+  if (!finePointer) return;
+  const px = gsap.quickTo(portrait, 'x', { duration: 0.8, ease: 'power3.out' });
+  const py = gsap.quickTo(portrait, 'y', { duration: 0.8, ease: 'power3.out' });
+  const bx = gsap.quickTo('.ab-dir__panel', 'x', { duration: 1.1, ease: 'power3.out' });
+  const by = gsap.quickTo('.ab-dir__panel', 'y', { duration: 1.1, ease: 'power3.out' });
+  sec.addEventListener('pointermove', (e) => {
+    const nx = e.clientX / window.innerWidth - 0.5;
+    const ny = e.clientY / window.innerHeight - 0.5;
+    px(nx * 18); py(ny * 14); bx(nx * -26); by(ny * -18);
+  });
+  sec.addEventListener('pointerleave', () => { px(0); py(0); bx(0); by(0); });
+}
+
 // mono labels scramble in when they first scroll into view
 function scrambleOnEnter(el) {
   if (!el || reduced) return;
@@ -200,6 +244,7 @@ async function boot() {
   buildStory();
   buildMissionVision();
   buildNumbers();
+  buildDirector();
   basicReveals();
   buildCta();
   buildProgress();
