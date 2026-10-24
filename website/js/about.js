@@ -349,6 +349,80 @@ function buildCertifications() {
   });
 }
 
+// ---------------------------------------------------------------------------
+// 10 · In the Field: tiles reveal with staggered clip-path wipes; on desktop the track is dragged with
+// inertia and skews a little at speed (arrow keys move it too); hover removes the grade and types the
+// caption. Phones and reduced motion get a native horizontal scroll.
+function buildField() {
+  const sec = $('.ab-field');
+  const viewport = $('.ab-field__viewport', sec);
+  const track = $('.ab-field__track', sec);
+  const tiles = $$('.ab-tile', sec);
+  scrambleOnEnter($('.ab-label', sec));
+  // captions type in on hover (and are fully shown for touch / reduced motion)
+  tiles.forEach((t) => {
+    const cap = $('.ab-tile__cap', t);
+    const chars = SplitText.create(cap, { type: 'words,chars', charsClass: 'type-char' }).chars;
+    if (reduced || !finePointer) { chars.forEach((c) => { c.style.visibility = 'visible'; }); return; }
+    let tw = null;
+    t.addEventListener('pointerenter', () => {
+      tw?.kill();
+      chars.forEach((c) => { c.style.visibility = 'hidden'; });
+      tw = gsap.to({}, { duration: chars.length * 0.022, ease: 'none', onUpdate() { const n = Math.ceil(this.progress() * chars.length); chars.forEach((c, i) => { c.style.visibility = i < n ? 'visible' : 'hidden'; }); } });
+    });
+  });
+  if (reduced) return;
+  gsap.fromTo(tiles, { clipPath: 'inset(0% 100% 0% 0%)' }, {
+    clipPath: 'inset(0% 0% 0% 0%)', duration: 1.3, stagger: 0.09,
+    scrollTrigger: { trigger: viewport, start: 'top 80%', toggleActions: 'play none none none' },
+    onComplete: () => gsap.set(tiles, { clearProps: 'clipPath' }),
+  });
+  if (!desktopMotion || !finePointer) return;
+
+  // drag with inertia; skew follows the velocity
+  const st = { x: 0, v: 0 };
+  const minX = () => Math.min(0, viewport.clientWidth - track.scrollWidth - parseFloat(getComputedStyle(viewport).paddingLeft) * 2);
+  const clampX = (x) => Math.max(minX(), Math.min(0, x));
+  const skewTo = gsap.quickTo(track, 'skewX', { duration: 0.4, ease: 'power3.out' });
+  const apply = () => gsap.set(track, { x: st.x });
+  let dragging = false, startX = 0, startPX = 0, lastX = 0, lastT = 0, glide = null;
+  viewport.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    dragging = true; glide?.kill();
+    startX = st.x; startPX = lastX = e.clientX; lastT = performance.now(); st.v = 0;
+    viewport.setPointerCapture(e.pointerId);
+    viewport.classList.add('is-dragging');
+  });
+  viewport.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const now = performance.now();
+    st.v = (e.clientX - lastX) / Math.max(1, now - lastT) * 1000;
+    lastX = e.clientX; lastT = now;
+    // a little resistance past either end
+    const raw = startX + (e.clientX - startPX);
+    const c = clampX(raw);
+    st.x = c + (raw - c) * 0.25;
+    apply();
+    skewTo(Math.max(-6, Math.min(6, -st.v / 400)));
+  });
+  const release = () => {
+    if (!dragging) return;
+    dragging = false;
+    viewport.classList.remove('is-dragging');
+    glide = gsap.to(st, { x: clampX(st.x + st.v * 0.35), duration: 1.2, ease: 'power3.out', onUpdate: apply });
+    skewTo(0);
+  };
+  viewport.addEventListener('pointerup', release);
+  viewport.addEventListener('pointercancel', release);
+  viewport.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    glide?.kill();
+    glide = gsap.to(st, { x: clampX(st.x + (e.key === 'ArrowLeft' ? 1 : -1) * viewport.clientWidth * 0.4), duration: 0.8, onUpdate: apply });
+  });
+  ScrollTrigger.addEventListener('refresh', () => { st.x = clampX(st.x); apply(); });
+}
+
 // mono labels scramble in when they first scroll into view
 function scrambleOnEnter(el) {
   if (!el || reduced) return;
@@ -411,6 +485,7 @@ async function boot() {
   buildDivisions();
   buildJourney();
   buildCertifications();
+  buildField();
   basicReveals();
   buildCta();
   buildProgress();

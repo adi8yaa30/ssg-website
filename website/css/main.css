@@ -604,8 +604,14 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
 .flag__project { position: absolute; left: calc(80 * var(--u)); top: calc(603 * var(--u)); width: calc(381 * var(--u)); }
 .flag__project img { width: 100%; height: calc(343 * var(--u)); object-fit: cover; filter: brightness(.72) saturate(.7) sepia(.15); }
 .flag__project-shade { position: absolute; left: 0; top: 0; width: 100%; height: calc(343 * var(--u)); background: var(--night); opacity: .25; pointer-events: none; }
-.flag__project img.flag__project-true { position: absolute; left: 0; top: 0; filter: none;
-  -webkit-mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 901" preserveAspectRatio="none"%3E%3Cfilter id="f"%3E%3CfeGaussianBlur stdDeviation="2"/%3E%3C/filter%3E%3Cpolygon points="444,58 458,62 475,95 500,150 525,205 548,250 570,290 590,330 607,362 596,364 575,352 552,335 538,300 520,262 498,245 470,228 447,222" filter="url%28%23f%29"/%3E%3C/svg%3E') 0 0 / 100% 100% no-repeat; mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 901" preserveAspectRatio="none"%3E%3Cfilter id="f"%3E%3CfeGaussianBlur stdDeviation="2"/%3E%3C/filter%3E%3Cpolygon points="444,58 458,62 475,95 500,150 525,205 548,250 570,290 590,330 607,362 596,364 575,352 552,335 538,300 520,262 498,245 470,228 447,222" filter="url%28%23f%29"/%3E%3C/svg%3E') 0 0 / 100% 100% no-repeat; }
+.flag__project img.flag__project-true { position: absolute; left: 0; top: 0; filter: none; }
+/* the flag in assets/04-flag/project-image.webp, traced in the photo's own 1000 × 901 frame: an ungraded copy
+   masked to it keeps the national flag in true colour over a dusk-graded photo (§12.7). The image box
+   must keep the photo's aspect ratio for the mask to line up. */
+.flag-true-mask {
+  -webkit-mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 901" preserveAspectRatio="none"%3E%3Cfilter id="f"%3E%3CfeGaussianBlur stdDeviation="2"/%3E%3C/filter%3E%3Cpolygon points="444,58 458,62 475,95 500,150 525,205 548,250 570,290 590,330 607,362 596,364 575,352 552,335 538,300 520,262 498,245 470,228 447,222" filter="url%28%23f%29"/%3E%3C/svg%3E') 0 0 / 100% 100% no-repeat;
+  mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 901" preserveAspectRatio="none"%3E%3Cfilter id="f"%3E%3CfeGaussianBlur stdDeviation="2"/%3E%3C/filter%3E%3Cpolygon points="444,58 458,62 475,95 500,150 525,205 548,250 570,290 590,330 607,362 596,364 575,352 552,335 538,300 520,262 498,245 470,228 447,222" filter="url%28%23f%29"/%3E%3C/svg%3E') 0 0 / 100% 100% no-repeat;
+}
 .flag__project figcaption { margin-top: calc(16 * var(--u)); width: calc(240 * var(--u)); font-size: max(10px, calc(16.5 * var(--u))); line-height: calc(20 * var(--u)); }
 .flag__project figcaption span { display: block; }
 .flag__project figcaption { color: var(--ash); }

@@ -276,11 +276,35 @@
 .ab-cert__name { position: relative; font-size: clamp(14px, 1.3vw, 20px); line-height: 1.25; letter-spacing: .06em; color: var(--text); }
 .ab-cert__desc { position: relative; color: var(--text); font-size: 14px; line-height: 1.45; }
 
+/* ---------- 10 · In the Field ---------------------------------------------- */
+.ab-field__head { grid-template-columns: 1fr auto; align-items: end; }
+.ab-field__hint { font-size: 12px; letter-spacing: .16em; color: var(--ash); }
+.ab-field__viewport { overflow: hidden; padding-inline: var(--gut); outline: none; cursor: grab; touch-action: pan-y; }
+.ab-field__viewport:focus-visible { outline: 2px solid var(--sun); outline-offset: -2px; }
+.ab-field__viewport.is-dragging { cursor: grabbing; }
+.ab-field__track { display: flex; gap: clamp(12px, 1.4vw, 22px); width: max-content; align-items: flex-start; will-change: transform; user-select: none; -webkit-user-select: none; }
+.ab-field__col { display: grid; gap: clamp(12px, 1.4vw, 22px); width: clamp(240px, 24vw, 400px); }
+.ab-field__col:first-child { width: clamp(300px, 32vw, 520px); }
+.ab-tile { position: relative; margin: 0; overflow: hidden; border: 1px solid var(--line); }
+.ab-tile__img { position: relative; aspect-ratio: var(--ar, 4 / 3); }
+.ab-tile__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; transition: filter .6s var(--ease), transform 1.2s var(--ease); }
+.ab-tile__img .ab-tile__true { filter: none; }
+.ab-tile:hover .ab-tile__img img { filter: none; transform: scale(1.03); }
+.ab-tile__cap {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 28px 14px 12px; font-size: 11px; letter-spacing: .14em; color: var(--text);
+  background: linear-gradient(0deg, color-mix(in srgb, var(--night) 85%, transparent), transparent);
+}
+.ab-tile__cap .type-char { visibility: hidden; }
+
 /* ---------- Tablet --------------------------------------------------------- */
 @media (max-width: 1099px) and (min-width: 768px) {
   .ab-values__grid { grid-template-columns: 1fr 1fr; }
   .ab-certs__row { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* reduced motion: a plain horizontal scroll, no inertia */
+.reduced-motion .ab-field__viewport { overflow-x: auto; cursor: auto; }
+.reduced-motion .ab-tile__cap .type-char { visibility: visible; }
 
 /* ---------- Mobile --------------------------------------------------------- */
 @media (max-width: 767px) {
@@ -310,6 +334,11 @@
   .ab-ms__year { font-size: 52px; }
   .ab-ms__node { position: absolute; left: -22px; top: 22px; margin: 0; }
   .ab-certs__row { grid-template-columns: 1fr 1fr; }
+  /* the gallery is a native swipe on phones */
+  .ab-field__viewport { overflow-x: auto; cursor: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+  .ab-field__col { width: 72vw; scroll-snap-align: start; }
+  .ab-field__col:first-child { width: 80vw; }
+  .ab-field__hint { content: ""; }
   .ab-hero { --horizon: 78%; }
   .ab-hero__sun { right: 8vw; width: 44vw; }
 }
