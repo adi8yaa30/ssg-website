@@ -70,6 +70,14 @@
   filter: drop-shadow(var(--gold-glow)) drop-shadow(0 0 60px color-mix(in srgb, var(--gold) 30%, transparent));
 }
 .ab-hero__sun path { fill: var(--sun); }
+/* above the horizon: the sky lifts from night to slate and warms into haze and amber towards the line,
+   with a soft glow around the low sun, as in the client's reference */
+.ab-hero::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: var(--horizon); z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(38% 46% at calc(100% - 12vw - clamp(65px, 8vw, 150px)) 100%, color-mix(in srgb, var(--gold) 34%, transparent) 0%, color-mix(in srgb, #8A6A3A 22%, transparent) 40%, transparent 75%),
+    linear-gradient(180deg, transparent 0%, color-mix(in srgb, #2E3742 55%, transparent) 50%, color-mix(in srgb, var(--haze) 70%, transparent) 82%, color-mix(in srgb, #8A6A3A 55%, transparent) 100%);
+}
 /* below the horizon: a soft warm haze, like the reference's glow over the hills */
 .ab-hero::after {
   content: ""; position: absolute; left: 0; right: 0; top: var(--horizon); height: 26%; z-index: 0; pointer-events: none;
