@@ -200,12 +200,11 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   spill.position.set(0, 2.4, 3.6);
   scene.add(spill);
 
-  // ---- Post: bloom on the HDR buffer, tone mapping in the OutputPass, then anti-aliasing.
-  // MSAA on the HDR buffer is the biggest GPU cost at Retina sizes, so there edges are smoothed by an
-  // SMAA pass on the final image instead; at 1× the buffer is small enough for 4× MSAA. ?msaa=0|2|4 overrides it.
-  const msaa = new URLSearchParams(location.search).get('msaa');
-  const samples = msaa !== null ? +msaa : Math.min(window.devicePixelRatio || 1, PR_MAX) >= 1.5 ? 0 : 4;
-  const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples });
+  // ---- Post: bloom on the HDR buffer, tone mapping in the OutputPass. Edges: 4× MSAA on the HDR target
+  // (the renderer's own `antialias` doesn't apply to a composer). If the GPU can't hold ~50 fps with it,
+  // the visit falls back to an SMAA pass on the final image (see adapt()). ?msaa=0|2|4 pins it for QA.
+  const msaaQuery = new URLSearchParams(location.search).get('msaa');
+  const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: msaaQuery !== null ? +msaaQuery : 4 });
   const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), BLOOM.strength, BLOOM.radius, BLOOM.threshold);
@@ -213,12 +212,18 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   composer.addPass(new OutputPass());
   const { SMAAPass } = await import('three/addons/postprocessing/SMAAPass.js');
   const smaa = new SMAAPass(1, 1);
-  smaa.enabled = samples === 0 && new URLSearchParams(location.search).get('aa') !== '0';   // ?aa=0: no SMAA (QA)
+  smaa.enabled = target.samples === 0;
   composer.addPass(smaa);
+  // switch the HDR targets' MSAA (three reallocates a target on its next use after dispose())
+  function setMsaa(n) {
+    [composer.renderTarget1, composer.renderTarget2].forEach((rt) => { rt.samples = n; rt.dispose(); });
+    smaa.enabled = n === 0;
+    state.msaa = n;
+  }
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
   // ---- State
-  const state = { p: 0, glass: 'cheap', adaptive: true, switches: 0, pr: 0, fps: 0 };
+  const state = { p: 0, glass: 'cheap', adaptive: true, switches: 0, msaa: target.samples, pr: 0, fps: 0 };
   const time = { value: 0 };
   let model = null;
   let doorL = null, doorR = null;
@@ -465,9 +470,11 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     composer.render(dt);
   }
 
-  // Resolution follows the camera: full ratio at rest, PR_MOVING while it moves fast, full again once it settles.
+  // Resolution follows the camera: full ratio at rest, PR_MOVING while it moves fast, full again once it
+  // settles. Anti-aliasing follows the GPU: if frames stay above ~20 ms for a second with MSAA on, the
+  // rest of the visit uses SMAA instead (MSAA is the bigger cost at Retina sizes).
   const lastCam = new THREE.Vector3();
-  let haveLast = false, settledFor = 0, ema = 1 / 60;
+  let haveLast = false, settledFor = 0, ema = 1 / 60, slowFor = 0;
   function adapt(dt) {
     if (dt <= 0 || dt > 0.25) return;              // ignore stalls (tab switches, the first frames)
     const speed = haveLast ? camPos.distanceTo(lastCam) / dt : 0;
@@ -479,6 +486,8 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     else if (settledFor > SETTLE_S) setRatio(full);
     ema += (dt - ema) * 0.08;
     state.fps = 1 / ema;
+    slowFor = ema > 0.0205 ? slowFor + dt : 0;
+    if (slowFor > 1 && state.msaa > 0 && msaaQuery === null) { setMsaa(0); slowFor = 0; ema = 1 / 60; }
   }
 
   // per-frame: pose, adapt the resolution to the frame time, draw
