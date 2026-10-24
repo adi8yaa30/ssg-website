@@ -25,10 +25,13 @@ const FOV = 35;            // architectural framing for the establishing shot
 const FOV_FAST = 47;       // widens as the light takes over, for a sense of speed
 const FOV_INSIDE = 40;     // a little wider inside the showroom
 const MIN_HFOV = 38;       // narrow windows widen the lens so the store still fits
-// Pixel ratio: 1.5 holds 60 fps through the moving camera on a Radeon Pro 5300M (1.75 dropped ~20 % of
-// frames while moving; with SMAA, 1.5 is still crisp on Retina). 1.25 only if frames are actually slow.
-const PR_SLOW = 1.5;
-const PR_STEPS = [1.5, 1.25];
+// Pixel ratio: the full device ratio (capped at 2) whenever the camera is still or slow; 1.5 only while it
+// moves fast (the eye can't resolve the difference in motion), restored as soon as it settles.
+const PR_MAX = 2;
+const PR_MOVING = 1.5;
+const MOVE_FAST = 1.5;     // m/s: above this the camera counts as moving fast
+const MOVE_SETTLED = 0.15; // m/s: below this for SETTLE_S, full resolution again
+const SETTLE_S = 0.25;
 
 // Dusk look (§12): exposure, bloom (threshold high so only emissives bloom) and light levels
 const EXPOSURE = 0.95;
@@ -198,25 +201,24 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   scene.add(spill);
 
   // ---- Post: bloom on the HDR buffer, tone mapping in the OutputPass, then anti-aliasing.
-  // MSAA on the HDR buffer is the biggest GPU cost at Retina sizes (2520×1575 on a 1440 screen: 4× drops
-  // ~15 % of frames on a Radeon 5300M), so there edges are smoothed by an SMAA pass on the final image
-  // instead (~1 ms); at 1× the buffer is small enough for 4× MSAA. ?msaa=0|2|4 overrides it for QA.
+  // MSAA on the HDR buffer is the biggest GPU cost at Retina sizes, so there edges are smoothed by an
+  // SMAA pass on the final image instead; at 1× the buffer is small enough for 4× MSAA. ?msaa=0|2|4 overrides it.
   const msaa = new URLSearchParams(location.search).get('msaa');
-  const samples = msaa !== null ? +msaa : Math.min(window.devicePixelRatio || 1, PR_SLOW) >= 1.5 ? 0 : 4;
+  const samples = msaa !== null ? +msaa : Math.min(window.devicePixelRatio || 1, PR_MAX) >= 1.5 ? 0 : 4;
   const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples });
   const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), BLOOM.strength, BLOOM.radius, BLOOM.threshold);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
-  if (!samples && new URLSearchParams(location.search).get('aa') !== '0') {   // ?aa=0: no SMAA (QA)
-    const { SMAAPass } = await import('three/addons/postprocessing/SMAAPass.js');
-    composer.addPass(new SMAAPass(1, 1));
-  }
+  const { SMAAPass } = await import('three/addons/postprocessing/SMAAPass.js');
+  const smaa = new SMAAPass(1, 1);
+  smaa.enabled = samples === 0 && new URLSearchParams(location.search).get('aa') !== '0';   // ?aa=0: no SMAA (QA)
+  composer.addPass(smaa);
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
   // ---- State
-  const state = { p: 0, glass: 'cheap', adaptive: true, switches: 0 };
+  const state = { p: 0, glass: 'cheap', adaptive: true, switches: 0, pr: 0, fps: 0 };
   const time = { value: 0 };
   let model = null;
   let doorL = null, doorR = null;
@@ -383,7 +385,9 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   let fovBase = FOV;
   let vw = window.innerWidth, vh = window.innerHeight;
   const prPin = +new URLSearchParams(location.search).get('pr') || 0;   // QA: ?pr=1.5 pins the pixel ratio
-  let pr = Math.min(window.devicePixelRatio || 1, prPin || PR_SLOW);
+  const prFull = () => prPin || Math.min(window.devicePixelRatio || 1, PR_MAX);
+  let pr = prFull();
+  state.pr = pr;
 
   function fovFor(aspect) {
     // keep at least MIN_HFOV horizontally, so the storefront fits portrait / narrow windows
@@ -394,6 +398,7 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
   function setRatio(next) {
     if (Math.abs(next - pr) < 0.01) return;
     pr = next;
+    state.pr = pr;
     state.switches++;
     renderer.setPixelRatio(pr);
     renderer.setSize(vw, vh, false);
@@ -460,20 +465,20 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     composer.render(dt);
   }
 
-  // Dynamic resolution: render at full sharpness (1.75) and step the pixel ratio down only when the
-  // measured frame time stays above ~20 ms (a slow or busy GPU); step back up after 3 s of comfortable
-  // frames. Each switch reallocates the buffers (a hitch of its own), so a level the GPU has had to
-  // leave twice is not tried again during this visit.
-  let ema = 1 / 60, slowFor = 0, fastFor = 0, step = 0;
-  const drops = PR_STEPS.map(() => 0);
+  // Resolution follows the camera: full ratio at rest, PR_MOVING while it moves fast, full again once it settles.
+  const lastCam = new THREE.Vector3();
+  let haveLast = false, settledFor = 0, ema = 1 / 60;
   function adapt(dt) {
     if (dt <= 0 || dt > 0.25) return;              // ignore stalls (tab switches, the first frames)
+    const speed = haveLast ? camPos.distanceTo(lastCam) / dt : 0;
+    lastCam.copy(camPos);
+    haveLast = true;
+    settledFor = speed < MOVE_SETTLED ? settledFor + dt : 0;
+    const full = prFull();
+    if (prPin) { /* ?pr= pins it (QA) */ } else if (speed > MOVE_FAST) setRatio(Math.min(full, PR_MOVING));
+    else if (settledFor > SETTLE_S) setRatio(full);
     ema += (dt - ema) * 0.08;
-    slowFor = ema > 0.0205 ? slowFor + dt : 0;
-    fastFor = ema < 0.0172 ? fastFor + dt : 0;
-    if (slowFor > 0.5 && step < PR_STEPS.length - 1) { drops[step]++; step++; slowFor = 0; ema = 1 / 60; }
-    else if (fastFor > 3 && step > 0 && drops[step - 1] < 2) { step--; fastFor = 0; }
-    setRatio(Math.min(window.devicePixelRatio || 1, PR_STEPS[step]));
+    state.fps = 1 / ema;
   }
 
   // per-frame: pose, adapt the resolution to the frame time, draw
@@ -482,7 +487,7 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     if (!ready || capturing) return;
     clock += dt;
     pose(state.p, clock);
-    if (state.adaptive && !prPin) adapt(dt);
+    if (state.adaptive) adapt(dt);
     render(dt);
   }
 
@@ -552,6 +557,7 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     composer.renderTarget1.dispose();
     composer.renderTarget2.dispose();
     bloom.dispose();
+    smaa.dispose();
     draco.dispose();
     scene.clear();
     renderer.renderLists.dispose();
