@@ -47,7 +47,8 @@
 }
 
 /* ---------- The gold thread ------------------------------------------------ */
-.ab-thread { position: absolute; top: 0; left: 0; width: 100%; z-index: 1; overflow: visible; pointer-events: none; }
+/* a fixed overlay above the sections (the thread runs in the gutters and ends inside the CTA skyline) */
+.ab-thread { position: fixed; inset: 0; width: 100%; height: 100%; z-index: calc(var(--z-over) + 1); overflow: visible; pointer-events: none; }
 .ab-thread__path {
   fill: none; stroke: var(--gold); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
   filter: drop-shadow(0 0 3px color-mix(in srgb, var(--gold) 80%, transparent)) drop-shadow(0 0 10px color-mix(in srgb, var(--gold) 35%, transparent));

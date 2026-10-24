@@ -423,6 +423,93 @@ function buildField() {
   ScrollTrigger.addEventListener('refresh', () => { st.x = clampX(st.x); apply(); });
 }
 
+// ---------------------------------------------------------------------------
+// ★ The gold thread. One thin gold line down the whole page: it rises out of the hero horizon,
+// underlines the story's pull quote, becomes the Mission/Vision divider, runs into the timeline track,
+// and after the timeline carries on down to plug into the CTA skyline, whose lamps then switch on.
+// It is a fixed overlay rebuilt every frame from the live positions of its anchors, so it stays attached
+// through the pinned sections and reflows on resize. Its drawn length follows a reading line (62% of the
+// viewport); horizontal runs cost scroll too, so they draw progressively instead of appearing at once.
+function buildThread() {
+  const svg = $('.ab-thread');
+  const pathA = $('.ab-thread__path--a');
+  const pathB = $('.ab-thread__path--b');
+  const A = {
+    horizon: $('.ab-hero__horizon'), quote: $('[data-thread="quote"]'), divider: $('[data-thread="divider"]'),
+    track: $('[data-thread="track"]').parentElement, sky: $('.cta__skyline'),   // the rail (its fill is scaled)
+  };
+  const K = 0.6;          // scroll cost per px of horizontal run
+  const LINE = 0.62;      // the reading line, as a share of the viewport height
+
+  const routes = () => {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const r = (el) => el.getBoundingClientRect();
+    const h = r(A.horizon), sky = r(A.sky);
+    if (mobile) {
+      // phones: straight down the left edge, from the horizon into the CTA
+      return [[[10, h.top + 1], [10, sky.top + sky.height * 0.5]], []];
+    }
+    const g = Math.max(14, parseFloat(getComputedStyle($('.ab-wrap')).paddingLeft) * 0.45);   // half the page gutter
+    const q = r(A.quote), d = r(A.divider), t = r(A.track);
+    const qy = q.top + 1, ty = t.top + 0.5, gy = sky.top + sky.height * 0.58;   // gy: among the skyline's lamp heads
+    const a = [
+      [W - g, h.top + 1],            // out of the hero horizon, at its right end
+      [W - g, qy], [q.right, qy], [q.left, qy],   // down the right gutter, along the quote's underline
+      [g, qy], [g, d.top - 40],     // across, and down the left gutter
+      [d.left + 0.5, d.top - 40], [d.left + 0.5, d.bottom], [d.left + 0.5, d.bottom + 40],   // the divider
+      [g, d.bottom + 40], [g, ty], [t.left, ty],  // down to the timeline track
+    ];
+    const b = [[Math.min(t.right, W), ty], [W - g, ty], [W - g, gy], [sky.left + sky.width * 0.5, gy]];
+    return [a, b];
+  };
+
+  // drawn length of a polyline for the reading line at y = LINE * H
+  const measure = (pts, lineY) => {
+    let len = 0, hx = 0, total = 0;
+    const segs = [];
+    for (let i = 1; i < pts.length; i++) {
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+      const l = Math.hypot(x1 - x0, y1 - y0);
+      const r0 = y0 + K * hx;
+      hx += Math.abs(x1 - x0);
+      segs.push({ l, r0, r1: y1 + K * hx });
+      total += l;
+    }
+    for (const s of segs) {
+      if (lineY >= s.r1) { len += s.l; continue; }
+      if (lineY > s.r0) len += s.l * ((lineY - s.r0) / (s.r1 - s.r0 || 1));
+      break;
+    }
+    return { len, total };
+  };
+  const toD = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('');
+
+  let lastSig = '';
+  const draw = () => {
+    const [a, b] = routes();
+    const lineY = window.innerHeight * LINE;
+    const sig = `${a.flat().map(Math.round).join()}|${b.flat().map(Math.round).join()}`;
+    if (sig === lastSig) return;
+    lastSig = sig;
+    pathA.setAttribute('d', toD(a));
+    pathB.setAttribute('d', b.length ? toD(b) : '');
+    if (reduced) { gsap.set([pathA, pathB], { drawSVG: '100%' }); return; }
+    const ma = measure(a, lineY);
+    gsap.set(pathA, { drawSVG: `0 ${Math.max(0.01, ma.len)}` });
+    const mb = b.length ? measure(b, lineY) : { len: 0, total: 0 };
+    gsap.set(pathB, { drawSVG: `0 ${Math.max(0.01, mb.len)}`, opacity: b.length ? 1 : 0 });
+    // the thread has reached the skyline: the street lights come on one by one
+    // (or the visitor reached the bottom of the page before the line did)
+    const done = (b.length ? mb.len >= mb.total - 2 : ma.len >= ma.total - 2) || window.scrollY >= ScrollTrigger.maxScroll(window) - 4;
+    if (done && !threadDone) { threadDone = true; skyline?.lightLamps(); }
+  };
+  gsap.ticker.add(draw);
+  window.addEventListener('resize', () => { lastSig = ''; });
+  draw();
+  if (reduced) { threadDone = true; }
+}
+
 // mono labels scramble in when they first scroll into view
 function scrambleOnEnter(el) {
   if (!el || reduced) return;
@@ -486,6 +573,7 @@ async function boot() {
   buildJourney();
   buildCertifications();
   buildField();
+  buildThread();
   basicReveals();
   buildCta();
   buildProgress();
