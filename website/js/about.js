@@ -59,6 +59,35 @@ function buildHero() {
 }
 
 // ---------------------------------------------------------------------------
+// 02 · Our Story: pinned while the body is read along (words 15% → 100%); the pull quote rises line
+// by line from behind a mask; the photo strip drifts in parallax
+function buildStory() {
+  const sec = $('.ab-story');
+  const body = $('[data-readalong]', sec);
+  const words = SplitText.create(body.querySelectorAll('p'), { type: 'words', wordsClass: 'ab-word' }).words;
+  if (reduced) { gsap.set(words, { opacity: 1 }); return; }
+  const quote = SplitText.create('.ab-story__quote p', { type: 'lines', mask: 'lines' });
+  gsap.from(quote.lines, { yPercent: 110, duration: 1.6, stagger: 0.12, scrollTrigger: { trigger: '.ab-story__quote', start: 'top 82%', toggleActions: toggle } });
+  scrambleOnEnter($('.ab-label', sec));
+  if (desktopMotion) {
+    gsap.to(words, {
+      opacity: 1, stagger: 0.1, ease: 'none',
+      scrollTrigger: { trigger: '.ab-story__pin', start: 'top 18%', end: () => `+=${window.innerHeight * 1.2}`, pin: true, scrub: 0.6 },
+    });
+    gsap.fromTo('.ab-story__strip img', { yPercent: -8 }, { yPercent: 8, ease: 'none', scrollTrigger: { trigger: '.ab-story__strip', start: 'top bottom', end: 'bottom top', scrub: true } });
+  } else {
+    gsap.to(words, { opacity: 1, stagger: 0.02, duration: 0.6, ease: 'none', scrollTrigger: { trigger: body, start: 'top 80%' } });
+  }
+}
+
+// mono labels scramble in when they first scroll into view
+function scrambleOnEnter(el) {
+  if (!el || reduced) return;
+  const tw = scramble(el, { paused: true });
+  ScrollTrigger.create({ trigger: el, start: 'top 90%', once: true, onEnter: () => tw.play() });
+}
+
+// ---------------------------------------------------------------------------
 // Scroll progress: the gold line on the right edge fills with the page, and the label names the
 // section in view (sections carry data-label)
 function buildProgress() {
@@ -105,6 +134,7 @@ async function boot() {
   const fill = setProgress(1, 0.6);
   await Promise.all([fontsReady, pageFonts(), new Promise((r) => fill.eventCallback('onComplete', r))]);
   const heroIntro = buildHero();
+  buildStory();
   basicReveals();
   buildCta();
   buildProgress();
