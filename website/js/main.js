@@ -47,7 +47,7 @@ if (!core || !initProducts) {
 const {
   gsap, ScrollTrigger, SplitText, lenis, root, $, $$, reduced, mobile, finePointer, debug, desktopMotion, toggle,
   staticFallback, whileVisible, scrollToTarget, scrollToHash, setProgress, openPreloader, fontsReady, pageFonts,
-  typeIn, countUp, buildNav, enquire,
+  typeIn, countUp, buildNav, enquire, basicReveals,
 } = core;
 
 let softwareGL = false;
@@ -395,21 +395,7 @@ function buildEnergyFlow(svg, [cx, cy]) {
 // Default section reveals
 function buildReveals() {
   if (reduced) return;
-  $$('[data-split]').forEach((el) => {
-    const split = SplitText.create(el, { type: 'lines', mask: 'lines' });
-    gsap.from(split.lines, {
-      yPercent: 110, duration: 1.6, stagger: 0.08,
-      scrollTrigger: { trigger: el, start: 'top 86%', toggleActions: toggle },
-    });
-  });
-  $$('[data-fade]').forEach((el) => {
-    gsap.fromTo(el, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.6, scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: toggle } });
-  });
-  $$('[data-type]').forEach((el) => {
-    if (el.closest('.callout')) return;
-    const tw = typeIn(el, { paused: true });
-    ScrollTrigger.create({ trigger: el, start: 'top 92%', once: true, onEnter: () => tw.play() });
-  });
+  basicReveals({ skip: '.callout' });
 
   // Why SSG title rules
   gsap.from('.why__rule', { scaleX: 0, duration: 1.6, scrollTrigger: { trigger: '.why__title', start: 'top 85%' } });

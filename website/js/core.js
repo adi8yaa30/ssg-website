@@ -8,6 +8,28 @@
 (function () {
 window.SSG = window.SSG || {};
 
+/* Local-file support: when a page is opened straight from disk (file://), browsers block fetch()
+   of local files. Heavy assets then come from small companion scripts (<file>.js, written by
+   tools/embed-local-assets.py) that register their content here. Used by scene.js and scanlines.js. */
+const isFile = location.protocol === 'file:';
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(s);
+  });
+}
+async function readLocal(path) {
+  window.__SSG_FILES = window.__SSG_FILES || {};
+  if (!(path in window.__SSG_FILES)) await loadScript(`${path}.js`);
+  return window.__SSG_FILES[path];
+}
+window.SSG.isFile = isFile;
+window.SSG.loadScript = loadScript;
+window.SSG.readLocal = readLocal;
+
 const TRANSITION_KEY = 'ssg-wipe';
 
 function initCore({ page = 'home' } = {}) {
@@ -185,6 +207,27 @@ function initCore({ page = 'home' } = {}) {
     return gsap.to(o, { v: to, duration, onUpdate: () => { el.textContent = Math.round(o.v); } });
   }
 
+  // ---- The default reveals both pages use: [data-split] headings rise line by line from a mask,
+  // [data-fade] blocks fade up, [data-type] mono labels type in. `skip` excludes elements inside it.
+  function basicReveals({ skip = null, scope = document } = {}) {
+    if (reduced) return;
+    const keep = (el) => !(skip && el.closest(skip));
+    $$('[data-split]', scope).filter(keep).forEach((el) => {
+      const split = SplitText.create(el, { type: 'lines', mask: 'lines' });
+      gsap.from(split.lines, {
+        yPercent: 110, duration: 1.6, stagger: 0.08,
+        scrollTrigger: { trigger: el, start: 'top 86%', toggleActions: toggle },
+      });
+    });
+    $$('[data-fade]', scope).filter(keep).forEach((el) => {
+      gsap.fromTo(el, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.6, scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: toggle } });
+    });
+    $$('[data-type]', scope).filter(keep).forEach((el) => {
+      const tw = typeIn(el, { paused: true });
+      ScrollTrigger.create({ trigger: el, start: 'top 92%', once: true, onEnter: () => tw.play() });
+    });
+  }
+
   // ---- Nav: on the home page the link for the section you're reading is marked current;
   // on another page that page's link is. Plus the mobile menu toggle.
   function buildNav() {
@@ -328,7 +371,7 @@ function initCore({ page = 'home' } = {}) {
     reduced, mobile, finePointer, debug, desktopMotion, toggle,
     staticFallback, whileVisible, scrollToTarget, scrollToHash,
     setProgress, openPreloader, fontsReady, pageFonts,
-    typeIn, countUp, buildNav, toast, openQuote, enquire, leaveTo,
+    typeIn, countUp, basicReveals, buildNav, toast, openQuote, enquire, leaveTo,
   };
   if (debug) window.__ssg = Object.assign(window.__ssg || {}, { gsap, ScrollTrigger, lenis, core });
   return core;

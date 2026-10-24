@@ -1,0 +1,98 @@
+/* ==========================================================================
+   SSG About page. Builds on tokens.css + main.css (buttons, nav, preloader,
+   CTA, footer, modal); only this page's sections live here.
+   One gradient (--about-gradient) runs behind every section; sections are
+   transparent unless noted. Sizes are fluid (clamp), not Figma units.
+   ========================================================================== */
+
+.page-about body { background: var(--night) var(--about-gradient) no-repeat; background-size: 100% 100%; }
+.ab {
+  --gut: clamp(20px, 5.5vw, 104px);
+  --sec: clamp(96px, 12vw, 200px);
+  position: relative;
+  overflow-x: clip;
+}
+.ab > section { position: relative; z-index: 2; }
+.ab-wrap { width: 100%; max-width: 1440px; margin: 0 auto; padding-inline: var(--gut); }
+
+/* shared bits */
+.ab-label { font-size: 12px; letter-spacing: .16em; color: var(--gold); text-transform: uppercase; }
+.ab-h2 { font-family: var(--f-display); font-weight: 400; font-size: clamp(30px, 3.6vw, 60px); line-height: 1.05; color: var(--text); }
+.ab-body { color: var(--ash); font-size: clamp(16px, 1.25vw, 20px); line-height: 1.6; }
+.ab-body strong, .ab-strong { color: var(--text); font-weight: 500; }
+.ab-section { padding-block: var(--sec); }
+.ab-head { display: grid; gap: 18px; margin-bottom: clamp(40px, 5vw, 80px); }
+/* the dusk grade for daytime photos (§12.7) */
+.ab-grade { filter: brightness(.72) saturate(.7) sepia(.15); }
+.ab-placeholder {
+  display: grid; place-items: center; width: 100%; height: 100%;
+  background:
+    repeating-linear-gradient(180deg, color-mix(in srgb, var(--text) 6%, transparent) 0 1px, transparent 1px 7px),
+    linear-gradient(160deg, var(--dusk), var(--deep));
+  color: var(--ash); font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; text-align: center; padding: 16px;
+}
+
+/* ---------- Scroll progress (right edge) --------------------------------- */
+.ab-progress { position: fixed; top: 0; right: 0; bottom: 0; width: 28px; z-index: var(--z-nav); pointer-events: none; }
+.ab-progress::before { content: ""; position: absolute; top: 0; bottom: 0; right: 12px; width: 1px; background: var(--line); }
+.ab-progress__bar {
+  position: absolute; top: 0; bottom: 0; right: 12px; width: 1px;
+  background: var(--gold); box-shadow: 0 0 8px color-mix(in srgb, var(--gold) 70%, transparent);
+  transform: scaleY(0); transform-origin: 50% 0; will-change: transform;
+}
+.ab-progress__label {
+  position: absolute; right: 22px; bottom: 26px; white-space: nowrap;
+  font-size: 11px; letter-spacing: .14em; color: var(--ash);
+  writing-mode: vertical-rl; transform: rotate(180deg);
+}
+
+/* ---------- The gold thread ------------------------------------------------ */
+.ab-thread { position: absolute; top: 0; left: 0; width: 100%; z-index: 1; overflow: visible; pointer-events: none; }
+.ab-thread__path {
+  fill: none; stroke: var(--gold); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--gold) 80%, transparent)) drop-shadow(0 0 10px color-mix(in srgb, var(--gold) 35%, transparent));
+}
+
+/* ---------- 01 · Hero ------------------------------------------------------ */
+.ab-hero { --horizon: 74%; height: 100vh; height: 100svh; min-height: 560px; overflow: hidden; }
+.ab-hero__copy { position: relative; z-index: 2; padding-top: clamp(120px, 18vh, 220px); display: grid; gap: clamp(18px, 2vw, 28px); }
+.ab-hero__title { font-weight: 400; font-size: clamp(36px, 5.6vw, 100px); line-height: .98; color: var(--text); }
+.ab-hero__line { display: block; }
+.ab-hero__sub { max-width: 46ch; color: var(--ash); font-size: clamp(16px, 1.3vw, 21px); line-height: 1.55; }
+.ab-hero__horizon {
+  position: absolute; left: 0; right: 0; top: var(--horizon); height: 2px; z-index: 1;
+  background: var(--gold-line); box-shadow: var(--gold-line-glow);
+}
+.ab-hero__sun {
+  position: absolute; z-index: 0; right: 12vw; width: clamp(130px, 16vw, 300px); height: auto;
+  bottom: calc(100% - var(--horizon)); overflow: visible;
+  filter: drop-shadow(var(--gold-glow)) drop-shadow(0 0 60px color-mix(in srgb, var(--gold) 30%, transparent));
+}
+.ab-hero__sun path { fill: var(--sun); }
+/* below the horizon: a soft warm haze, like the reference's glow over the hills */
+.ab-hero::after {
+  content: ""; position: absolute; left: 0; right: 0; top: var(--horizon); height: 26%; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, color-mix(in srgb, #8A6A3A 55%, transparent) 0%, color-mix(in srgb, var(--haze) 25%, transparent) 40%, transparent 100%);
+}
+/* faint scanline mist drifting in the sky */
+.ab-hero__mist { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.ab-hero__mist span {
+  position: absolute; left: -20%; width: 140%; height: 34%;
+  background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--text) 9%, transparent) 0 1px, transparent 1px 7px);
+  -webkit-mask: radial-gradient(60% 50% at 50% 50%, #000 0%, transparent 72%); mask: radial-gradient(60% 50% at 50% 50%, #000 0%, transparent 72%);
+  will-change: transform;
+}
+.ab-hero__mist span:nth-child(1) { top: 36%; opacity: .7; }
+.ab-hero__mist span:nth-child(2) { top: 52%; opacity: .45; height: 22%; }
+.ab-hero__hint {
+  position: absolute; z-index: 2; left: 50%; bottom: 28px; translate: -50% 0;
+  display: flex; gap: 10px; align-items: center; font-size: 12px; letter-spacing: .16em; color: var(--text);
+}
+.ab-hero__arrow { color: var(--gold); display: inline-block; animation: intro-nudge 1.8s var(--ease) infinite; }
+
+/* ---------- Mobile --------------------------------------------------------- */
+@media (max-width: 767px) {
+  .ab-progress { display: none; }
+  .ab-hero { --horizon: 78%; }
+  .ab-hero__sun { right: 8vw; width: 44vw; }
+}

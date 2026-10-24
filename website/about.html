@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en-IN" class="page-about">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>About SSG | Shree Shyam Group, Guwahati</title>
+  <meta name="description" content="Shree Shyam Group, a unit of Shyam Infratech, plans, supplies and installs sustainable infrastructure for communities, industries and government bodies across India. Built in Guwahati since 2021.">
+  <meta name="theme-color" content="#12171E">
+  <link rel="icon" href="assets/logo-new.webp" type="image/webp">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=Space+Mono&family=Unbounded:wght@400&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/reset.css?v=34">
+  <link rel="stylesheet" href="css/tokens.css?v=about-1">
+  <link rel="stylesheet" href="css/main.css?v=about-1">
+  <link rel="stylesheet" href="css/about.css?v=about-1">
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+<!-- SVG sprite: small reusable icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="thread-fade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#E9A94A" stop-opacity="0"/>
+      <stop offset=".12" stop-color="#E9A94A"/>
+      <stop offset=".5" stop-color="#FFE2A0"/>
+      <stop offset=".88" stop-color="#E9A94A"/>
+      <stop offset="1" stop-color="#E9A94A" stop-opacity="0"/>
+    </linearGradient>
+    <symbol id="i-arrow" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<!-- ============ PRELOADER (short: no 3D on this page) ============ -->
+<div class="preloader" id="preloader" role="status" aria-live="polite">
+  <div class="preloader__inner">
+    <img class="preloader__logo" src="assets/logo-new.webp" width="210" height="211" alt="Shree Shyam Group logo">
+    <div class="preloader__battery" aria-hidden="true">
+      <div class="preloader__shell">
+        <div class="preloader__half preloader__half--l"><span class="preloader__fill"></span></div>
+        <div class="preloader__half preloader__half--r"><span class="preloader__fill"></span></div>
+      </div>
+      <span class="preloader__cap"></span>
+    </div>
+    <p class="preloader__pct mono"><span id="preloader-pct">0</span>%</p>
+    <span class="sr-only">Loading the About page</span>
+  </div>
+</div>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <svg class="nav__bar" viewBox="0 0 1728 36" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M106.25 0H799V35.75H155L141.75 12.5Z"/>
+    <path d="M939 0H1621.75L1586.25 12.5L1573 35.75H939Z"/>
+  </svg>
+  <nav class="nav__inner" aria-label="Primary">
+    <ul class="nav__list nav__list--l">
+      <li><a class="nav__link" href="index.html#home">Home</a></li>
+      <li><a class="nav__link" href="about.html">About Us</a></li>
+      <li><a class="nav__link" href="index.html#ssg">SSG</a></li>
+    </ul>
+    <a class="nav__logo" href="index.html" aria-label="SSG home">
+      <img src="assets/logo-new.webp" width="84" height="84" alt="Shree Shyam Group">
+    </a>
+    <ul class="nav__list nav__list--r">
+      <li><a class="nav__link" href="index.html#divisions">Divisions</a></li>
+      <li><a class="nav__link" href="index.html#products">Products</a></li>
+      <li><a class="nav__link" href="#contact">Contact Us</a></li>
+    </ul>
+  </nav>
+  <button class="nav__burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><span></span><span></span></button>
+  <div class="nav__mobile" id="mobile-menu" hidden>
+    <a href="index.html#home">Home</a><a href="about.html">About Us</a><a href="index.html#ssg">SSG</a>
+    <a href="index.html#divisions">Divisions</a><a href="index.html#products">Products</a><a href="#contact">Contact Us</a>
+  </div>
+</header>
+
+<!-- scroll progress: a thin gold line on the right edge + the current section in mono -->
+<div class="ab-progress" aria-hidden="true"><span class="ab-progress__bar"></span><span class="ab-progress__label mono">// 01 — ABOUT</span></div>
+
+<main id="main" class="ab">
+
+  <!-- the gold thread: one line down the whole page (drawn by js/about.js, scrubbed to scroll) -->
+  <svg class="ab-thread" aria-hidden="true"><path class="ab-thread__path"/></svg>
+
+  <!-- ====== 01 · HERO ====== -->
+  <section class="ab-hero" id="top" data-label="01 — ABOUT" aria-labelledby="ab-hero-title">
+    <div class="ab-hero__mist" aria-hidden="true"><span></span><span></span></div>
+    <svg class="ab-hero__sun" viewBox="0 0 400 200" aria-hidden="true"><path d="M0 200A200 200 0 0 1 400 200Z"/></svg>
+    <span class="ab-hero__horizon" aria-hidden="true"></span>
+    <div class="ab-hero__copy ab-wrap">
+      <p class="ab-label mono" data-scramble>// ABOUT SSG</p>
+      <h1 class="ab-hero__title display" id="ab-hero-title"><span class="ab-hero__line">Built in Guwahati.</span><span class="ab-hero__line">Lighting the Northeast.</span></h1>
+      <p class="ab-hero__sub">Shree Shyam Group, a unit of Shyam Infratech, plans, supplies and installs sustainable infrastructure for communities, industries and government bodies across India.</p>
+    </div>
+    <p class="ab-hero__hint mono" aria-hidden="true"><span class="ab-hero__arrow">↓</span> SCROLL</p>
+  </section>
+
+  <!-- @next-section -->
+
+  <!-- ====== 11 · CTA (home page version) ====== -->
+  <section class="cta" id="contact" data-label="11 — CONTACT" aria-labelledby="cta-title">
+    <h2 class="cta__title display" id="cta-title" data-split>LET'S BUILD WHAT'S NEXT,<br>TOGETHER.</h2>
+    <p class="cta__text" data-fade>Panchayats, municipalities, schools, industries and departments trust SSG to plan, supply and install infrastructure that lasts.</p>
+    <div class="cta__buttons">
+      <button class="btn btn--solid" type="button" data-enquire="" data-magnetic><span class="btn__label">Partner With Us</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+      <a class="btn btn--solid" href="#footer-contact" data-magnetic><span class="btn__label">Contact Us</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </div>
+    <div class="cta__skyline" aria-hidden="true" data-svg-src="assets/08-cta/cta-skyline.svg">
+      <noscript><img src="assets/08-cta/cta-skyline.svg" alt="" loading="lazy" width="1672" height="941"></noscript>
+    </div>
+  </section>
+</main>
+
+<!-- ============ FOOTER (home page version) ============ -->
+<footer class="footer section-blue" aria-labelledby="footer-title">
+  <h2 class="sr-only" id="footer-title">Contact and site links</h2>
+  <div class="footer__top">
+    <a class="footer__logo" href="index.html" aria-label="SSG home"><img src="assets/logo-new.webp" width="420" height="421" alt="Shree Shyam Group logo" loading="lazy"></a>
+    <nav class="footer__col" aria-label="Overview">
+      <h3 class="footer__heading">Overview</h3>
+      <ul role="list">
+        <li><a class="footer__link" href="index.html#home">Home</a></li>
+        <li><a class="footer__link" href="about.html">About SSG</a></li>
+        <li><a class="footer__link" href="index.html#products">Products</a></li>
+        <li><a class="footer__link" href="#" data-todo="careers">Careers</a></li>
+        <li><a class="footer__link" href="#contact">Contact Us</a></li>
+      </ul>
+    </nav>
+    <nav class="footer__col" aria-label="Socials">
+      <h3 class="footer__heading">Socials</h3>
+      <ul role="list">
+        <li><a class="footer__link" href="#" data-todo="instagram">Instagram</a></li>
+        <li><a class="footer__link" href="#" data-todo="facebook">Facebook</a></li>
+        <li><a class="footer__link" href="#" data-todo="linkedin">LinkedIn</a></li>
+        <li><a class="footer__link" href="mailto:shyaminfratech.co.in@gmail.com">Email</a></li>
+      </ul>
+    </nav>
+    <address class="footer__card" id="footer-contact">
+      <p class="footer__card-label mono">// GET IN TOUCH</p>
+      <p class="footer__card-addr">Jyotikuchi, Guwahati,<br>Assam – 781034</p>
+      <p class="footer__card-row"><a href="tel:+919559993505">+91 95599 93505</a><span aria-hidden="true"> · </span><a href="tel:+919207131170">+91 92071 31170</a></p>
+      <p class="footer__card-row"><a href="mailto:shyaminfratech.co.in@gmail.com">shyaminfratech.co.in@gmail.com</a></p>
+      <p class="footer__card-row"><a href="https://www.ssginfo.com" rel="noopener">www.ssginfo.com</a></p>
+      <a class="footer__map mono" href="https://www.google.com/maps/search/?api=1&amp;query=Jyotikuchi%2C+Guwahati%2C+Assam+781034" target="_blank" rel="noopener">OPEN IN MAPS ↗</a>
+    </address>
+  </div>
+  <div class="footer__landscape" aria-hidden="true" data-svg-src="assets/09-footer/footer-landscape.svg">
+    <noscript><img src="assets/09-footer/footer-landscape.svg" alt="" loading="lazy" width="2048" height="768"></noscript>
+  </div>
+  <div class="footer__legal">
+    <p>© 2026 Shree Shyam Group, a unit of Shyam Infratech. All rights reserved.</p>
+    <p><a href="#" data-todo="terms">Terms</a><span aria-hidden="true"> · </span><a href="#" data-todo="privacy">Privacy</a></p>
+  </div>
+</footer>
+
+<dialog class="quote" id="quote" aria-labelledby="quote-title">
+  <form class="quote__form" method="dialog" novalidate>
+    <button class="quote__close" type="button" value="cancel" aria-label="Close">×</button>
+    <p class="mono quote__kicker">// PARTNER WITH US</p>
+    <h2 class="quote__title display" id="quote-title">Tell us about your project</h2>
+    <div class="quote__grid">
+      <label class="field"><span>Name</span><input name="name" type="text" autocomplete="name" required></label>
+      <label class="field"><span>Organisation</span><input name="org" type="text" autocomplete="organization"></label>
+      <label class="field"><span>Phone</span><input name="phone" type="tel" autocomplete="tel" required></label>
+      <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email"></label>
+      <label class="field field--wide"><span>Product</span><input name="product" type="text" placeholder="e.g. All-in-One Solar Street Light"></label>
+      <label class="field field--wide"><span>Message</span><textarea name="message" rows="4" placeholder="Site, quantity, timeline"></textarea></label>
+    </div>
+    <p class="quote__note mono" role="status"></p>
+    <button class="btn btn--solid quote__submit" type="submit"><span class="btn__label">Send Enquiry</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+  </form>
+</dialog>
+
+<!-- GSAP 3.13 (all plugins free) + Lenis -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/CustomEase.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js" defer></script>
+<script src="js/core.js?v=about-1" defer></script>
+<script src="js/scanlines.js?v=about-1" defer></script>
+<script src="js/about.js?v=about-1" defer></script>
+<script>
+  // Safety net: never leave visitors on the preloader if a script fails to load
+  setTimeout(function () {
+    if (window.__ssgBooted) return;
+    var p = document.getElementById('preloader');
+    if (p) p.remove();
+    document.body.classList.remove('is-loading');
+    document.documentElement.classList.add('reduced-motion');
+  }, 8000);
+</script>
+</body>
+</html>

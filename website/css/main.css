@@ -174,8 +174,8 @@ html:not(.js) .preloader { display: none; }
 }
 .page-wipe__line, .preloader__horizon {
   position: absolute; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--gold) 12%, var(--sun) 50%, var(--gold) 88%, transparent 100%);
-  box-shadow: 0 0 16px 2px color-mix(in srgb, var(--gold) 65%, transparent), 0 0 50px 8px color-mix(in srgb, var(--gold) 22%, transparent);
+  background: var(--gold-line);
+  box-shadow: var(--gold-line-glow);
 }
 .page-wipe__line { top: 0; }
 .preloader__horizon { bottom: 0; }

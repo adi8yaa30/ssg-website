@@ -39,6 +39,12 @@
       #E9A94A 91%, #8A6A3A 94%, #4E4A45 97%, #2E3742 100%);
   --why-gradient:  linear-gradient(180deg, #2E3742 0%, #1E2630 40%, #12171E 100%);
   --sun-gradient:  linear-gradient(180deg, #12171E 0%, #2E3742 55%, #4E4A45 80%, #8A6A3A 94%, #E9A94A 100%);
+  /* About page: one gradient behind every section (it holds #2E3742 from 75% down) */
+  --about-gradient: linear-gradient(180deg, #12171E 0%, #1E2630 50%, #2E3742 75%);
+
+  /* The glowing gold horizon line (page transition, About hero, the gold thread) */
+  --gold-line: linear-gradient(90deg, transparent 0%, var(--gold) 12%, var(--sun) 50%, var(--gold) 88%, transparent 100%);
+  --gold-line-glow: 0 0 16px 2px color-mix(in srgb, var(--gold) 65%, transparent), 0 0 50px 8px color-mix(in srgb, var(--gold) 22%, transparent);
 
   /* Type */
   --f-display: "Unbounded", "Helvetica Neue", Arial, sans-serif;

@@ -8,33 +8,14 @@
 (function () {
 window.SSG = window.SSG || {};
 
-/* Local-file support: when the page is opened straight from disk (file://),
-   browsers block fetch() of local files. Heavy assets then come from small
-   companion scripts (<file>.js) that register their content here. */
-const isFile = location.protocol === 'file:';
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = () => reject(new Error(`Failed to load ${src}`));
-    document.head.appendChild(s);
-  });
-}
-async function readLocal(path) {
-  window.__SSG_FILES = window.__SSG_FILES || {};
-  if (!(path in window.__SSG_FILES)) await loadScript(`${path}.js`);
-  return window.__SSG_FILES[path];
-}
+// file:// support (isFile, readLocal) lives in core.js, which loads first
+const { isFile, readLocal } = window.SSG;
 function base64ToBuffer(b64) {
   const bin = atob(b64);
   const out = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out.buffer;
 }
-window.SSG.isFile = isFile;
-window.SSG.loadScript = loadScript;
-window.SSG.readLocal = readLocal;
 
 const MODEL_URL = 'assets/01-hero/model/ssg-streetlight.web.glb';
 const DRACO_PATH = 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/libs/draco/gltf/';
