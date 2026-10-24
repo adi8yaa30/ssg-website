@@ -103,9 +103,21 @@
 /* fade the photo into the page above and below */
 .ab-story__strip::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, var(--night) 0%, transparent 22%, transparent 70%, color-mix(in srgb, #1E2630 85%, transparent) 100%); pointer-events: none; }
 
+/* ---------- 03 · Mission & Vision ----------------------------------------- */
+.ab-mv__grid { display: grid; grid-template-columns: 1fr 1px 1fr; gap: clamp(32px, 6vw, 110px); align-items: stretch; }
+.ab-mv__col { display: grid; gap: 22px; align-content: start; padding-block: clamp(24px, 3vw, 48px); }
+.ab-mv__col--l { text-align: right; justify-items: end; }
+.ab-mv__text { font-size: clamp(20px, 2vw, 32px); line-height: 1.35; color: var(--ash); max-width: 26ch; }
+.ab-mv__text strong { color: var(--text); font-weight: 400; font-family: var(--f-display); letter-spacing: 0; }
+/* the divider is drawn by the gold thread (it runs through here); this is its faint track */
+.ab-mv__divider { width: 1px; background: var(--line); }
+
 /* ---------- Mobile --------------------------------------------------------- */
 @media (max-width: 767px) {
   .ab-progress { display: none; }
+  .ab-mv__grid { grid-template-columns: 1fr; gap: 8px; }
+  .ab-mv__col--l { text-align: left; justify-items: start; }
+  .ab-mv__divider { display: none; }
   .ab-hero { --horizon: 78%; }
   .ab-hero__sun { right: 8vw; width: 44vw; }
 }

@@ -80,6 +80,26 @@ function buildStory() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 03 · Mission & Vision: the two statements start overlapped in the centre and slide apart as the
+// divider between them draws (the gold thread draws the divider itself)
+function buildMissionVision() {
+  const sec = $('.ab-mv');
+  $$('.ab-label', sec).forEach(scrambleOnEnter);
+  if (reduced) return;
+  if (!desktopMotion) {
+    gsap.from($$('.ab-mv__col', sec), { y: 30, opacity: 0, duration: 1.2, stagger: 0.15, scrollTrigger: { trigger: sec, start: 'top 80%' } });
+    return;
+  }
+  const l = $('.ab-mv__col--l', sec);
+  const r = $('.ab-mv__col--r', sec);
+  // how far each column sits from the centre line
+  const shift = (el) => { const a = el.getBoundingClientRect(); const g = $('.ab-mv__divider', sec).getBoundingClientRect(); return g.left - (a.left + a.width / 2); };
+  gsap.timeline({ scrollTrigger: { trigger: sec, start: 'top 75%', end: 'top 25%', scrub: 0.8, invalidateOnRefresh: true } })
+    .fromTo(l, { x: () => shift(l), opacity: 0.35 }, { x: 0, opacity: 1, ease: 'none' }, 0)
+    .fromTo(r, { x: () => shift(r), opacity: 0.35 }, { x: 0, opacity: 1, ease: 'none' }, 0);
+}
+
 // mono labels scramble in when they first scroll into view
 function scrambleOnEnter(el) {
   if (!el || reduced) return;
@@ -135,6 +155,7 @@ async function boot() {
   await Promise.all([fontsReady, pageFonts(), new Promise((r) => fill.eventCallback('onComplete', r))]);
   const heroIntro = buildHero();
   buildStory();
+  buildMissionVision();
   basicReveals();
   buildCta();
   buildProgress();
