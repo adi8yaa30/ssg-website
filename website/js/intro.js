@@ -746,6 +746,7 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
         veil.remove();
         if (el.isConnected) el.remove();
         root.classList.remove('intro-fading');
+        removeHud();
         resolve();
       };
       const tl = gsap.timeline({ onComplete: done }).add(onReveal, 0);
@@ -762,7 +763,32 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
     teardown();
     veil.remove();
     el.remove();
+    removeHud();
   }
+
+  // ---- ?debug overlay: what is actually running (mode, pixel ratio, MSAA, FPS), updated 4× a second
+  let hud = null;
+  if (debug) {
+    hud = document.createElement('div');
+    hud.className = 'intro-hud mono';
+    hud.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(hud);
+    let frames = 0, since = performance.now();
+    const count = () => { frames++; if (hud) requestAnimationFrame(count); };
+    requestAnimationFrame(count);
+    const show = () => {
+      if (!hud) return;
+      const now = performance.now();
+      const fps = (frames * 1000) / (now - since);
+      frames = 0; since = now;
+      const st = store?.state;
+      const aa = st ? (st.msaa > 0 ? `MSAA ${st.msaa}×` : 'SMAA') : '—';
+      hud.textContent = `intro ${mode}  ·  pr ${st ? st.pr.toFixed(2) : (window.devicePixelRatio || 1).toFixed(2) + ' (css)'}  ·  ${aa}  ·  ${fps.toFixed(0)} fps`;
+      setTimeout(show, 250);
+    };
+    show();
+  }
+  const removeHud = () => { hud?.remove(); hud = null; };
 
   const api = { mode, loaded, entered, start, commit, teardown, reveal, abort, get store() { return store; } };
   if (debug) {

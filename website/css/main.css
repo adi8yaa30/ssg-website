@@ -156,6 +156,12 @@ html:not(.js) .preloader { display: none; }
   border-bottom: 1px solid transparent; transition: color .4s var(--ease), border-color .4s var(--ease);
 }
 .intro__skip:hover, .intro__skip:focus-visible { color: var(--gold); border-color: var(--gold); }
+/* ?debug: what the intro is running (mode, pixel ratio, anti-aliasing, fps) */
+.intro-hud {
+  position: fixed; top: 10px; right: 10px; z-index: calc(var(--z-preloader) + 1); pointer-events: none;
+  padding: 6px 10px; border: 1px solid var(--line); border-radius: 4px;
+  background: color-mix(in srgb, var(--night) 85%, transparent); color: var(--gold); font-size: 11px; letter-spacing: .04em;
+}
 /* the visit fades to the page's night colour, then lifts off the home page */
 .intro-veil { position: fixed; inset: 0; z-index: calc(var(--z-intro) + 5); pointer-events: none; opacity: 0; background: var(--night); }
 
