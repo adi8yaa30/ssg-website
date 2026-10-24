@@ -70,7 +70,7 @@ function buildStory() {
   gsap.from(quote.lines, { yPercent: 110, duration: 1.6, stagger: 0.12, scrollTrigger: { trigger: '.ab-story__quote', start: 'top 82%', toggleActions: toggle } });
   scrambleOnEnter($('.ab-label', sec));
   if (desktopMotion) {
-    gsap.to(words, {
+    storyPin = gsap.to(words, {
       opacity: 1, stagger: 0.1, ease: 'none',
       scrollTrigger: { trigger: '.ab-story__pin', start: 'top 18%', end: () => `+=${window.innerHeight * 1.2}`, pin: true, scrub: 0.6 },
     });
@@ -298,6 +298,7 @@ function buildDivisions() {
 // as they're reached, the huge outlined years fill with gold; the scanline landscape drifts behind.
 // Phones: a vertical timeline, the track filling down the left edge.
 let journeyST = null;
+let storyPin = null;   // the Story section's pinned read-along (the gold thread follows its pin)
 function buildJourney() {
   const sec = $('.ab-journey');
   const list = $('.ab-journey__list', sec);
@@ -359,6 +360,7 @@ function buildField() {
   const track = $('.ab-field__track', sec);
   const tiles = $$('.ab-tile', sec);
   scrambleOnEnter($('.ab-label', sec));
+  if (!finePointer) $('.ab-field__hint', sec).textContent = 'SWIPE ↔';
   // captions type in on hover (and are fully shown for touch / reduced motion)
   tiles.forEach((t) => {
     const cap = $('.ab-tile__cap', t);
@@ -427,87 +429,117 @@ function buildField() {
 // ★ The gold thread. One thin gold line down the whole page: it rises out of the hero horizon,
 // underlines the story's pull quote, becomes the Mission/Vision divider, runs into the timeline track,
 // and after the timeline carries on down to plug into the CTA skyline, whose lamps then switch on.
-// It is a fixed overlay rebuilt every frame from the live positions of its anchors, so it stays attached
-// through the pinned sections and reflows on resize. Its drawn length follows a reading line (62% of the
-// viewport); horizontal runs cost scroll too, so they draw progressively instead of appearing at once.
+// It is a fixed overlay of straight runs placed every frame (transforms only) from anchors measured once
+// per layout, so it stays attached through the pinned sections, reflows on resize and never repaints.
+// Its drawn length follows a reading line (62% of the viewport); horizontal runs cost scroll too, so they
+// draw progressively instead of appearing at once.
 function buildThread() {
-  const svg = $('.ab-thread');
-  const pathA = $('.ab-thread__path--a');
-  const pathB = $('.ab-thread__path--b');
-  const A = {
+  const layer = $('.ab-thread');
+  const list = $('.ab-journey__list');
+  const el = {
     horizon: $('.ab-hero__horizon'), quote: $('[data-thread="quote"]'), divider: $('[data-thread="divider"]'),
-    track: $('[data-thread="track"]').parentElement, sky: $('.cta__skyline'),   // the rail (its fill is scaled)
+    rail: $('[data-thread="track"]').parentElement, sky: $('.cta__skyline'),   // the rail (its fill is scaled)
   };
-  const K = 0.6;          // scroll cost per px of horizontal run
+  const K = 0.6;          // reading-line px per px of horizontal run
   const LINE = 0.62;      // the reading line, as a share of the viewport height
+  const CORE = 1.5, GLOW = 7;   // line and glow thickness (px)
 
+  // Anchors are measured once per layout (ScrollTrigger refresh) in page coordinates. Per frame they are
+  // placed from the scroll position alone: the quote's underline and the timeline rail are pinned, so
+  // while their pin runs they move down the page with the scroll (and the rail slides with the timeline).
+  const pinOffset = (st, y) => (st ? Math.min(Math.max(y - st.start, 0), st.end - st.start) : 0);
+  const listX = () => (list ? +gsap.getProperty(list, 'x') : 0);
+  let m = null;
+  const measure = () => {
+    const y = window.scrollY;
+    const box = (e) => { const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top + y, b: r.bottom + y, w: r.width, h: r.height }; };
+    const q = box(el.quote); q.t -= pinOffset(storyPin?.scrollTrigger, y);
+    const t = box(el.rail); t.t -= pinOffset(journeyST, y); t.l -= listX(); t.r -= listX();
+    m = { h: box(el.horizon), q, d: box(el.divider), t, sky: box(el.sky), g: Math.max(14, parseFloat(getComputedStyle($('.ab-wrap')).paddingLeft) * 0.45) };
+  };
+
+  // the route, in viewport coordinates: run a (hero → timeline) and run b (after the timeline → CTA)
   const routes = () => {
     const W = window.innerWidth;
-    const H = window.innerHeight;
-    const r = (el) => el.getBoundingClientRect();
-    const h = r(A.horizon), sky = r(A.sky);
-    if (mobile) {
-      // phones: straight down the left edge, from the horizon into the CTA
-      return [[[10, h.top + 1], [10, sky.top + sky.height * 0.5]], []];
-    }
-    const g = Math.max(14, parseFloat(getComputedStyle($('.ab-wrap')).paddingLeft) * 0.45);   // half the page gutter
-    const q = r(A.quote), d = r(A.divider), t = r(A.track);
-    const qy = q.top + 1, ty = t.top + 0.5, gy = sky.top + sky.height * 0.58;   // gy: among the skyline's lamp heads
+    const y = window.scrollY;
+    const v = (pageY) => pageY - y;
+    if (mobile) return [[[10, v(m.h.t) + 1], [10, v(m.sky.t) + m.sky.h * 0.5]], []];
+    const { g } = m;
+    const qy = v(m.q.t) + pinOffset(storyPin?.scrollTrigger, y) + 1;
+    const x = listX();
+    const ty = v(m.t.t) + pinOffset(journeyST, y) + 0.5;
+    const dTop = v(m.d.t), dBot = v(m.d.b), dx = m.d.l + 0.5;
+    const gy = v(m.sky.t) + m.sky.h * 0.58;   // among the skyline's lamp heads
     const a = [
-      [W - g, h.top + 1],            // out of the hero horizon, at its right end
-      [W - g, qy], [q.right, qy], [q.left, qy],   // down the right gutter, along the quote's underline
-      [g, qy], [g, d.top - 40],     // across, and down the left gutter
-      [d.left + 0.5, d.top - 40], [d.left + 0.5, d.bottom], [d.left + 0.5, d.bottom + 40],   // the divider
-      [g, d.bottom + 40], [g, ty], [t.left, ty],  // down to the timeline track
+      [W - g, v(m.h.t) + 1],                       // out of the hero horizon, at its right end
+      [W - g, qy], [m.q.r, qy], [m.q.l, qy],      // down the right gutter, along the quote's underline
+      [g, qy], [g, dTop - 40],                     // across, and down the left gutter
+      [dx, dTop - 40], [dx, dBot], [dx, dBot + 40],   // the Mission/Vision divider
+      [g, dBot + 40], [g, ty], [m.t.l + x, ty],    // down to the timeline track
     ];
-    const b = [[Math.min(t.right, W), ty], [W - g, ty], [W - g, gy], [sky.left + sky.width * 0.5, gy]];
+    const b = [[Math.min(m.t.r + x, W), ty], [W - g, ty], [W - g, gy], [m.sky.l + m.sky.w * 0.5, gy]];
     return [a, b];
   };
 
-  // drawn length of a polyline for the reading line at y = LINE * H
-  const measure = (pts, lineY) => {
-    let len = 0, hx = 0, total = 0;
-    const segs = [];
+  // One element pair (glow + core) per straight run; created once, then only transformed.
+  const runs = [];
+  const runEl = (i) => {
+    while (runs.length <= i) {
+      const glow = document.createElement('span'); glow.className = 'ab-run ab-run--glow';
+      const core = document.createElement('span'); core.className = 'ab-run';
+      layer.append(glow, core);
+      runs.push({ glow, core, key: '' });
+    }
+    return runs[i];
+  };
+  // Each run reveals over a range of the reading line: it starts where the previous one ended and takes
+  // K px per px of horizontal travel; a vertical run then catches up with its own position, so a long
+  // horizontal only delays what follows it.
+  let used = 0;
+  const place = (pts, lineY) => {
+    let r1 = pts[0][1], allDone = true;
     for (let i = 1; i < pts.length; i++) {
       const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-      const l = Math.hypot(x1 - x0, y1 - y0);
-      const r0 = y0 + K * hx;
-      hx += Math.abs(x1 - x0);
-      segs.push({ l, r0, r1: y1 + K * hx });
-      total += l;
+      const r0 = r1;
+      r1 = Math.max(y1, r0 + K * Math.abs(x1 - x0));
+      const f = lineY >= r1 ? 1 : lineY <= r0 ? 0 : (lineY - r0) / (r1 - r0 || 1);
+      if (f < 1) allDone = false;
+      const run = runEl(used++);
+      const horiz = Math.abs(x1 - x0) >= Math.abs(y1 - y0);
+      const len = (horiz ? x1 - x0 : y1 - y0) * f;   // signed: a negative scale draws left / up
+      const set = (node, w) => horiz
+        ? `translate(${x0.toFixed(1)}px,${(y0 - w / 2).toFixed(1)}px) scale(${len.toFixed(2)},${w})`
+        : `translate(${(x0 - w / 2).toFixed(1)}px,${y0.toFixed(1)}px) scale(${w},${len.toFixed(2)})`;
+      const key = f === 0 ? 'off' : set(null, CORE);
+      if (key === run.key) continue;
+      run.key = key;
+      if (f === 0) { run.core.style.transform = run.glow.style.transform = 'scale(0)'; continue; }
+      run.core.style.transform = key;
+      run.glow.style.transform = set(null, GLOW);
     }
-    for (const s of segs) {
-      if (lineY >= s.r1) { len += s.l; continue; }
-      if (lineY > s.r0) len += s.l * ((lineY - s.r0) / (s.r1 - s.r0 || 1));
-      break;
-    }
-    return { len, total };
+    return allDone;
   };
-  const toD = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('');
 
-  let lastSig = '';
+  let last = '';
   const draw = () => {
+    if (!m) return;
     const [a, b] = routes();
-    const lineY = window.innerHeight * LINE;
-    const sig = `${a.flat().map(Math.round).join()}|${b.flat().map(Math.round).join()}`;
-    if (sig === lastSig) return;
-    lastSig = sig;
-    pathA.setAttribute('d', toD(a));
-    pathB.setAttribute('d', b.length ? toD(b) : '');
-    if (reduced) { gsap.set([pathA, pathB], { drawSVG: '100%' }); return; }
-    const ma = measure(a, lineY);
-    gsap.set(pathA, { drawSVG: `0 ${Math.max(0.01, ma.len)}` });
-    const mb = b.length ? measure(b, lineY) : { len: 0, total: 0 };
-    gsap.set(pathB, { drawSVG: `0 ${Math.max(0.01, mb.len)}`, opacity: b.length ? 1 : 0 });
-    // the thread has reached the skyline: the street lights come on one by one
-    // (or the visitor reached the bottom of the page before the line did)
-    const done = (b.length ? mb.len >= mb.total - 2 : ma.len >= ma.total - 2) || window.scrollY >= ScrollTrigger.maxScroll(window) - 4;
+    const frameKey = `${window.scrollY}|${a[a.length - 1][0].toFixed(1)}|${window.innerWidth}`;
+    if (frameKey === last) return;
+    last = frameKey;
+    const lineY = reduced ? Infinity : window.innerHeight * LINE;
+    used = 0;
+    const doneA = place(a, lineY);
+    const doneB = b.length ? place(b, lineY) : doneA;
+    for (let i = used; i < runs.length; i++) { if (runs[i].key !== 'off') { runs[i].key = 'off'; runs[i].core.style.transform = runs[i].glow.style.transform = 'scale(0)'; } }
+    // the thread has reached the skyline (or the visitor reached the bottom first): the lamps come on one by one
+    const done = doneB || window.scrollY >= ScrollTrigger.maxScroll(window) - 4;
     if (done && !threadDone) { threadDone = true; skyline?.lightLamps(); }
   };
-  gsap.ticker.add(draw);
-  window.addEventListener('resize', () => { lastSig = ''; });
+  ScrollTrigger.addEventListener('refresh', () => { measure(); last = ''; draw(); });
+  measure();
   draw();
-  if (reduced) { threadDone = true; }
+  gsap.ticker.add(draw);
 }
 
 // mono labels scramble in when they first scroll into view

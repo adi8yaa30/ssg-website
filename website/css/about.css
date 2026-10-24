@@ -47,12 +47,12 @@
 }
 
 /* ---------- The gold thread ------------------------------------------------ */
-/* a fixed overlay above the sections (the thread runs in the gutters and ends inside the CTA skyline) */
-.ab-thread { position: fixed; inset: 0; width: 100%; height: 100%; z-index: calc(var(--z-over) + 1); overflow: visible; pointer-events: none; }
-.ab-thread__path {
-  fill: none; stroke: var(--gold); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
-  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--gold) 80%, transparent)) drop-shadow(0 0 10px color-mix(in srgb, var(--gold) 35%, transparent));
-}
+/* a fixed overlay above the sections (the thread runs in the gutters and ends inside the CTA skyline).
+   Each straight run is a 1px-long element scaled to its length: placing and drawing it is a transform,
+   so the compositor does it without repainting. Every run has a core line over a faint, wider glow. */
+.ab-thread { position: fixed; inset: 0; z-index: calc(var(--z-over) + 1); pointer-events: none; overflow: hidden; }
+.ab-run { position: absolute; left: 0; top: 0; width: 1px; height: 1px; transform-origin: 0 0; will-change: transform; background: var(--gold); }
+.ab-run--glow { opacity: .16; }
 
 /* ---------- 01 · Hero ------------------------------------------------------ */
 .ab-hero { --horizon: 74%; height: 100vh; height: 100svh; min-height: 560px; overflow: hidden; }
@@ -195,8 +195,9 @@
 .ab-val__icon path { fill: currentColor; stroke: var(--gold); stroke-width: 3; }
 .ab-val__card.is-on .ab-val__icon { color: var(--gold); }
 .ab-val__title { font-family: var(--f-display); font-weight: 400; font-size: clamp(18px, 1.5vw, 24px); color: var(--text); letter-spacing: 0; }
-.ab-val__text { color: var(--ash); font-size: clamp(15px, 1.05vw, 17px); line-height: 1.5; }
-.ab-val__num { position: absolute; right: 18px; top: 16px; font-size: 11px; letter-spacing: .14em; color: var(--ash); }
+/* --ash lifted a quarter towards --text: 5.3:1 on glass cards over the page's lightest part (#2E3742) */
+.ab-val__text { color: color-mix(in srgb, var(--text) 25%, var(--ash)); font-size: clamp(15px, 1.05vw, 17px); line-height: 1.5; }
+.ab-val__num { position: absolute; right: 18px; top: 16px; font-size: 11px; letter-spacing: .14em; color: color-mix(in srgb, var(--text) 25%, var(--ash)); }
 
 /* ---------- 07 · Our Divisions --------------------------------------------- */
 .ab-divs__row { display: flex; gap: clamp(10px, 1.2vw, 18px); height: clamp(440px, 40vw, 600px); }
@@ -211,7 +212,7 @@
 .ab-div__img { position: relative; z-index: 1; width: 84%; height: 92%; object-fit: contain; opacity: 0; transform: scale(.86) translateY(14px); transition: opacity .7s var(--ease), transform 1s var(--ease); }
 .ab-div__img.ab-placeholder { width: 74%; height: 76%; border: 1px solid var(--line); }
 .ab-div__glow { /* pulsing warm glow under the image */
-  position: absolute; left: 50%; top: 58%; width: 60%; aspect-ratio: 2 / 1; translate: -50% -50%; border-radius: 50%;
+  position: absolute; left: 50%; top: 58%; width: 60%; aspect-ratio: 2 / 1; margin: -15% 0 0 -30%; border-radius: 50%;   /* centred with margins: GSAP animates its scale */
   background: radial-gradient(50% 50% at 50% 50%, color-mix(in srgb, var(--gold) 40%, transparent), transparent 70%);
   opacity: 0; transition: opacity .8s var(--ease);
 }
@@ -339,7 +340,6 @@
   .ab-field__viewport { overflow-x: auto; cursor: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
   .ab-field__col { width: 72vw; scroll-snap-align: start; }
   .ab-field__col:first-child { width: 80vw; }
-  .ab-field__hint { content: ""; }
   .ab-hero { --horizon: 78%; }
   .ab-hero__sun { right: 8vw; width: 44vw; }
 }

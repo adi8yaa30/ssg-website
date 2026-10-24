@@ -84,9 +84,10 @@
 
 <main id="main" class="ab">
 
-  <!-- the gold thread: one line down the whole page (js/about.js rebuilds it from its anchors every frame,
-       so it stays attached through the pinned sections; drawn with DrawSVG, scrubbed to scroll) -->
-  <svg class="ab-thread" aria-hidden="true"><path class="ab-thread__path ab-thread__path--a"/><path class="ab-thread__path ab-thread__path--b"/></svg>
+  <!-- the gold thread: one line down the whole page. js/about.js places each straight run of it from its
+       anchors every frame (transforms only, so scrolling never repaints it); it stays attached through the
+       pinned sections and draws as you read. -->
+  <div class="ab-thread" aria-hidden="true"></div>
 
   <!-- ====== 01 · HERO ====== -->
   <section class="ab-hero" id="top" data-label="01 — ABOUT" aria-labelledby="ab-hero-title">
