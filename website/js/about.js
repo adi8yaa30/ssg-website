@@ -329,6 +329,26 @@ function buildJourney() {
   gsap.fromTo('.ab-journey__land', { xPercent: 0 }, { xPercent: -8, ease: 'none', scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${dist()}`, scrub: true } });
 }
 
+// ---------------------------------------------------------------------------
+// 09 · Certifications: each badge "plots" in (its frame lines draw, then its text types); hover or
+// focus flips it (CSS rotateY) to the description on the back
+function buildCertifications() {
+  const sec = $('.ab-certs');
+  scrambleOnEnter($('.ab-label', sec));
+  if (reduced) return;
+  $$('.ab-cert', sec).forEach((badge, i) => {
+    const front = $('.ab-cert__front', badge);
+    const lines = $$('.ab-cert__outline, .ab-cert__tick', front);
+    const texts = $$('[data-plot]', front);
+    gsap.set(lines, { drawSVG: '0%' });
+    gsap.set(texts, { opacity: 0 });
+    const tl = gsap.timeline({ paused: true })
+      .to(lines, { drawSVG: '100%', duration: 1.1, ease: 'power1.inOut', stagger: 0.3 })
+      .add(() => texts.forEach((t, k) => { gsap.set(t, { opacity: 1 }); typeIn(t, { delay: k * 0.15 }); }), 0.6);
+    ScrollTrigger.create({ trigger: badge, start: 'top 85%', once: true, onEnter: () => gsap.delayedCall(i * 0.14, () => tl.play()) });
+  });
+}
+
 // mono labels scramble in when they first scroll into view
 function scrambleOnEnter(el) {
   if (!el || reduced) return;
@@ -390,6 +410,7 @@ async function boot() {
   buildValues();
   buildDivisions();
   buildJourney();
+  buildCertifications();
   basicReveals();
   buildCta();
   buildProgress();
