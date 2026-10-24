@@ -187,6 +187,91 @@ function buildDirector() {
   sec.addEventListener('pointerleave', () => { px(0); py(0); bx(0); by(0); });
 }
 
+// ---------------------------------------------------------------------------
+// 06 · Our Values: the cards fan out from a stack; gold circuit lines connect them and a pulse hops
+// card to card, drawing each icon as it arrives. Hover: 3D tilt + a gold edge glow under the cursor.
+function buildValues() {
+  const sec = $('.ab-values');
+  const stage = $('.ab-values__stage', sec);
+  const cards = $$('.ab-val__card', sec);
+  const icons = cards.map((c) => $('.ab-val__icon path', c));
+  const wire = $('.ab-values__wire', sec);
+  const pulse = $('.ab-values__pulse', sec);
+  scrambleOnEnter($('.ab-label', sec));
+
+  // the wire runs centre to centre (behind the glass), so it follows the grid at any width
+  let stops = [];
+  const layout = () => {
+    const s = stage.getBoundingClientRect();
+    const pts = cards.map((c) => { const r = c.getBoundingClientRect(); return [r.left - s.left + r.width / 2, r.top - s.top + r.height * 0.32]; });
+    const d = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('');
+    wire.setAttribute('d', d);
+    pulse.setAttribute('d', d);
+    let acc = 0;
+    stops = pts.map((p, i) => { if (i) acc += Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]); return acc; });
+  };
+  layout();
+  ScrollTrigger.addEventListener('refreshInit', () => { gsap.set(cards, { clearProps: 'x,y,rotation' }); });
+  ScrollTrigger.addEventListener('refresh', layout);
+
+  if (reduced) { cards.forEach((c) => c.classList.add('is-on')); return; }
+  gsap.set(icons, { drawSVG: '0%', fillOpacity: 0 });
+  gsap.set(wire, { drawSVG: '0%' });
+  gsap.set(pulse, { drawSVG: '0% 0%', opacity: 0 });
+
+  // fan out from a stack at the centre of the row
+  const fromStack = (i, el) => {
+    const s = stage.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    return (s.left + s.width / 2) - (r.left + r.width / 2);
+  };
+  const run = gsap.timeline({ paused: true });
+  if (desktopMotion) {
+    run.fromTo(cards, { x: fromStack, y: 40, rotation: (i) => (i - 1.5) * 5, opacity: 0.6 }, { x: 0, y: 0, rotation: 0, opacity: 1, duration: 1.4, stagger: 0.08 }, 0);
+  } else {
+    run.from(cards, { y: 30, opacity: 0, duration: 1, stagger: 0.12 }, 0);
+  }
+  run.to(wire, { drawSVG: '100%', duration: 1.2, ease: 'power1.inOut' }, desktopMotion ? 0.9 : 0.4);
+  // the pulse: a short bright dash travelling the wire; each icon draws as it arrives
+  const head = { t: 0 };
+  const total = () => stops[stops.length - 1] || 1;
+  let lit = -1;
+  run.set(pulse, { opacity: 1 }, '>-0.6')
+    .to(head, {
+      t: 1, duration: 2.6, ease: 'none',
+      onUpdate: () => {
+        const L = total();
+        const at = head.t * L;
+        gsap.set(pulse, { drawSVG: `${Math.max(0, at - 50)} ${at}` });
+        while (lit + 1 < cards.length && at >= stops[lit + 1] - 1) {
+          lit++;
+          const c = cards[lit];
+          gsap.timeline()
+            .to(icons[lit], { drawSVG: '100%', duration: 0.7, ease: 'power1.inOut' })
+            .to(icons[lit], { fillOpacity: 1, duration: 0.4 }, '-=0.2')
+            .add(() => c.classList.add('is-on'), '-=0.3');
+        }
+      },
+    }, '<')
+    .to(pulse, { opacity: 0, duration: 0.3 });
+  ScrollTrigger.create({ trigger: stage, start: 'top 72%', once: true, onEnter: () => run.play() });
+
+  if (!finePointer) return;
+  cards.forEach((card) => {
+    const rx = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power3.out' });
+    const ry = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power3.out' });
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      card.style.setProperty('--mx', `${px * 100}%`);
+      card.style.setProperty('--my', `${py * 100}%`);
+      ry((px - 0.5) * 12); rx(-(py - 0.5) * 12);
+    });
+    card.addEventListener('pointerleave', () => { rx(0); ry(0); });
+  });
+}
+
 // mono labels scramble in when they first scroll into view
 function scrambleOnEnter(el) {
   if (!el || reduced) return;
@@ -245,6 +330,7 @@ async function boot() {
   buildMissionVision();
   buildNumbers();
   buildDirector();
+  buildValues();
   basicReveals();
   buildCta();
   buildProgress();
