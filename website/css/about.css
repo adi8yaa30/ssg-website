@@ -112,12 +112,30 @@
 /* the divider is drawn by the gold thread (it runs through here); this is its faint track */
 .ab-mv__divider { width: 1px; background: var(--line); }
 
+/* ---------- 04 · By the Numbers ------------------------------------------- */
+.ab-num__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(20px, 3vw, 48px); }
+.ab-stat { display: grid; gap: 14px; align-content: start; }
+.ab-stat__value { position: relative; font-size: clamp(44px, 5.4vw, 92px); line-height: 1; color: var(--gold); display: flex; }
+/* odometer: each digit is a window onto a 0–9 column that rolls to its value */
+.ab-odo { display: inline-block; height: 1em; overflow: hidden; line-height: 1; }
+.ab-odo__col { display: flex; flex-direction: column; align-items: center; will-change: transform; }
+.ab-odo__col span { height: 1em; }
+.ab-stat__value::after { /* the small gold flash when the digits land */
+  content: ""; position: absolute; left: -10%; top: -20%; width: 120%; height: 140%; pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 50%, color-mix(in srgb, var(--sun) 45%, transparent), transparent 70%);
+  mix-blend-mode: screen; opacity: var(--flash, 0);
+}
+.ab-stat__bar { display: block; height: 2px; background: var(--line); position: relative; overflow: hidden; }
+.ab-stat__bar::after { content: ""; position: absolute; inset: 0; background: var(--gold); box-shadow: 0 0 8px var(--gold); transform: scaleX(var(--fill, 1)); transform-origin: 0 50%; }
+.ab-stat__label { color: var(--ash); font-size: clamp(14px, 1.1vw, 18px); line-height: 1.4; }
+
 /* ---------- Mobile --------------------------------------------------------- */
 @media (max-width: 767px) {
   .ab-progress { display: none; }
   .ab-mv__grid { grid-template-columns: 1fr; gap: 8px; }
   .ab-mv__col--l { text-align: left; justify-items: start; }
   .ab-mv__divider { display: none; }
+  .ab-num__grid { grid-template-columns: 1fr 1fr; row-gap: 36px; }
   .ab-hero { --horizon: 78%; }
   .ab-hero__sun { right: 8vw; width: 44vw; }
 }

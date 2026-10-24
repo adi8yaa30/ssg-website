@@ -100,6 +100,49 @@ function buildMissionVision() {
     .fromTo(r, { x: () => shift(r), opacity: 0.35 }, { x: 0, opacity: 1, ease: 'none' }, 0);
 }
 
+// ---------------------------------------------------------------------------
+// 04 · By the Numbers: odometer digits roll to their value and land with a small gold flash, while a
+// thin gold bar fills under each stat
+function buildNumbers() {
+  const sec = $('.ab-num');
+  scrambleOnEnter($('.ab-label', sec));
+  const stats = $$('.ab-stat', sec);
+  if (reduced) return;
+  stats.forEach((stat, i) => {
+    const value = $('[data-odometer]', stat);
+    const text = value.dataset.odometer;
+    // each digit becomes a column 0..9 (+ a full extra turn for the leading digits, so they visibly roll)
+    value.textContent = '';
+    const cols = [];
+    [...text].forEach((ch, k) => {
+      if (!/\d/.test(ch)) { const s = document.createElement('span'); s.textContent = ch; value.appendChild(s); return; }
+      const odo = document.createElement('span');
+      odo.className = 'ab-odo';
+      odo.setAttribute('aria-hidden', 'true');
+      // the window is as wide as its final digit (Unbounded's numerals are proportional)
+      const probe = document.createElement('span');
+      probe.textContent = ch;
+      value.appendChild(probe);
+      odo.style.width = `${probe.getBoundingClientRect().width / parseFloat(getComputedStyle(value).fontSize)}em`;
+      probe.remove();
+      const col = document.createElement('span');
+      col.className = 'ab-odo__col';
+      const turns = 1 + (k % 2);
+      for (let n = 0; n <= 10 * turns + +ch; n++) { const d = document.createElement('span'); d.textContent = n % 10; col.appendChild(d); }
+      odo.appendChild(col);
+      value.appendChild(odo);
+      cols.push({ col, steps: 10 * turns + +ch });
+    });
+    gsap.set(stat, { '--fill': 0, '--flash': 0 });
+    const tl = gsap.timeline({ paused: true });
+    cols.forEach(({ col, steps }, k) => tl.fromTo(col, { yPercent: 0 }, { yPercent: -(100 * steps) / (steps + 1), duration: 1.6 + k * 0.12, ease: 'power3.out' }, 0));
+    tl.to(stat, { '--fill': 1, duration: 1.6, ease: 'power2.inOut' }, 0)
+      .to(stat, { '--flash': 1, duration: 0.15, ease: 'power1.out' }, '>-0.25')
+      .to(stat, { '--flash': 0, duration: 0.6, ease: 'power1.in' });
+    ScrollTrigger.create({ trigger: stat, start: 'top 85%', once: true, onEnter: () => gsap.delayedCall(i * 0.12, () => tl.play()) });
+  });
+}
+
 // mono labels scramble in when they first scroll into view
 function scrambleOnEnter(el) {
   if (!el || reduced) return;
@@ -156,6 +199,7 @@ async function boot() {
   const heroIntro = buildHero();
   buildStory();
   buildMissionVision();
+  buildNumbers();
   basicReveals();
   buildCta();
   buildProgress();
