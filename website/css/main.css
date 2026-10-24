@@ -165,6 +165,21 @@ html:not(.js) .preloader { display: none; }
 /* the visit fades to the page's night colour, then lifts off the home page */
 .intro-veil { position: fixed; inset: 0; z-index: calc(var(--z-intro) + 5); pointer-events: none; opacity: 0; background: var(--night); }
 
+/* ---------- Page transition (core.js) ---------------------------------- */
+/* leaving: a night panel rises under a sweeping gold horizon line; arriving, the preloader lifts the
+   same way (.preloader__horizon) */
+.page-wipe {
+  position: fixed; inset: 0; z-index: calc(var(--z-preloader) + 2); pointer-events: none;
+  background: var(--night); will-change: transform;
+}
+.page-wipe__line, .preloader__horizon {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 12%, var(--sun) 50%, var(--gold) 88%, transparent 100%);
+  box-shadow: 0 0 16px 2px color-mix(in srgb, var(--gold) 65%, transparent), 0 0 50px 8px color-mix(in srgb, var(--gold) 22%, transparent);
+}
+.page-wipe__line { top: 0; }
+.preloader__horizon { bottom: 0; }
+
 /* ---------- Nav --------------------------------------------------------- */
 .nav {
   --nu: max(var(--u), .72px);

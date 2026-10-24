@@ -1,6 +1,7 @@
 /* ==========================================================================
-   SSG home page: Lenis + GSAP setup, preloader, store intro, nav and section
-   timelines. The store intro lives in intro.js, the 3D street light in
+   SSG home page: store intro, hero and section timelines. Shared setup
+   (GSAP, Lenis, preloader, nav, modal, links, page transition) is in
+   core.js. The store intro lives in intro.js, the 3D street light in
    scene.js (they share one renderer); the street light is only loaded on
    desktop with WebGL, and mobile and no-WebGL use static images.
 
@@ -37,60 +38,17 @@
 const { initProducts, initProcess, initFlag, initCtaSkyline, initFooterLandscape } = window.SSG || {};
 window.__ssgBooted = true;
 
-const { gsap, ScrollTrigger, SplitText, DrawSVGPlugin, CustomEase, Lenis } = window;
-const root = document.documentElement;
-const $ = (s, c = document) => c.querySelector(s);
-const $$ = (s, c = document) => [...c.querySelectorAll(s)];
-
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const mobile = matchMedia('(max-width: 767px)').matches;
-const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
-const debug = new URLSearchParams(location.search).has('debug');
-// Pins, scrubs and the 3D choreography are desktop-only; phones get simple one-shot reveals
-const desktopMotion = !reduced && !mobile;
-const toggle = mobile ? 'play none none none' : 'play none none reverse';
-
-// ---------------------------------------------------------------------------
-// Fluid unit: 1 Figma px (frame is 1728 wide)
-const setUnit = () => root.style.setProperty('--u', `${root.clientWidth / 1728}px`);
-setUnit();
-window.addEventListener('resize', setUnit);
-
-// Show the page without motion if anything essential is missing
-function staticFallback(reason) {
-  console.warn('[SSG] static fallback:', reason);
-  root.classList.add('no-webgl', 'static-panels', 'reduced-motion');
-  document.getElementById('preloader')?.remove();
-  document.body.classList.remove('is-loading');
-}
-if (!gsap || !ScrollTrigger || !initProducts) {
-  staticFallback('scripts unavailable');
+const core = window.SSG.initCore?.({ page: 'home' });
+if (!core || !initProducts) {
+  core?.staticFallback('scripts unavailable');
+  if (!core) { document.getElementById('preloader')?.remove(); document.documentElement.classList.add('no-webgl', 'static-panels', 'reduced-motion'); }
   return;
 }
-
-gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin, CustomEase);
-// the site's one motion curve; entrances run 1.6s on it (scroll-linked tweens and ambient loops opt out)
-CustomEase.create('ssg', '0.4,0.01,0.04,1');
-gsap.defaults({ ease: 'ssg' });
-// mobile browsers resize the viewport as the address bar slides; don't re-measure every trigger for that
-ScrollTrigger.config({ ignoreMobileResize: true });
-
-// Endless ambient loops (sun bob, cloud drift, marquee, glows…) only tick while their
-// section is on screen, so off-screen sections cost nothing per frame
-const ambient = new Map();
-const ambientIO = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => entries.forEach((e) => {
-  const a = ambient.get(e.target);
-  a.on = e.isIntersecting;
-  a.anims.forEach((anim) => anim.paused(!a.on));
-}), { rootMargin: '80px 0px' }) : null;
-function whileVisible(el, anim) {
-  if (!el || !anim || !ambientIO) return anim;
-  let a = ambient.get(el);
-  if (!a) { a = { on: false, anims: [] }; ambient.set(el, a); ambientIO.observe(el); }
-  a.anims.push(anim);
-  anim.paused(!a.on);
-  return anim;
-}
+const {
+  gsap, ScrollTrigger, SplitText, lenis, root, $, $$, reduced, mobile, finePointer, debug, desktopMotion, toggle,
+  staticFallback, whileVisible, scrollToTarget, scrollToHash, setProgress, openPreloader, fontsReady, pageFonts,
+  typeIn, countUp, buildNav, enquire,
+} = core;
 
 let softwareGL = false;
 function hasWebGL() {
@@ -106,54 +64,7 @@ function hasWebGL() {
 }
 const use3D = !mobile && hasWebGL();
 if (!use3D) root.classList.add('no-webgl');
-if (reduced) root.classList.add('reduced-motion');
 if (reduced || !use3D) root.classList.add('static-panels');
-document.body.classList.add('is-loading');
-
-// ---------------------------------------------------------------------------
-// Smooth scroll (Lenis, synced with ScrollTrigger)
-let lenis = null;
-if (!reduced && Lenis) {
-  lenis = new Lenis({ lerp: 0.1, smoothWheel: true, autoRaf: false });
-  lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add((time) => lenis.raf(time * 1000));
-  gsap.ticker.lagSmoothing(0);
-  lenis.stop();
-}
-window.scrollTo(0, 0);
-if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-
-function scrollToTarget(target, onComplete) {
-  if (lenis) lenis.scrollTo(target, { duration: 1.4, onComplete });
-  else {
-    const y = typeof target === 'number' ? target : target.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
-    if (onComplete) setTimeout(onComplete, reduced ? 0 : 700);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Preloader: battery bar fills with the GLB download, then the screen splits open
-const preloader = $('#preloader');
-const pctEl = $('#preloader-pct');
-const fills = $$('.preloader__fill');
-const progress = { v: 0 };
-function renderProgress() {
-  gsap.set(fills[0], { scaleX: Math.min(1, progress.v * 2) });
-  gsap.set(fills[1], { scaleX: Math.max(0, Math.min(1, progress.v * 2 - 1)) });
-  pctEl.textContent = Math.round(progress.v * 100);
-}
-function setProgress(p) {
-  gsap.to(progress, { v: Math.max(progress.v, p), duration: 0.5, overwrite: true, onUpdate: renderProgress });
-}
-
-const fontsReady = (document.fonts ? document.fonts.ready : Promise.resolve()).catch(() => {});
-// While the store intro plays the page is display:none, so the browser never asks for its faces and
-// fonts.ready resolves early; load them explicitly before SplitText measures the hero
-const pageFonts = () => (document.fonts ? Promise.all(
-  ['400 1em Unbounded', '400 1em "Instrument Sans"', '500 1em "Instrument Sans"', '400 1em "Space Mono"'].map((f) => document.fonts.load(f))
-).catch(() => {}) : Promise.resolve());
-if (debug) window.__ssg = { gsap, ScrollTrigger, lenis };
 
 // ---------------------------------------------------------------------------
 // 3D scene (desktop + WebGL only)
@@ -241,20 +152,6 @@ function updateLeaders() {
 }
 if (use3D) gsap.ticker.add(updateLeaders);
 else $('.hero__leaders').style.display = 'none';
-
-// ---------------------------------------------------------------------------
-// Typing helper for mono labels
-function typeIn(el, opts = {}) {
-  const split = SplitText.create(el, { type: 'words,chars', charsClass: 'type-char' });
-  gsap.set(split.chars, { autoAlpha: 0 });
-  return gsap.to(split.chars, { autoAlpha: 1, duration: 0.01, stagger: opts.stagger ?? 0.022, ease: 'none', ...opts });
-}
-function countUp(el, duration = 1.6) {
-  const to = parseFloat(el.dataset.to);
-  const o = { v: 0 };
-  el.textContent = '0';
-  return gsap.to(o, { v: to, duration, onUpdate: () => { el.textContent = Math.round(o.v); } });
-}
 
 // ---------------------------------------------------------------------------
 // HERO intro
@@ -611,43 +508,6 @@ function buildLogos() {
 }
 
 // ---------------------------------------------------------------------------
-// Nav: the link for the section you're reading is marked current; mobile menu toggle
-function buildNav() {
-  const links = $$('.nav__link, .nav__mobile a');
-  const targets = [...new Set(links.map((a) => a.getAttribute('href')))]
-    .map((h) => $(h)).filter(Boolean)
-    .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
-  let currentId = null;
-  // section tops are measured once per layout (ScrollTrigger refresh), not on every scroll frame
-  let tops = [];
-  const measure = () => { tops = targets.map((t) => ({ id: t.id, top: t.getBoundingClientRect().top + window.scrollY })); };
-  const update = () => {
-    // the last linked section whose top has passed the middle of the screen
-    // (sections without a link, like Why SSG, keep the one above them current)
-    const line = window.scrollY + window.innerHeight * 0.5;
-    let id = tops[0]?.id;
-    tops.forEach((t) => { if (t.top <= line) id = t.id; });
-    if (id === currentId) return;
-    currentId = id;
-    links.forEach((a) => {
-      if (a.getAttribute('href') === `#${id}`) a.setAttribute('aria-current', 'location');
-      else a.removeAttribute('aria-current');
-    });
-  };
-  ScrollTrigger.create({ start: 0, end: 'max', onUpdate: update, onRefresh: () => { measure(); update(); } });
-  measure();
-  update();
-  const burger = $('.nav__burger');
-  const menu = $('#mobile-menu');
-  burger?.addEventListener('click', () => {
-    const open = burger.getAttribute('aria-expanded') !== 'true';
-    burger.setAttribute('aria-expanded', String(open));
-    menu.hidden = !open;
-  });
-  menu?.addEventListener('click', (e) => { if (e.target.closest('a')) { burger.setAttribute('aria-expanded', 'false'); menu.hidden = true; } });
-}
-
-// ---------------------------------------------------------------------------
 // Pointer position feeds the 3D scene's subtle parallax
 function trackPointer() {
   if (!finePointer) return;
@@ -657,72 +517,6 @@ function trackPointer() {
     sceneApi.state.pointerY = (e.clientY / window.innerHeight - 0.5) * 2;
   }, { passive: true });
 }
-
-// ---------------------------------------------------------------------------
-// Links, enquiry modal, toasts
-const dialog = $('#quote');
-const form = $('.quote__form', dialog);
-const note = $('.quote__note', dialog);
-
-function toast(msg) {
-  let t = $('.toast');
-  if (!t) { t = document.createElement('div'); t.className = 'toast mono'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
-  t.textContent = msg;
-  gsap.fromTo(t, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, overwrite: true });
-  gsap.to(t, { y: 20, opacity: 0, duration: 0.4, delay: 2.6 });
-}
-
-function openQuote(product = '') {
-  form.reset();
-  note.textContent = '';
-  form.elements.product.value = product;
-  dialog.showModal();
-  lenis?.stop();
-  setTimeout(() => form.elements.name.focus(), 50);
-}
-dialog.addEventListener('close', () => lenis?.start());
-$('.quote__close', dialog).addEventListener('click', () => dialog.close());
-dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const f = form.elements;
-  if (!f.name.value.trim() || !f.phone.value.trim()) {
-    note.textContent = 'Please add your name and phone number.';
-    (f.name.value.trim() ? f.phone : f.name).focus();
-    return;
-  }
-  const subject = `Quote request${f.product.value ? `: ${f.product.value}` : ''}`;
-  const body = [
-    `Name: ${f.name.value}`, `Organisation: ${f.org.value}`, `Phone: ${f.phone.value}`, `Email: ${f.email.value}`,
-    `Product: ${f.product.value}`, '', f.message.value,
-  ].join('\n');
-  // TODO: replace mailto with the client's form endpoint / CRM
-  window.location.href = `mailto:shyaminfratech.co.in@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  note.textContent = 'Opening your email app with the enquiry…';
-  setTimeout(() => dialog.close(), 1600);
-});
-
-function enquire(product, fromEl) {
-  const contact = $('#contact');
-  if (fromEl && contact.contains(fromEl)) { openQuote(product); return; }
-  scrollToTarget(contact, () => openQuote(product));
-}
-
-document.addEventListener('click', (e) => {
-  const enq = e.target.closest('[data-enquire]');
-  if (enq && !enq.closest('.products')) { e.preventDefault(); enquire(enq.dataset.enquire, enq); return; }
-  const todo = e.target.closest('[data-todo], [data-brochure]');
-  if (todo) {
-    e.preventDefault();
-    toast(todo.hasAttribute('data-brochure') ? 'Brochure PDF coming soon' : 'Link coming soon');
-    return;
-  }
-  const a = e.target.closest('a[href^="#"]');
-  if (a && a.getAttribute('href').length > 1) {
-    const target = $(a.getAttribute('href'));
-    if (target) { e.preventDefault(); scrollToTarget(target); }
-  }
-});
 
 // ---------------------------------------------------------------------------
 // Store intro: which version plays (see intro.js). Null when it has been seen this session.
@@ -763,48 +557,6 @@ function buildPage() {
   return heroIntro;
 }
 
-// preloader out: the logo bows out, a seam draws down the middle and the screen splits open like two doors.
-// `onStart` runs as it begins (so the intro is already drawing underneath), `onOpen` once it has parted.
-function openPreloader({ onStart = () => {}, onOpen = () => {} } = {}) {
-  return new Promise((resolve) => {
-    const out = gsap.timeline({
-      onComplete: () => {
-        preloader.remove();
-        document.body.classList.remove('is-loading');
-        ScrollTrigger.refresh();
-        // the intro's pin spacer appears after Lenis last measured the page
-        lenis?.resize();
-        lenis?.start();
-        resolve();
-      },
-    });
-    onStart();
-    if (reduced) {
-      out.to(preloader, { opacity: 0, duration: 0.3 }).add(onOpen);
-      return;
-    }
-    // the logo and battery bow out in one piece, then the empty screen splits open
-    const inner = $('.preloader__inner', preloader);
-    const panels = ['l', 'r'].map((side) => {
-      const panel = document.createElement('div');
-      panel.className = `preloader__panel preloader__panel--${side}`;
-      preloader.appendChild(panel);
-      return panel;
-    });
-    const seam = document.createElement('span');
-    seam.className = 'preloader__seam';
-    preloader.appendChild(seam);
-    preloader.classList.add('is-splitting');
-    out.to('.preloader__pct', { opacity: 0, duration: 0.2 })
-      .to(inner, { opacity: 0, scale: 0.94, duration: 0.45 }, 0.05)
-      .fromTo(seam, { scaleY: 0 }, { scaleY: 1, duration: 0.45 }, 0.3)
-      .to(panels[0], { xPercent: -100, duration: 1.6 }, 0.7)
-      .to(panels[1], { xPercent: 100, duration: 1.6 }, 0.7)
-      .to(seam, { opacity: 0, duration: 0.25 }, 0.75)
-      .add(onOpen, 1);
-  });
-}
-
 async function boot() {
   setProgress(0.04);
   const mode = introMode();
@@ -818,6 +570,7 @@ async function boot() {
   setProgress(1);
   const heroIntro = buildPage();
   start3D();
+  scrollToHash();   // deep links (index.html#products) land on their section
   await new Promise((r) => setTimeout(r, 450));
   await openPreloader({ onOpen: () => { if (!reduced) heroIntro.play(); } });
 }

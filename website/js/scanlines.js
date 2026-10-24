@@ -95,12 +95,14 @@ function ripple({ gsap, section, svg, rows, viewH, amount = 4, radius = 60 }) {
   });
 }
 
-async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, whileVisible = (el, a) => a }) {
+// `lamps: 'manual'` leaves the street lights off after the skyline draws; the returned lightLamps()
+// switches them on one by one, left to right (the About page does it when its gold thread arrives)
+async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, whileVisible = (el, a) => a, lamps = 'auto' }) {
   const section = document.querySelector('.cta');
   const container = section?.querySelector('.cta__skyline');
-  if (!container) return;
+  if (!container) return null;
   let svg;
-  try { svg = await inline(container); } catch (e) { console.warn(e); showImage(container); return; }
+  try { svg = await inline(container); } catch (e) { console.warn(e); showImage(container); return null; }
   const vb = svg.viewBox.baseVal;
   const items = measure([...svg.querySelectorAll('path')]);
   const half = vb.width / 2;
@@ -121,9 +123,22 @@ async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, while
   shimmerWrap.appendChild(shimmer);
   container.appendChild(shimmerWrap);
 
+  // lamps left to right, for the one-by-one switch-on
+  const byX = [...glows].sort((a, b) => parseFloat(a.style.left) - parseFloat(b.style.left));
+  let lit = false;
+  const glowLoop = () => whileVisible(section, gsap.to(glows, { opacity: 0.75, duration: 1.8, ease: 'sine.inOut', repeat: -1, yoyo: true, stagger: { each: 0.25, from: 'random' } }));
+  const api = {
+    lightLamps() {
+      if (lit) return;
+      lit = true;
+      if (reduced) { gsap.set(glows, { opacity: 1, scale: 1 }); return; }
+      gsap.to(byX, { opacity: 1, scale: 1, duration: 0.45, stagger: 0.09, ease: 'back.out(2)', onComplete: glowLoop });
+    },
+  };
+
   if (reduced) {
     gsap.set(glows, { opacity: 1, scale: 1 });
-    return;
+    return api;
   }
 
   // rows draw in from both outer edges towards the centre, bottom rows first
@@ -131,14 +146,14 @@ async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, while
   gsap.set(order.map((o) => o.el), { scaleX: 0, transformOrigin: (i) => (order[i].cx < half ? '0% 50%' : '100% 50%') });
 
   const tl = gsap.timeline({ paused: true });
-  tl.to(order.map((o) => o.el), { scaleX: 1, duration: 1.6, stagger: { each: 1.5 / order.length } })
-    .to(glows, { opacity: 1, scale: 1, duration: 0.45, stagger: 0.06 }, '-=0.3')
-    .to(shimmer, { opacity: 1, duration: 0.6 }, '-=0.4')
+  tl.to(order.map((o) => o.el), { scaleX: 1, duration: 1.6, stagger: { each: 1.5 / order.length } });
+  if (lamps === 'auto') tl.add(() => { lit = true; }, '-=0.3').to(glows, { opacity: 1, scale: 1, duration: 0.45, stagger: 0.06 }, '<');
+  tl.to(shimmer, { opacity: 1, duration: 0.6 }, '-=0.4')
     .add(() => {
       // the shimmer band and the glows are their own GPU layers, so these loops never repaint
       // the skyline; they also stop while the section is off screen
       whileVisible(section, gsap.fromTo(shimmer, { xPercent: -160 }, { xPercent: 260, duration: 5, ease: 'sine.inOut', repeat: -1, repeatDelay: 1.5, force3D: true }));
-      whileVisible(section, gsap.to(glows, { opacity: 0.75, duration: 1.8, ease: 'sine.inOut', repeat: -1, yoyo: true, stagger: { each: 0.25, from: 'random' } }));
+      if (lamps === 'auto') glowLoop();
       // transforms are only needed for the intro; drop them so the ripple groups stay cheap
       gsap.set(order.map((o) => o.el), { clearProps: 'transform' });
     });
@@ -149,6 +164,7 @@ async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, while
     const rows = bucket(svg, items, 7);
     ripple({ gsap, section, svg, rows, viewH: vb.height, amount: 4, radius: 55 });
   }
+  return api;
 }
 
 async function initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer, whileVisible = (el, a) => a }) {

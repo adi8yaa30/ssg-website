@@ -64,8 +64,10 @@ index.html          all sections, inline icons and the exploded-parts SVG
 css/reset.css
 css/tokens.css      colours, fonts, the --u Figma-pixel unit, z-index layers
 css/main.css        section styles, plus tablet, mobile and reduced-motion rules
-js/main.js          (loads last) Lenis + GSAP setup, preloader, store intro boot, hero, panel
-                    choreography wiring, section reveals, nav, quote modal (asset mapping at the top)
+js/core.js          shared by every page: GSAP + the 'ssg' curve, Lenis, preloader, nav, toasts,
+                    enquiry modal, link handling and the gold page transition (SSG.initCore)
+js/main.js          (loads last) home page: store intro boot, hero, panel choreography wiring,
+                    section reveals (asset mapping at the top)
 js/intro.js         store intro: the store scene at dusk, the scroll fly-in, skip, fallbacks
 js/scene.js         Three.js scene, panelRig, DOM-anchored poses (states A–E); also the shared
                     three.js loader and the page's one WebGL renderer
