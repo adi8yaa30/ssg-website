@@ -156,16 +156,8 @@ html:not(.js) .preloader { display: none; }
   border-bottom: 1px solid transparent; transition: color .4s var(--ease), border-color .4s var(--ease);
 }
 .intro__skip:hover, .intro__skip:focus-visible { color: var(--gold); border-color: var(--gold); }
-/* the warm light the flight ends in, which collapses onto the hero's gold horizon line */
-.intro-glow {
-  position: fixed; inset: 0; z-index: calc(var(--z-intro) + 5); pointer-events: none; opacity: 0;
-  background: radial-gradient(130% 120% at 50% 52%, #FFECC4 0%, var(--sun) 35%, var(--gold) 75%, var(--amber) 100%);
-}
-.intro-glow__line {
-  position: absolute; left: 0; right: 0; top: 50%; height: 2px; opacity: 0;
-  background: linear-gradient(90deg, transparent 0%, var(--gold) 14%, var(--sun) 50%, var(--gold) 86%, transparent 100%);
-  box-shadow: 0 0 18px 2px color-mix(in srgb, var(--gold) 70%, transparent), 0 0 60px 6px color-mix(in srgb, var(--gold) 30%, transparent);
-}
+/* the visit fades to the page's night colour, then lifts off the home page */
+.intro-veil { position: fixed; inset: 0; z-index: calc(var(--z-intro) + 5); pointer-events: none; opacity: 0; background: var(--night); }
 
 /* ---------- Nav --------------------------------------------------------- */
 .nav {

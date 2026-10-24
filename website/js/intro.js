@@ -1,9 +1,9 @@
 /* ==========================================================================
    SSG store intro: the first thing a visitor sees is the SSG store at dusk.
-   Scrolling (250vh, pinned) flies the camera over the paving to the entrance,
-   the glass doors slide open, the camera passes through, and the warm interior
-   light resolves into the hero's gold horizon line, which sweeps away to reveal
-   the home page.
+   Scrolling (400vh, pinned) walks the camera over the paving to the entrance,
+   the glass doors slide open, the camera steps into the showroom and settles at
+   the SSG wall; then it pushes on as the view fades to the page's night colour,
+   and the home page fades up with its own load-in.
 
    Modes (chosen in main.js):
      '3d'      live scene on the shared #scene renderer (desktop + WebGL)
@@ -25,8 +25,10 @@ const FOV = 35;            // architectural framing for the establishing shot
 const FOV_FAST = 47;       // widens as the light takes over, for a sense of speed
 const FOV_INSIDE = 40;     // a little wider inside the showroom
 const MIN_HFOV = 38;       // narrow windows widen the lens so the store still fits
-const PR_SLOW = 1.75;
-const PR_STEPS = [1.75, 1.5, 1.25];   // full sharpness; dropped a step only while frames are actually slow
+// Pixel ratio: 1.5 holds 60 fps through the moving camera on a Radeon Pro 5300M (1.75 dropped ~20 % of
+// frames while moving; with SMAA, 1.5 is still crisp on Retina). 1.25 only if frames are actually slow.
+const PR_SLOW = 1.5;
+const PR_STEPS = [1.5, 1.25];
 
 // Dusk look (§12): exposure, bloom (threshold high so only emissives bloom) and light levels
 const EXPOSURE = 0.95;
@@ -43,13 +45,11 @@ const STAGES = [
   ['inside', 0.55, 0.85, 2.8],    // walk through the doorway into the showroom
   ['wall', 0.85, 0.95, 1.2],      // settle in front of the SSG feature wall
 ];
-const ENTER_AT = 0.95;     // then the light takes over (0.95 → 1 plays on a clock after the commit)
+const ENTER_AT = 0.95;     // then the camera pushes on and the view fades out (0.95 → 1 plays on a clock)
 const pace = (p) => {
   const st = STAGES.find(([, a, b]) => p < b) || STAGES[STAGES.length - 1];
   return (st[2] - st[1]) / st[3];   // progress per second
 };
-// the warm glow overlay before the commit: a hint of it as the camera settles at the wall
-const preGlow = (p) => 0.18 * smooth(range(p, 0.9, ENTER_AT));
 
 // Camera path: wide shot across the lawn -> eye level at the doors -> through the doorway -> the wall
 const PATH = [
@@ -442,21 +442,17 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
       doorR.position.x = doorR.userData.x0 + 1.2 * open;
     }
 
-    // the interior brightens as the doors open and a touch more inside; light and bloom only swell
-    // once the visit is over and the light takes over
+    // the interior brightens as the doors open, and a touch more inside
     const inside = smooth(range(p, 0.55, 0.85));
-    const swell = smooth(range(p, ENTER_AT, 1)) + 0.15 * smooth(range(p, 0.85, ENTER_AT));
-    const interior = 0.62 + 0.38 * open + 0.15 * inside + 1.6 * swell;
+    const interior = 0.62 + 0.38 * open + 0.15 * inside;
     downlights.forEach((l) => { l.intensity = DOWNLIGHT * interior; });
-    spill.intensity = 2.5 * open + 6 * swell;
+    spill.intensity = 2.5 * open;
     ['M_EmitCeiling', 'M_EmitGlow'].forEach((n) => { if (mats[n]) mats[n].emissiveIntensity = mats[n].userData.base * interior; });
     // a soft pulse on the sign (and logo)
     const pulse = 1 + 0.07 * Math.sin(t * 1.4) + 0.03 * Math.sin(t * 3.1);
     if (mats.M_EmitSign) mats.M_EmitSign.emissiveIntensity = mats.M_EmitSign.userData.base * pulse;
     if (mats.M_Logo) mats.M_Logo.emissiveIntensity = mats.M_Logo.userData.base * (0.5 + 0.5 * pulse);
-    bloom.strength = BLOOM.strength + 1.5 * swell;
-    bloom.threshold = lerp(BLOOM.threshold, 0.6, swell);
-    renderer.toneMappingExposure = EXPOSURE * (1 + 1.1 * swell);
+    renderer.toneMappingExposure = EXPOSURE;   // shared renderer: the hero uses its own
   }
 
   function render(dt) {
@@ -508,7 +504,7 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
 
   // Offscreen-sized renders for the poster and the fly-in video (tools/render-intro-media.mjs):
   // begin(w, h) pauses the live loop at that size, shot() renders progress p at time t and returns a
-  // data URL, with `glow` baking in the DOM glow overlay so a video ends on the same warm screen.
+  // data URL, with `veil` baking in the DOM fade-out so a video ends the same way the live visit does.
   let capturing = null;
   const capture = {
     begin(w, h) {
@@ -521,13 +517,13 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
       camera.aspect = w / h;
       fovBase = fovFor(camera.aspect);
     },
-    shot({ p, t = 0, glow = 0, type = 'image/png', quality }) {
+    shot({ p, t = 0, veil = 0, type = 'image/png', quality }) {
       pose(p, t, 1);
       render(0);
       const { c } = capturing;
       const g = c.getContext('2d');
       g.drawImage(renderer.domElement, 0, 0, c.width, c.height);
-      if (glow > 0) paintGlow(g, c.width, c.height, glow);
+      if (veil > 0) paintVeil(g, c.width, c.height, veil);
       return c.toDataURL(type, quality);
     },
     end() {
@@ -573,19 +569,13 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     info: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, textures: renderer.info.memory.textures, geometries: renderer.info.memory.geometries }),
     camera, scene, debug,
     // live tuning handles (?debug)
-    tune: { mats, downlights, key, fill, spill, bloom, field, sky, curve, ridges },
+    tune: { mats, downlights, key, fill, spill, bloom, field, sky, curve, ridges, composer },
   };
 }
 
-// The warm screen the flight ends on (same look as .intro-glow in CSS)
-function paintGlow(g, w, h, a) {
-  const r = Math.hypot(w, h) * 0.62;
-  const grd = g.createRadialGradient(w / 2, h * 0.52, 0, w / 2, h * 0.52, r);
-  grd.addColorStop(0, `rgba(255,236,196,${a})`);
-  grd.addColorStop(0.35, `rgba(255,226,160,${a})`);
-  grd.addColorStop(0.75, `rgba(233,169,74,${a})`);
-  grd.addColorStop(1, `rgba(185,119,46,${a})`);
-  g.fillStyle = grd;
+// The dark screen the visit fades to (same colour as .intro-veil in CSS: --night)
+function paintVeil(g, w, h, a) {
+  g.fillStyle = `rgba(18, 23, 30, ${a})`;
   g.fillRect(0, 0, w, h);
 }
 
@@ -601,8 +591,7 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
   const skipBtn = el.querySelector('.intro__skip');
   const poster = el.querySelector('.intro__poster');
   const video = el.querySelector('.intro__video');
-  const glow = document.getElementById('intro-glow');
-  const line = glow.querySelector('.intro-glow__line');
+  const veil = document.getElementById('intro-veil');
   root.classList.add(`intro-${mode}`);
 
   let store = null;
@@ -636,27 +625,23 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
       scrub = gsap.to(target, {
         p: 1, ease: 'none',
         scrollTrigger: {
-          trigger: el, start: 'top top', end: () => `+=${window.innerHeight * 4}`, scrub: 0.4, pin: stage, anticipatePin: 1,
+          trigger: el, start: 'top top', end: () => `+=${window.innerHeight * 4}`, scrub: true, pin: stage, anticipatePin: 1,
         },
       });
       follow = { target, paused: false };
-      let shownLabels = -1, shownGlow = -1;
+      let shownLabels = -1;
       tick = (_t, ms) => {
         const dt = Math.min(ms, 50) / 1000;
         const st = store.state;
         if (!committed && !follow.paused) {
           const rate = pace(st.p);
           // ease towards the scroll position, never faster than the stage allows (a little faster back)
-          const step = (target.p - st.p) * Math.min(1, dt * 3.2);
+          const step = (target.p - st.p) * Math.min(1, dt * 7);
           st.p = Math.min(ENTER_AT, st.p + Math.max(-1.5 * rate * dt, Math.min(rate * dt, step)));
           if (st.p >= ENTER_AT - 0.002) commit();
         }
         const labels = 1 - smooth(range(st.p, 0, 0.04));
         if (labels !== shownLabels) { label.style.opacity = hint.style.opacity = labels; shownLabels = labels; }
-        if (!committed) {
-          const g = preGlow(st.p);
-          if (g !== shownGlow) { glow.style.opacity = g; shownGlow = g; }
-        }
         store.frame(dt);
       };
       gsap.ticker.add(tick);
@@ -706,7 +691,7 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
     const tl = gsap.timeline({ onComplete: () => resolveEntered() });
     tl.to([label, hint, skipBtn], { opacity: 0, duration: 0.3, ease: 'power1.out', overwrite: true }, 0);
     if (mode === 'static') {
-      // reduced motion: no flight, no glow; the poster simply fades once the hero is underneath
+      // reduced motion: no flight; the poster simply fades once the hero is underneath
       tl.to({}, { duration: 0.01 });
       return;
     }
@@ -716,15 +701,15 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
         scrub.kill();
         st?.kill(false);
       }
-      // keep flying forward into the light (faster when skipped from the establishing shot)
+      // keep moving forward while the view fades to night (faster when skipped from the establishing shot)
       tl.to(store.state, { p: 1, duration: skipped ? 1.1 : 1.2, ease: skipped ? 'power2.inOut' : 'power1.in' }, 0);
-      tl.to(glow, { opacity: 1, duration: skipped ? 0.9 : 1.0, ease: 'power2.in' }, skipped ? 0.2 : 0.2);
+      tl.to(veil, { opacity: 1, duration: 0.8, ease: 'power1.in' }, skipped ? 0.3 : 0.4);
     } else {
-      tl.to(glow, { opacity: 1, duration: skipped ? 0.5 : 0.35, ease: 'power1.in' }, 0);
+      tl.to(veil, { opacity: 1, duration: skipped ? 0.5 : 0.4, ease: 'power1.in' }, 0);
     }
   }
 
-  // ---- Teardown: called by main.js while the glow covers the screen (or, for static, before the fade)
+  // ---- Teardown: called by main.js while the veil covers the screen (or, for static, before the fade)
   function teardown() {
     if (tick) gsap.ticker.remove(tick);
     tick = null;
@@ -739,34 +724,18 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
     root.classList.remove('intro-active', `intro-${mode}`);
   }
 
-  // ---- Reveal: the glow resolves into the hero's gold horizon line, which then sweeps away.
-  // `horizonY` is the line's viewport y; `onLine` fires as the glow starts to collapse onto it.
-  function reveal({ horizonY, onLine = () => {} }) {
+  // ---- Reveal: the night veil fades off the page underneath. `onReveal` fires as it starts to lift.
+  function reveal({ onReveal = () => {} } = {}) {
     return new Promise((resolve) => {
       const done = () => {
-        glow.remove();
+        veil.remove();
         if (el.isConnected) el.remove();
         root.classList.remove('intro-fading');
         resolve();
       };
-      if (mode === 'static') {
-        gsap.timeline({ onComplete: done })
-          .add(onLine, 0)
-          .to(el, { opacity: 0, duration: 0.8, ease: 'power1.inOut' }, 0);
-        return;
-      }
-      const vh = window.innerHeight;
-      const y = Math.round(Math.min(Math.max(horizonY, vh * 0.3), vh * 0.92));
-      gsap.set(line, { top: y, opacity: 0, scaleX: 1 });
-      // inset(top right bottom left): collapse the glow onto a 2px band at y
-      gsap.timeline({ onComplete: done })
-        .add(onLine, 0.15)
-        .fromTo(glow, { clipPath: 'inset(0px 0px 0px 0px)' }, { clipPath: `inset(${y}px 0px ${vh - y - 2}px 0px)`, duration: 1.15, ease: 'ssg' }, 0)
-        .to(line, { opacity: 1, duration: 0.5, ease: 'power1.out' }, 0.45)
-        .set(glow, { background: 'transparent' }, 1.15)
-        // the line sweeps off to the right, leaving the hero's own horizon behind it
-        .to(line, { scaleX: 0, transformOrigin: '100% 50%', duration: 1.1, ease: 'ssg' }, 1.2)
-        .to(line, { opacity: 0, duration: 0.5, ease: 'power1.in' }, 1.75);
+      const tl = gsap.timeline({ onComplete: done }).add(onReveal, 0);
+      if (mode === 'static') tl.to(el, { opacity: 0, duration: 0.8, ease: 'power1.inOut' }, 0);
+      else tl.to(veil, { opacity: 0, duration: 1.0, ease: 'power1.inOut' }, 0.1);
     });
   }
 
@@ -776,7 +745,7 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
     if (scrub) { scrub.scrollTrigger?.kill(false); scrub.kill(); }
     window.removeEventListener('keydown', onKey);
     teardown();
-    glow.remove();
+    veil.remove();
     el.remove();
   }
 
@@ -787,7 +756,7 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
     api.setProgress = (p) => {
       if (!store || !follow) return;
       follow.paused = p !== null;
-      if (p !== null) { store.state.p = p; glow.style.opacity = preGlow(p); }
+      if (p !== null) { store.state.p = p;  }
     };
   }
   return api;
@@ -795,6 +764,5 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
 
 window.SSG.createIntro = createIntro;
 // shared with tools/render-intro-media.mjs, so the fallback video keeps the live visit's pacing
-window.SSG.introPacing = { STAGES, ENTER_AT, pace, preGlow };
-window.SSG.paintIntroGlow = paintGlow;
+window.SSG.introPacing = { STAGES, ENTER_AT, pace };
 })();

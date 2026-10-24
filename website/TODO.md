@@ -40,7 +40,7 @@ The first screen is the SSG store at dusk (`assets/ssg-store-hq.glb`); scrolling
 ### Confirm with the client
 
 - [ ] **The store fascia is brand blue** (`M_SSGBlue`, `M_SSGBluePlain` in the model). §12.3 keeps `#2744DF` off the site, but this is the physical store's branding, so it is left as modelled (at dusk it reads as deep navy). Confirm, or it can be shifted to slate in `js/intro.js`.
-- [ ] **Sign-off on the intro itself**: the establishing shot vs `client-colour-reference.png`, the pacing of the visit (~10 s minimum, 400vh of scroll), and the warm glow → gold horizon line transition.
+- [ ] **Sign-off on the intro itself**: the establishing shot vs `client-colour-reference.png`, the pacing of the visit (~10 s minimum, 400vh of scroll), and the fade-to-night transition into the home page.
 - [ ] **The far horizon is generated** (a tiled lawn field and two low hazy ridges, as in the reference), because the model's lawn ends ~12 m from the store. A wider modelled landscape would replace it.
 
 ### Follow-ups

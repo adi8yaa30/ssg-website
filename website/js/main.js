@@ -740,17 +740,6 @@ const withTimeout = (promise, ms, what) => Promise.race([
   promise, new Promise((_, rej) => setTimeout(() => rej(new Error(`${what} timeout`)), ms)),
 ]);
 
-// The viewport y of the hero's gold horizon line, where the intro's glow collapses to
-function heroHorizonY() {
-  if (mobile) {
-    // phones: the band tied to the street light (::before, top 72% + 61% of its 32% height)
-    const r = $('#anchor-streetlight').getBoundingClientRect();
-    return r.top + r.height * (0.72 + 0.32 * 0.61);
-  }
-  const r = hero.getBoundingClientRect();
-  return r.top + r.height * 0.885;   // #FFE2A0 stop of --hero-gradient
-}
-
 // ---------------------------------------------------------------------------
 // Boot
 function buildPage() {
@@ -821,7 +810,7 @@ async function boot() {
   if (mode && await runIntro(mode)) return;
   root.classList.remove('intro-active');
   $('#intro')?.remove();
-  $('#intro-glow')?.remove();
+  $('#intro-veil')?.remove();
 
   // no intro (seen this session): the street light GLB drives the preloader
   await Promise.all([fontsReady, load3D()]);
@@ -832,7 +821,7 @@ async function boot() {
   await openPreloader({ onOpen: () => { if (!reduced) heroIntro.play(); } });
 }
 
-// Plays the store intro, then boots the page behind its glow. False if the intro couldn't load.
+// Plays the store intro, then boots the page behind its night veil. False if the intro couldn't load.
 async function runIntro(mode) {
   let intro = null;
   let fontsForPage = null;
@@ -855,18 +844,18 @@ async function runIntro(mode) {
   await openPreloader({
     onStart: () => {
       intro.start();
-      // …and its textures go up to the GPU a few ms per frame, so its first frame after the glow is cheap
+      // …and its textures go up to the GPU a few ms per frame, so its first frame after the intro is cheap
       heroReady = load3D({ quiet: true }).then(() => sceneApi?.warm(4));
     },
   });
 
   await intro.entered;
-  // never hold the visitor in the glow: without the street light in time, the hero uses its image
+  // never hold the visitor on the dark screen: without the street light in time, the hero uses its image
   try { await withTimeout(heroReady, 8000, 'street light'); } catch (err) { disable3D(err); }
 
   try { await withTimeout(fontsForPage, 3000, 'fonts'); } catch { /* build with the fallback faces */ }
 
-  // behind the glow: drop the intro, show the page at the top, build it
+  // behind the veil: drop the intro, show the page at the top, build it
   const tm = debug ? [['start', performance.now()]] : null;
   intro.teardown();
   tm?.push(['teardown', performance.now()]);
@@ -887,7 +876,7 @@ async function runIntro(mode) {
   }
   const nav = $('#nav');
   gsap.set(nav, { yPercent: -100, opacity: 0 });
-  // the page's first layout, paint and 3D frame are heavy: let them land while the glow still
+  // the page's first layout, paint and 3D frame are heavy: let them land while the veil still
   // covers everything, so the reveal below plays from its first frame instead of jumping
   await new Promise((resolve) => {
     const t0 = performance.now();
@@ -900,8 +889,7 @@ async function runIntro(mode) {
     requestAnimationFrame(settle);
   });
   await intro.reveal({
-    horizonY: heroHorizonY(),
-    onLine: () => {
+    onReveal: () => {
       heroIntro.play();
       gsap.to(nav, { yPercent: 0, opacity: 1, duration: 1.2, delay: 0.5, clearProps: 'transform,opacity' });
     },
@@ -915,7 +903,7 @@ async function runIntro(mode) {
 boot().catch((err) => {
   staticFallback(err);
   document.getElementById('intro')?.remove();
-  document.getElementById('intro-glow')?.remove();
+  document.getElementById('intro-veil')?.remove();
   root.classList.remove('intro-active', 'intro-fading');
   lenis?.start();
 });

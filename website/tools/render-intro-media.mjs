@@ -28,25 +28,24 @@ const VARIANTS = [
 ];
 
 // The fly-in on a clock, paced exactly like the live visit when the visitor scrolls straight through
-// (each stage at its minimum duration, from window.SSG.introPacing), then the committed push into the
-// light: p ENTER_AT → 1 over 1.2 s (power1.in) while the glow rises to full over 1 s.
-const HOLD = 0.6, PUSH = 1.2, AFTER = 0.25;
+// (each stage at its minimum duration, from window.SSG.introPacing), then the committed push:
+// p ENTER_AT → 1 over 1.2 s (power1.in) while the view fades to night from 0.4 s over 0.8 s.
+const HOLD = 0.6, PUSH = 1.2, AFTER = 0.2;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
-function timeline({ STAGES, ENTER_AT, preGlowAt }) {
+function timeline({ STAGES, ENTER_AT }) {
   const frames = [];
-  for (let i = 0; i < Math.round(HOLD * FPS); i++) frames.push({ p: 0, glow: 0 });
+  for (let i = 0; i < Math.round(HOLD * FPS); i++) frames.push({ p: 0, veil: 0 });
   let p = 0;
   while (p < ENTER_AT - 1e-6) {
     const st = STAGES.find(([, a, b]) => p < b) || STAGES[STAGES.length - 1];
     p = Math.min(ENTER_AT, p + (st[2] - st[1]) / st[3] / FPS);
-    frames.push({ p, glow: preGlowAt(p) });
+    frames.push({ p, veil: 0 });
   }
-  const g0 = preGlowAt(ENTER_AT);
   for (let i = 1; i <= Math.round((PUSH + AFTER) * FPS); i++) {
     const t = i / FPS;
     const k = clamp01(t / PUSH);
-    const gk = clamp01((t - 0.2) / 1.0);
-    frames.push({ p: ENTER_AT + (1 - ENTER_AT) * k * k, glow: g0 + (1 - g0) * gk * gk });
+    const v = clamp01((t - 0.4) / 0.8);
+    frames.push({ p: ENTER_AT + (1 - ENTER_AT) * k * k, veil: v * v });
   }
   return frames;
 }
@@ -59,8 +58,7 @@ page.on('pageerror', (e) => console.error('[page]', e.message));
 await page.goto(URL);
 await page.waitForFunction(() => window.__ssg?.intro?.store?.ready && !document.getElementById('preloader'), null, { timeout: 90000 });
 const pacing = await page.evaluate(() => ({ STAGES: window.SSG.introPacing.STAGES, ENTER_AT: window.SSG.introPacing.ENTER_AT }));
-const glowTable = await page.evaluate(() => Array.from({ length: 1001 }, (_, i) => window.SSG.introPacing.preGlow(i / 1000)));
-const FRAMES = timeline({ ...pacing, preGlowAt: (p) => glowTable[Math.round(p * 1000)] });
+const FRAMES = timeline(pacing);
 const DURATION = FRAMES.length / FPS;
 
 for (const v of VARIANTS) {
@@ -77,8 +75,8 @@ for (const v of VARIANTS) {
   const n = FRAMES.length - 1;
   for (let i = 0; i <= n; i++) {
     const t = i / FPS;
-    const { p, glow } = FRAMES[i];
-    const jpg = await page.evaluate((o) => window.__ssg.intro.store.capture.shot(o), { p, t, glow, type: 'image/jpeg', quality: 0.93 });
+    const { p, veil } = FRAMES[i];
+    const jpg = await page.evaluate((o) => window.__ssg.intro.store.capture.shot(o), { p, t, veil, type: 'image/jpeg', quality: 0.93 });
     dataToFile(jpg, path.join(dir, `f${String(i).padStart(4, '0')}.jpg`));
   }
   await page.evaluate(() => window.__ssg.intro.store.capture.end());
