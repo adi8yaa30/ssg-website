@@ -117,7 +117,9 @@ function token(THREE, name, fallback) {
    its brightness instead (a valid premultiplied colour), so only the glow itself covers the
    page. Written against three@0.169.0 (pinned in the import map). */
 function makeBloomComposer({ THREE, EffectComposer, RenderPass, UnrealBloomPass, OutputPass }, renderer, scene, camera, w, h) {
-  const target = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType });
+  // 4× MSAA on the composer's target: the renderer's `antialias` doesn't apply once rendering goes
+  // through a composer. The target is cleared to transparent, so resolved edges keep their coverage alpha.
+  const target = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: 4 });
   const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(w, h), BLOOM.strength, BLOOM.radius, BLOOM.threshold);
@@ -136,6 +138,7 @@ function makeBloomComposer({ THREE, EffectComposer, RenderPass, UnrealBloomPass,
 function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress = () => {}, onHeroPoints = () => {} }) {
   const { THREE, GLTFLoader, DRACOLoader, RoomEnvironment } = libs;
   const renderer = createRenderer(THREE, canvas);
+  const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 400);
@@ -251,7 +254,8 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
         o.frustumCulled = false;
         const m = o.material;
         if (m && m.name === 'M_LED') ledMat = m;
-        if (m && m.map) m.map.anisotropy = 4;
+        // every map at the GPU's maximum anisotropy (the panel cells and grass are seen at an angle)
+        if (m) Object.values(m).forEach((v) => { if (v && v.isTexture) v.anisotropy = maxAniso; });
       }
     });
     if (ledMat) {
