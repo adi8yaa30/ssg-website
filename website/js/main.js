@@ -6,7 +6,8 @@
 
    Asset mapping (provided folder -> web-safe folder used here)
    --------------------------------------------------------------------------
-   assets/ssg-store-hq.glb                                 -> assets/00-intro/ssg-store-hq.glb (the original, unchanged)
+   assets/ssg-store-hq.glb                                 -> assets/00-intro/ssg-store.glb
+        (tools/optimize-store.mjs: vegetation thinned 986k -> 265k triangles; store, textures as delivered)
    assets/1. Hero-Section/ssg-streetlight-realistic.glb   -> assets/01-hero/model/ssg-streetlight.web.glb
         (gltf-transform optimize: Draco + WebP 2048, palette/simplify off so
          node + material names such as Panel and M_LED survive; 34.6 MB -> 1.95 MB)
@@ -830,7 +831,7 @@ async function runIntro(mode) {
     fontsForPage = pageFonts();
     if (debug) window.__ssg.intro = intro;
     // the store comes first; if it can't load in time, the visitor gets the normal hero instead
-    await withTimeout(Promise.all([intro.loaded, fontsReady]), mode === '3d' ? 60000 : 10000, 'intro');   // the original store GLB is 30 MB
+    await withTimeout(Promise.all([intro.loaded, fontsReady]), mode === '3d' ? 45000 : 10000, 'intro');   // the store GLB is 18 MB
   } catch (err) {
     console.warn('[SSG] intro skipped:', err);
     intro?.abort();

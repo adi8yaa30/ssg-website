@@ -16,8 +16,8 @@
 (function () {
 window.SSG = window.SSG || {};
 
-const STORE_URL = 'assets/00-intro/ssg-store-hq.glb';   // the original model, as delivered (30 MB)
-const STORE_VERSION = 'store-3';
+const STORE_URL = 'assets/00-intro/ssg-store.glb';   // the original with its vegetation thinned (tools/optimize-store.mjs)
+const STORE_VERSION = 'store-5';
 const SEEN_KEY = 'ssg-intro-seen';
 
 const DEG = Math.PI / 180;

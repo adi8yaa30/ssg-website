@@ -1,19 +1,22 @@
-/* Builds the web version of the store intro model.
+/* Builds the store model the intro loads, from the original as delivered:
 
-     assets/00-intro/ssg-store-hq.glb  (30 MB, ~986k triangles)
-       -> assets/00-intro/ssg-store.web.glb
+     ../../assets/ssg-store-hq.glb  (30 MB, ~986k triangles)
+       -> assets/00-intro/ssg-store.glb      default: vegetation thinned, everything else as delivered
+       -> assets/00-intro/ssg-store.web.glb  with --web: also re-encodes textures (a ~9 MB build)
 
-   The vegetation is made of single triangles (leaves, foliage blades) and two-triangle
-   quads (lawn blades), so edge-collapse simplification can't reduce it. Instead it is
-   thinned: a seeded random subset is kept, weighted towards the camera's flight path
-   (x ≈ 0, z 3 → 20), and every kept leaf/blade is enlarged about its own centre so the
-   canopies and lawn keep their coverage. The store, glass, doors, sign and paving are
-   untouched. Node names (Door_L, Door_R, Glass…) and materials survive: no join/flatten.
-   Textures are re-encoded per role (see below) rather than with one lossy quality.
+   Only the vegetation is reduced (lawn blades, leaf canopies, foliage blades): it is most of the
+   triangles and is never seen up close. It is made of single triangles (leaves, foliage blades) and
+   two-triangle quads (lawn blades), so edge-collapse simplification can't reduce it; instead a seeded
+   random subset is kept, weighted towards the camera's path (x ≈ 0, z 3 → 20), and each kept
+   leaf/blade is enlarged about its own centre so the canopies and lawn keep their coverage.
+   The store, glass, doors, sign and paving keep every triangle, and by default every texture keeps its
+   original bytes; geometry is re-encoded with Draco at a higher precision than the original export.
+   Node names (Door_L, Door_R, Glass…) and materials survive: no join/flatten.
+   Prints the triangles per mesh before and after.
 
    Run from website/tools:
      npm install          (once; see package.json)
-     node optimize-store.mjs
+     node optimize-store.mjs [--web]
 */
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
@@ -24,15 +27,16 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const SRC = path.join(here, '../assets/00-intro/ssg-store-hq.glb');
-const OUT = path.join(here, '../assets/00-intro/ssg-store.web.glb');
+const WEB = process.argv.includes('--web');
+const SRC = path.join(here, '../../assets/ssg-store-hq.glb');
+const OUT = path.join(here, `../assets/00-intro/${WEB ? 'ssg-store.web.glb' : 'ssg-store.glb'}`);
 
 // keep: share of components kept near the path (`near`) and far from it (`far`);
 // grow: enlargement of each kept component about its centre (xz only for blades)
 const THIN = {
-  'Fine natural lawn blades': { near: 0.34, far: 0.07, grow: 1.4, flat: true },
-  'Natural leafy canopies':   { near: 0.34, far: 0.22, grow: 1.6 },
-  'Foliage':                  { near: 0.8, far: 0.55, grow: 1.12, flat: true, only: /GrassBlade/ },
+  'Fine natural lawn blades': { near: 0.3, far: 0.08, grow: 1.4, flat: true },
+  'Natural leafy canopies':   { near: 0.35, far: 0.2, grow: 1.6 },
+  'Foliage':                  { near: 0.75, far: 0.5, grow: 1.15, flat: true, only: /GrassBlade/ },
 };
 
 // deterministic PRNG so rebuilds are identical
@@ -102,6 +106,8 @@ function thinPrimitive(prim, opts) {
 
 const triCount = (mesh) => mesh.listPrimitives().reduce((s, pr) => s + (pr.getIndices()?.getCount() ?? pr.getAttribute('POSITION').getCount()) / 3, 0);
 
+const triBefore = new Map(doc.getRoot().listNodes().filter((n) => n.getMesh()).map((n) => [n.getName(), triCount(n.getMesh())]));
+
 for (const node of doc.getRoot().listNodes()) {
   const opts = THIN[node.getName()];
   const mesh = node.getMesh();
@@ -115,13 +121,12 @@ for (const node of doc.getRoot().listNodes()) {
     const [b, a] = thinPrimitive(prim, opts);
     before += b; after += a;
   }
-  console.log(`${node.getName()}: ${before} -> ${after} triangles`);
 }
 
 // prune the now-unreferenced vertices
 await doc.transform(prune({ keepAttributes: true }), dedup());
 
-// Textures. The source's are near-lossless WebP (15.8 MB), and a blanket lossy re-encode (q82) left
+// Textures (--web only; by default they keep their original bytes). The source's are near-lossless WebP (15.8 MB), and a blanket lossy re-encode (q82) left
 // several at 3–8 % of their data: visibly smeared wood, paving, cladding and leaves. Each map is
 // re-encoded for its role instead, and keeps the original bytes whenever that isn't smaller:
 //   colour maps     lossy WebP q94 (sRGB, what the eye sees)
@@ -129,7 +134,7 @@ await doc.transform(prune({ keepAttributes: true }), dedup());
 //   roughness / AO  lossy WebP q90 (smooth data)
 // and nothing is larger than 2048 px (1024 for vegetation and ground, 512 for the unseen roof).
 const SMALL = /^(leaf_|M_Bark|T_Bark|M_Grass|T_Grass|M_Soil|T_Soil|M_Rock|M_Paving|T_Paving|M_Path|T_Path|M_Curb|concrete_)/;
-for (const tex of doc.getRoot().listTextures()) {
+for (const tex of WEB ? doc.getRoot().listTextures() : []) {
   const name = tex.getName() || '';
   const src = Buffer.from(tex.getImage());
   // the flat roof is above the camera the whole visit, so its maps can be small
@@ -147,11 +152,18 @@ for (const tex of doc.getRoot().listTextures()) {
     if (tex.getURI()) tex.setURI(tex.getURI().replace(/\.\w+$/, '.webp'));
   }
 }
-// geometry: 14-bit UVs (tiled paving and cladding span many repeats) and 12-bit normals (smooth shading)
-await doc.transform(draco({ method: 'edgebreaker', quantizePosition: 14, quantizeNormal: 12, quantizeTexcoord: 14 }));
+// geometry: Draco at 16-bit positions (0.4 mm over the 28 m site), 12-bit normals and 14-bit UVs: finer
+// than the original Blender export (14 / 10 / 12), so the store loses nothing in the re-encode
+await doc.transform(draco({ method: 'edgebreaker', quantizePosition: 16, quantizeNormal: 12, quantizeTexcoord: 14 }));
 
-let total = 0;
-doc.getRoot().listMeshes().forEach((m) => { total += triCount(m); });
+let total = 0, totalBefore = 0;
+console.log('mesh'.padEnd(50), 'before'.padStart(9), 'after'.padStart(9));
+for (const n of doc.getRoot().listNodes().filter((n) => n.getMesh())) {
+  const a = triCount(n.getMesh()), b0 = triBefore.get(n.getName());
+  total += a; totalBefore += b0;
+  console.log(n.getName().padEnd(50), String(b0).padStart(9), String(a).padStart(9), a !== b0 ? `  (${Math.round(100 * a / b0)} %)` : '');
+}
 await io.write(OUT, doc);
 const { size } = await import('node:fs').then((fs) => fs.promises.stat(OUT));
-console.log(`total ${total} triangles, ${(size / 1024 / 1024).toFixed(2)} MB -> ${path.relative(process.cwd(), OUT)}`);
+console.log('TOTAL'.padEnd(50), String(totalBefore).padStart(9), String(total).padStart(9));
+console.log(`${(size / 1024 / 1024).toFixed(2)} MB -> ${path.relative(process.cwd(), OUT)}`);
