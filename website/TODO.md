@@ -33,6 +33,17 @@ Built on the `dark-theme` branch (not merged: `main` auto-deploys). Preview scre
 - [ ] **Sign-off on the hero gradient** (slate → thin gold horizon). Note: the gold line was raised from §12.2's 92–100% to ~87–91% of the hero so it glows behind the grass island (approved internally); on phones it is a band tied to the street light.
 - [ ] **Hero sun:** it is the brightest element on the first screen (flat `--sun`, Figma size), where the reference has a small, low sun. Confirm it reads as intended, or make it smaller / dimmer.
 
+## About page (`about-page` branch)
+
+`about.html`: built from the brief, with these gaps marked in the page:
+
+- [ ] **Director's portrait.** A high-res photo of Vinay Kumar Choudhary replaces the placeholder silhouette in "From the Director" (it keeps the gold rim light and scanline reveal).
+- [ ] **Division images** for Hind Pure and NorthEast Innovation (placeholders now). SSG Lighting uses an existing dusk street-light image.
+- [ ] **Timeline years.** Only 2021 (founded) is confirmed. Years needed for: ISO 9001:2015 certification, the Hind Pure launch, the NorthEast Innovation launch, and the 100 FT National Flag mast in Arunachal Pradesh (shown as `20XX`).
+- [ ] **Certification descriptions** for the back of each badge (ISO 9001:2015, RoHS, MSME REGD., PRODUCT COMPLIANCE, QUALITY ASSURANCE), from the brochure. The backs are empty until then (`[data-cert-desc]` in `about.html`).
+- [ ] **Gallery originals.** "In the Field" uses the flag mast project photo and the solar-field image; the other six tiles are placeholders. Please send site photos (with a one-line caption each), and confirm the flag mast caption (`100 FT FLAG MAST — ARUNACHAL PRADESH`).
+- [ ] **Real stats** if the client wants them on the page: projects completed, lights installed, districts served. "By the Numbers" currently shows only 2021, 6+ product lines, 3 divisions and 100% inspected.
+
 ## Store intro (`store-intro` branch)
 
 The first screen is the SSG store at dusk (`assets/ssg-store-hq.glb`); scrolling flies through its doors into the hero. See the README, "Store intro".

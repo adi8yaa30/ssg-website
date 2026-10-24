@@ -35,6 +35,17 @@ The `dark-theme` branch has the **dark "Golden Dusk" theme** (post-sunset, muted
 - Interim product images come from the daytime ones: `python3 tools/cutout-products.py` writes `photo-dusk.webp` (white sky cut out) and `blueprint-dusk.webp` (warm-white lines on transparent) next to the originals. The dusk grade is CSS. When the client's dusk photos arrive, replace the `photo-dusk.webp` files and drop the `filter` on `.slide__photo img`.
 - Re-render the static 3D fallbacks from the page itself: open `http://localhost:5173/?debug` and run `await window.__ssg.sceneApi.captureStreetlight(800, 1375)` (→ `assets/01-hero/streetlight-fallback.webp`) and `await window.__ssg.sceneApi.capturePanel(1030, 626)` (→ `assets/01-hero/panel-static.webp`). Each returns a WebP `Blob` with the dusk lighting, the LED on and bloom.
 
+## About page
+
+`about.html` (`css/about.css`, `js/about.js`) shares everything else with the home page through `js/core.js` (GSAP and the 'ssg' curve, Lenis, preloader, nav, modal, links, reveals) and `js/scanlines.js` (CTA skyline, footer landscape). No store intro and no 3D: a short (~0.8 s) preloader.
+
+- **Background:** `--about-gradient` (tokens.css) behind every section; sections are transparent.
+- **Sections:** hero, Our Story (pinned read-along), Mission & Vision, By the Numbers (odometers), From the Director, Our Values (glass cards, Phosphor icons inlined, MIT), Our Divisions (expanding panels), Our Journey (pinned horizontal timeline), Certifications (flip badges), In the Field (draggable gallery), and the home page's CTA + footer.
+- **The gold thread** (`buildThread`): one line from the hero horizon, under the story quote, down the Mission/Vision divider, into the timeline track, then down into the CTA skyline, whose lamps switch on when it arrives (`initCtaSkyline({ lamps: 'manual' })`). It is drawn from anchors marked `data-thread` and measured once per layout; each straight run is placed with transforms only, so it never repaints while scrolling.
+- **Page transition:** links between the two pages raise a night panel under a gold horizon line (`core.leaveTo`); the next page's preloader lifts away the same way. Deep links such as `index.html#products` skip the store intro and land on their section.
+- **Phones:** every layout stacks, the timeline turns vertical, the divisions become open cards, the gallery swipes, and the thread runs down the left edge. **Reduced motion:** final states, no pins, scrambles or inertia, and the thread is shown complete.
+- **Placeholders** (director portrait, two division images, timeline years, badge backs, gallery photos) are listed in `TODO.md`.
+
 ## Store intro
 
 The first thing a visitor sees is the SSG store at dusk (`js/intro.js`). Scrolling (400vh, pinned) walks the camera over the paving to the entrance, the glass doors slide open, the camera steps through into the showroom and settles in front of the glowing SSG wall; then it pushes on as the view fades to the page's night colour, and the home page fades up with its normal load-in.
@@ -68,6 +79,7 @@ js/core.js          shared by every page: GSAP + the 'ssg' curve, Lenis, preload
                     enquiry modal, link handling and the gold page transition (SSG.initCore)
 js/main.js          (loads last) home page: store intro boot, hero, panel choreography wiring,
                     section reveals (asset mapping at the top)
+about.html, css/about.css, js/about.js   the About page (see below)
 js/intro.js         store intro: the store scene at dusk, the scroll fly-in, skip, fallbacks
 js/scene.js         Three.js scene, panelRig, DOM-anchored poses (states A–E); also the shared
                     three.js loader and the page's one WebGL renderer
