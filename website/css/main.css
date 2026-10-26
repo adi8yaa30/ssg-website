@@ -126,7 +126,7 @@ html:not(.js) .preloader { display: none; }
 .intro-active .intro { display: block; position: relative; z-index: calc(var(--z-intro) + 1); height: 100vh; height: 100svh; }
 .intro-active #main, .intro-active .nav, .intro-active .footer, .intro-active #scene-alt { display: none; }
 .intro-active.intro-3d .scene { z-index: var(--z-intro); }
-.intro-active.intro-video body, .intro-active.intro-static body { overflow: hidden; }
+.intro-active body { overflow: hidden; }   /* the intro never scrolls: Enter SSG starts the visit */
 .intro-fading .intro { display: block; position: fixed; inset: 0; z-index: calc(var(--z-intro) + 1); }
 .intro__stage {
   position: relative; height: 100vh; height: 100svh; overflow: hidden;
@@ -143,13 +143,10 @@ html:not(.js) .preloader { display: none; }
 }
 .intro__poster, .intro__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .intro-3d .intro__poster, .intro-3d .intro__video, .intro-static .intro__video { display: none; }
-.intro__label, .intro__hint, .intro__skip { position: absolute; z-index: 2; font-size: 12px; letter-spacing: .14em; color: var(--ash); text-transform: uppercase; }
+.intro__label, .intro__skip { position: absolute; z-index: 2; font-size: 12px; letter-spacing: .14em; color: var(--ash); text-transform: uppercase; }
 .intro__label { left: var(--m, 40px); top: 34px; color: var(--text); text-shadow: 0 1px 12px rgba(18, 23, 30, .7); }
-.intro__hint {
-  left: 50%; bottom: 34px; translate: -50% 0; margin: 0; color: var(--text);
-  display: flex; align-items: center; gap: 10px; text-shadow: 0 1px 12px rgba(18, 23, 30, .7);
-}
-.intro__arrow { color: var(--gold); display: inline-block; animation: intro-nudge 1.8s var(--ease) infinite; }
+/* the visit starts from a button, not the scroll */
+.intro__enter { position: absolute; z-index: 2; left: 50%; bottom: 48px; translate: -50% 0; }
 @keyframes intro-nudge { 0%, 100% { transform: translateY(-2px); opacity: .6; } 50% { transform: translateY(4px); opacity: 1; } }
 .intro__skip {
   right: var(--m, 40px); bottom: 26px; padding: 8px 2px; color: var(--ash);
@@ -821,7 +818,7 @@ html:not(.js) .tile__img { background-image: url("../assets/03-mission/image.web
 @media (max-width: 767px) {
   :root { --m: 16px; }
   .intro__label { top: 22px; font-size: 11px; }
-  .intro__hint { bottom: 64px; font-size: 11px; }
+  .intro__enter { bottom: 64px; }
   .intro__skip { left: 50%; right: auto; translate: -50% 0; bottom: 18px; font-size: 11px; }
 
   .nav { height: 56px; background: color-mix(in srgb, var(--night) 80%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); pointer-events: auto; }

@@ -28,8 +28,8 @@ const VARIANTS = [
   { name: 'portrait', poster: [1440, 2560], video: [1080, 1920], crf: 20 },
 ];
 
-// The fly-in on a clock, paced exactly like the live visit when the visitor scrolls straight through
-// (each stage at its minimum duration, from window.SSG.introPacing), then the committed push:
+// The fly-in on a clock, paced exactly like the live visit after Enter SSG (each stage over its
+// duration, from window.SSG.introPacing), then the committed push:
 // p ENTER_AT → 1 over 1.2 s (power1.in) while the view fades to night from 0.4 s over 0.8 s.
 const HOLD = 0.6, PUSH = 1.2, AFTER = 0.2;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));

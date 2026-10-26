@@ -1,9 +1,9 @@
 /* ==========================================================================
    SSG store intro: the first thing a visitor sees is the SSG store at dusk.
-   Scrolling (400vh, pinned) walks the camera over the paving to the entrance,
-   the glass doors slide open, the camera steps into the showroom and settles at
-   the SSG wall; then it pushes on as the view fades to the page's night colour,
-   and the home page fades up with its own load-in.
+   Enter SSG walks the camera over the paving to the entrance, the glass doors
+   slide open, the camera steps into the showroom and settles at the SSG wall;
+   then it pushes on as the view fades to the page's night colour, and the home
+   page fades up with its own load-in.
 
    Modes (chosen in main.js):
      '3d'      live scene on the shared #scene renderer (desktop + WebGL)
@@ -38,11 +38,10 @@ const EXPOSURE = 0.95;
 const BLOOM = { strength: 0.42, radius: 0.55, threshold: 1.0 };
 const DOWNLIGHT = 2.6;       // candela per interior downlight (the GLB's Blender values are ~4900)
 
-/* The visit, in stages of progress p (0..1). Scrolling sets where the camera is heading; it gets
-   there no faster than each stage's minimum duration, so even one hard trackpad swipe plays the
-   whole visit (~8.5 s). At ENTER_AT the transition into the site commits (one way). */
+/* The visit, in stages of progress p (0..1), played on a clock once the visitor presses Enter SSG
+   (each stage over its duration, ~8.6 s in all). At ENTER_AT the transition into the site commits. */
 const STAGES = [
-  // [name, from, to, minimum seconds]
+  // [name, from, to, seconds]
   ['approach', 0, 0.40, 2.8],     // across the lawn to the doors, easing down to eye level
   ['doors', 0.40, 0.55, 1.8],     // the glass doors slide apart, the interior brightens
   ['inside', 0.55, 0.85, 2.8],    // walk through the doorway into the showroom
@@ -602,7 +601,7 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
   const el = document.getElementById('intro');
   const stage = el.querySelector('.intro__stage');
   const label = el.querySelector('.intro__label');
-  const hint = el.querySelector('.intro__hint');
+  const enterBtn = el.querySelector('.intro__enter');
   const skipBtn = el.querySelector('.intro__skip');
   const poster = el.querySelector('.intro__poster');
   const video = el.querySelector('.intro__video');
@@ -611,8 +610,6 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
 
   let store = null;
   let tick = null;
-  let scrub = null;
-  let follow = null;
   let committed = false;
   let resolveEntered;
   const entered = new Promise((r) => { resolveEntered = r; });
@@ -632,62 +629,44 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
   }
 
   // ---- Start: called once the preloader has opened onto the intro
+  // ---- Start: called once the preloader has opened onto the intro. The visit begins from the
+  // Enter SSG button (or Enter / Space); Skip Intro and Esc go straight to the site.
+  let visit = null;
   function start() {
     if (mode === '3d') {
-      // scroll (400vh, pinned) sets where the camera is heading; the camera follows at the visit's
-      // pace, so a fast swipe still walks the whole route instead of jumping to the site
-      const target = { p: 0 };
-      scrub = gsap.to(target, {
-        p: 1, ease: 'none',
-        scrollTrigger: {
-          trigger: el, start: 'top top', end: () => `+=${window.innerHeight * 4}`, scrub: true, pin: stage, anticipatePin: 1,
-        },
-      });
-      follow = { target, paused: false };
-      let shownLabels = -1;
-      tick = (_t, ms) => {
-        const dt = Math.min(ms, 50) / 1000;
-        const st = store.state;
-        if (!committed && !follow.paused) {
-          const rate = pace(st.p);
-          // ease towards the scroll position, never faster than the stage allows (a little faster back)
-          const step = (target.p - st.p) * Math.min(1, dt * 7);
-          st.p = Math.min(ENTER_AT, st.p + Math.max(-1.5 * rate * dt, Math.min(rate * dt, step)));
-          if (st.p >= ENTER_AT - 0.002) commit();
-        }
-        const labels = 1 - smooth(range(st.p, 0, 0.04));
-        if (labels !== shownLabels) { label.style.opacity = hint.style.opacity = labels; shownLabels = labels; }
-        store.frame(dt);
-      };
+      // the visit on a clock: each stage at its own duration (approach, doors, inside, the wall),
+      // then the commit pushes on and fades into the site
+      visit = gsap.timeline({ paused: true, onComplete: () => commit() });
+      STAGES.forEach(([, , to, secs]) => visit.to(store.state, { p: to, duration: secs, ease: 'none' }));
+      tick = (_t, ms) => store.frame(Math.min(ms, 50) / 1000);
       gsap.ticker.add(tick);
-    } else {
-      // video / static: the page doesn't scroll yet; the first scroll, swipe, key or tap enters
-      const go = (e) => {
-        if (e.type === 'keydown' && !['ArrowDown', 'PageDown', ' ', 'Enter', 'Spacebar'].includes(e.key)) return;
-        if (e.type === 'wheel' && e.deltaY <= 0) return;
-        if (e.target.closest?.('.intro__skip')) return;
-        off();
-        if (mode === 'video') playVideo();
-        else commit();
-      };
-      const evs = ['wheel', 'touchmove', 'pointerup', 'keydown'];
-      const off = () => evs.forEach((n) => window.removeEventListener(n, go));
-      evs.forEach((n) => window.addEventListener(n, go, { passive: true }));
-      if (mode === 'video') {
-        video.src = video.dataset[portrait() ? 'portrait' : 'landscape'];
-        video.preload = 'auto';
-        video.load();
-      }
+    } else if (mode === 'video') {
+      video.src = video.dataset[portrait() ? 'portrait' : 'landscape'];
+      video.preload = 'auto';
+      video.load();
     }
+    enterBtn.addEventListener('click', enter);
     window.addEventListener('keydown', onKey);
     skipBtn.addEventListener('click', onSkip);
   }
 
-  function onKey(e) { if (e.key === 'Escape') commit(true); }
+  let entering = false;
+  function enter() {
+    if (entering || committed) return;
+    entering = true;
+    gsap.to([label, enterBtn], { opacity: 0, y: 10, duration: 0.5, ease: 'power1.out', onComplete: () => { enterBtn.disabled = true; } });
+    if (mode === '3d') visit.play();
+    else if (mode === 'video') playVideo();
+    else commit();
+  }
+
+  function onKey(e) {
+    if (e.key === 'Escape') commit(true);
+    else if ((e.key === 'Enter' || e.key === ' ') && !entering && !e.target.closest?.('button, a')) { e.preventDefault(); enter(); }
+  }
   function onSkip() { commit(true); }
 
   function playVideo() {
-    gsap.to([label, hint], { opacity: 0, duration: 0.4 });
     gsap.to(poster, { opacity: 0, duration: 0.3, delay: 0.15 });
     video.addEventListener('ended', () => commit(), { once: true });
     video.addEventListener('error', () => commit(), { once: true });
@@ -704,18 +683,14 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
     skipBtn.removeEventListener('click', onSkip);
     lenis?.stop();
     const tl = gsap.timeline({ onComplete: () => resolveEntered() });
-    tl.to([label, hint, skipBtn], { opacity: 0, duration: 0.3, ease: 'power1.out', overwrite: true }, 0);
+    visit?.kill();
+    tl.to([label, enterBtn, skipBtn], { opacity: 0, duration: 0.3, ease: 'power1.out', overwrite: true }, 0);
     if (mode === 'static') {
       // reduced motion: no flight; the poster simply fades once the hero is underneath
       tl.to({}, { duration: 0.01 });
       return;
     }
     if (mode === '3d') {
-      if (scrub) {
-        const st = scrub.scrollTrigger;
-        scrub.kill();
-        st?.kill(false);
-      }
       // keep moving forward while the view fades to night (faster when skipped from the establishing shot)
       tl.to(store.state, { p: 1, duration: skipped ? 1.1 : 1.2, ease: skipped ? 'power2.inOut' : 'power1.in' }, 0);
       tl.to(veil, { opacity: 1, duration: 0.8, ease: 'power1.in' }, skipped ? 0.3 : 0.4);
@@ -758,7 +733,7 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
   // ---- Bail out (load failure / timeout): remove everything, the page boots normally
   function abort() {
     committed = true;
-    if (scrub) { scrub.scrollTrigger?.kill(false); scrub.kill(); }
+    visit?.kill();
     window.removeEventListener('keydown', onKey);
     teardown();
     veil.remove();
@@ -793,12 +768,8 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
   const api = { mode, loaded, entered, start, commit, teardown, reveal, abort, get store() { return store; } };
   if (debug) {
     // QA helpers: pose the live scene, measure the GPU cost, compare glass materials
-    // pose the visit at p and hold it there (QA screenshots); setProgress(null) hands control back to the scroll
-    api.setProgress = (p) => {
-      if (!store || !follow) return;
-      follow.paused = p !== null;
-      if (p !== null) { store.state.p = p;  }
-    };
+    // pose the visit at p and hold it there (QA screenshots)
+    api.setProgress = (p) => { if (store && p !== null) { visit?.pause(); store.state.p = p; } };
   }
   return api;
 }

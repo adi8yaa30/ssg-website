@@ -48,9 +48,9 @@ The `dark-theme` branch has the **dark "Golden Dusk" theme** (post-sunset, muted
 
 ## Store intro
 
-The first thing a visitor sees is the SSG store at dusk (`js/intro.js`). Scrolling (400vh, pinned) walks the camera over the paving to the entrance, the glass doors slide open, the camera steps through into the showroom and settles in front of the glowing SSG wall; then it pushes on as the view fades to the page's night colour, and the home page fades up with its normal load-in.
+The first thing a visitor sees is the SSG store at dusk (`js/intro.js`). An **Enter SSG** button starts the visit, which plays by itself (~8.6 s): it walks the camera over the paving to the entrance, the glass doors slide open, the camera steps through into the showroom and settles in front of the glowing SSG wall; then it pushes on as the view fades to the page's night colour, and the home page fades up with its normal load-in.
 
-- **Pacing.** Scrolling sets where the camera is heading, but it travels there no faster than each stage allows (`STAGES` in `intro.js`: approach 2.8 s, doors 1.8 s, inside 2.8 s, the wall 1.2 s). A hard trackpad swipe therefore still plays the whole visit (~10 s) instead of jumping to the site; a slow scroll is followed as it goes. Scrolling back up walks back out (until the visit is entered). It is one-way: the intro is removed from the DOM and its GPU resources are disposed, so scrolling back up stays on the hero.
+- **Pacing.** The visit is a timeline of stages (`STAGES` in `intro.js`: approach 2.8 s, doors 1.8 s, inside 2.8 s, the wall 1.2 s), then the push and fade into the site. The intro doesn't scroll. Enter / Space also start it; Skip Intro and Esc go straight to the site. Phones play the fly-in video from the same button; reduced motion fades straight to the site.
 
 - **Once per session.** A `sessionStorage` flag (`ssg-intro-seen`) skips it for the rest of the session. `?intro` forces it, `?nointro` skips it, and `?intro=3d|video|static` forces a version (QA).
 - **Skip.** The `SKIP INTRO` button or Esc goes straight to the transition.
