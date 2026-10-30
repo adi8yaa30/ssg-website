@@ -9,9 +9,9 @@
    --------------------------------------------------------------------------
    assets/ssg-store-hq.glb                                 -> assets/00-intro/ssg-store.glb
         (tools/optimize-store.mjs: vegetation thinned 986k -> 265k triangles; store, textures as delivered)
-   assets/1. Hero-Section/ssg-streetlight-realistic.glb   -> assets/01-hero/model/ssg-streetlight.web.glb
-        (gltf-transform optimize: Draco + WebP 2048, palette/simplify off so
-         node + material names such as Panel and M_LED survive; 34.6 MB -> 1.95 MB)
+   assets/1. Hero-Section/ssg-streetlight-land.glb        -> assets/01-hero/model/ssg-streetlight.web.glb
+        (gltf-transform optimize: Draco + WebP 2048; join/flatten/simplify/palette/instance off, so node and
+         material names survive; 36.4 MB -> 1.95 MB. The light plus its `Land`: scene.js frames on the light)
    assets/1. Hero-Section/hero-section-starting-viewport…  -> assets/01-hero/streetlight-fallback.webp (design crop)
    assets/1. Hero-Section/{pole,trusted,end-to-end}-icon.svg, certified-icon/, range-icon/, sun-icon-svg/
         -> inlined in index.html (multi-file icons recombined into single SVGs)

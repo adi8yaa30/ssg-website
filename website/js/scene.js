@@ -212,7 +212,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
         .catch(reject);
     } else {
       loader.load(
-        `${MODEL_URL}?v=landscape-4`,
+        `${MODEL_URL}?v=land-1`,
         done,
         (e) => { if (e.lengthComputable) onProgress(Math.min(0.98, e.loaded / e.total)); },
         reject
@@ -245,11 +245,18 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
       ledMat.toneMapped = false; // stays bright enough to pass the bloom threshold
     }
 
-    // Model bounds at rest (all parents are identity here, so world == model space)
+    // Model bounds at rest (all parents are identity here, so world == model space). The hero is framed on
+    // the street light and its footing (shrubs, rocks), not on the landscape around it (`Land`), so the
+    // light sits exactly where the old island model did and the land just extends around it.
     model.updateMatrixWorld(true);
-    const box = new THREE.Box3().setFromObject(model);
+    const land = model.getObjectByName('Land');
+    const box = new THREE.Box3();
+    model.children.forEach((c) => { if (c !== land) box.expandByObject(c); });
+    ['Footing_shrubs', 'Footing_Rock_1', 'Footing_Rock_2'].forEach((n) => { const o = model.getObjectByName(n); if (o) box.expandByObject(o); });
+    if (box.isEmpty()) box.setFromObject(model);
     box.getSize(modelSize);
     box.getCenter(modelCenter);
+    if (land) setupLandFade(land);
 
     // Callout targets (model space): pole at the arm junction, LED head front edge
     const pole = find(/^Pole$/);
@@ -308,6 +315,54 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     // parallel compile where supported, so a hero that finishes loading during the intro doesn't stall it
     if (renderer.compileAsync) renderer.compileAsync(scene, camera).catch(() => {});
     else renderer.compile(scene, camera);
+  }
+
+  // The landscape must never cover the hero's text: on screen it is kept below the light's base line.
+  // Land meshes (not the footing's own shrubs and rocks) fade out above that line, with a soft band just
+  // below it so the land melts into the hero's gold horizon. The line is in world space (≈ screen space:
+  // the camera looks straight down -z) and is refreshed every frame, so it follows the load-in, the sway
+  // and scrolling. The land also fades out a little further down (uDepth), so its front never reaches the
+  // next section. Uniforms (world units): uBase (the pole's base), uFade, uDepth.
+  const landFade = { uBase: { value: 0 }, uFade: { value: 1 }, uDepth: { value: 2 } };
+  const landBase = new THREE.Vector3();
+  function setupLandFade(land) {
+    const keep = new Set();
+    ['Footing_shrubs', 'Footing_Rock_1', 'Footing_Rock_2'].forEach((n) => model.getObjectByName(n)?.traverse((o) => keep.add(o)));
+    const faded = new Map();
+    land.traverse((o) => {
+      if (!o.isMesh || keep.has(o)) return;
+      const src = o.material;
+      if (!faded.has(src)) {
+        const m = src.clone();   // footing pieces may share the original material
+        m.transparent = true;
+        m.onBeforeCompile = (sh) => {
+          sh.uniforms.uBase = landFade.uBase;
+          sh.uniforms.uFade = landFade.uFade;
+          sh.uniforms.uDepth = landFade.uDepth;
+          // vLandXZ: position in the land's own frame (its meshes sit at the origin), for the edge fade
+          sh.vertexShader = `varying float vLandY;\nvarying vec2 vLandXZ;\n${sh.vertexShader}`.replace('#include <project_vertex>', `#include <project_vertex>
+            vLandY = (modelMatrix * vec4(transformed, 1.0)).y;
+            vLandXZ = transformed.xz;`);
+          // above the base line: gone; towards the land's own sides and front: soft, never a cut edge
+          sh.fragmentShader = `uniform float uBase;\nuniform float uFade;\nuniform float uDepth;\nvarying float vLandY;\nvarying vec2 vLandXZ;\n${sh.fragmentShader}`.replace('#include <dithering_fragment>', `#include <dithering_fragment>
+            gl_FragColor.a *= (1.0 - smoothstep(uBase - uFade, uBase, vLandY))
+              * smoothstep(uBase - uDepth, uBase - uDepth * 0.45, vLandY)
+              * (1.0 - smoothstep(10.0, 20.0, abs(vLandXZ.x)))
+              * (1.0 - smoothstep(1.8, 3.8, vLandXZ.y));`);
+        };
+        m.customProgramCacheKey = () => 'ssg-land-fade';
+        faded.set(src, m);
+      }
+      o.material = faded.get(src);
+      o.renderOrder = -1;   // drawn before the light, so the light always sits on top of it
+    });
+  }
+  function updateLandFade() {
+    if (!model) return;
+    landBase.set(0, 0, 0).applyMatrix4(model.matrixWorld);   // the pole's base (model origin)
+    landFade.uBase.value = landBase.y;
+    landFade.uFade.value = 0.35 * lightPivot.scale.y;   // fades in over 0.35 m below the base line…
+    landFade.uDepth.value = 1.0 * lightPivot.scale.y;   // …and out again by 1 m below it, before the hero ends
   }
 
   function makeContactShadow() {
@@ -414,6 +469,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     }
     lightTilt.rotation.set((s.baseTilt ?? LIGHT_TILT) + swayPitch, (s.baseYaw ?? LIGHT_YAW) + yaw, 0);
     lightPivot.updateMatrixWorld(true);
+    updateLandFade();
     if (ledMat) ledMat.emissiveIntensity = s.ledGlow;
     if (spot) spot.intensity = SPOT_ON * (s.ledGlow / LED_ON) * scale * scale;
 
@@ -608,6 +664,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     lightPivot.scale.setScalar(vH / modelSize.y);
     lightTilt.rotation.set(LIGHT_TILT, LIGHT_YAW, 0);
     lightPivot.updateMatrixWorld(true);
+    updateLandFade();
     mTmp.multiplyMatrices(model.matrixWorld, rigRest).decompose(panelRig.position, panelRig.quaternion, panelRig.scale);
     model.visible = panelRig.visible = true;
     if (ledMat) ledMat.emissiveIntensity = LED_ON;

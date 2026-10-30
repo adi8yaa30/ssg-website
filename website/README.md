@@ -126,7 +126,7 @@ python3 tools/verify-landscape.py
 ```
 
 Run these commands from `website/`. After future asset edits, increment the
-`landscape-4` URL version in `index.html`, `js/scene.js` and the preview together.
+`land-1` URL version in `index.html`, `js/scene.js` and the preview together.
 Keep the unversioned model path for `file://` embedding. (The preview's **Mobile
 render → Save render** exports a daytime-lit fallback; for the dark theme use
 `captureStreetlight()` instead.)

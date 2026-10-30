@@ -42,7 +42,7 @@
       var http = location.protocol !== 'file:';
       var desktop = matchMedia('(min-width: 768px)').matches;
       var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var href = intro ? (desktop && !still ? 'assets/00-intro/ssg-store.glb?v=store-5' : '') : 'assets/01-hero/model/ssg-streetlight.web.glb?v=landscape-4';
+      var href = intro ? (desktop && !still ? 'assets/00-intro/ssg-store.glb?v=store-5' : '') : 'assets/01-hero/model/ssg-streetlight.web.glb?v=land-1';
       if (http && desktop && href) {
         var l = document.createElement('link');
         l.rel = 'preload'; l.as = 'fetch'; l.crossOrigin = 'anonymous';
