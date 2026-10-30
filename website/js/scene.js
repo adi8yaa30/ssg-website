@@ -323,7 +323,9 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
   // the camera looks straight down -z) and is refreshed every frame, so it follows the load-in, the sway
   // and scrolling. The land also fades out a little further down (uDepth), so its front never reaches the
   // next section. Uniforms (world units): uBase (the pole's base), uFade, uDepth.
-  const landFade = { uBase: { value: 0 }, uFade: { value: 1 }, uDepth: { value: 2 } };
+  // uSide: half-width (world units) of a sideways fade around the pole; off (huge) in the live hero,
+  // set for the static fallback render so the ground never meets the picture's edges
+  const landFade = { uBase: { value: 0 }, uFade: { value: 1 }, uDepth: { value: 2 }, uBaseX: { value: 0 }, uSide: { value: 1e6 } };
   const landBase = new THREE.Vector3();
   function setupLandFade(land) {
     const keep = new Set();
@@ -339,14 +341,19 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
           sh.uniforms.uBase = landFade.uBase;
           sh.uniforms.uFade = landFade.uFade;
           sh.uniforms.uDepth = landFade.uDepth;
+          sh.uniforms.uBaseX = landFade.uBaseX;
+          sh.uniforms.uSide = landFade.uSide;
           // vLandXZ: position in the land's own frame (its meshes sit at the origin), for the edge fade
-          sh.vertexShader = `varying float vLandY;\nvarying vec2 vLandXZ;\n${sh.vertexShader}`.replace('#include <project_vertex>', `#include <project_vertex>
-            vLandY = (modelMatrix * vec4(transformed, 1.0)).y;
+          sh.vertexShader = `varying float vLandY;\nvarying float vLandX;\nvarying vec2 vLandXZ;\n${sh.vertexShader}`.replace('#include <project_vertex>', `#include <project_vertex>
+            vec4 landWorld = modelMatrix * vec4(transformed, 1.0);
+            vLandY = landWorld.y;
+            vLandX = landWorld.x;
             vLandXZ = transformed.xz;`);
           // above the base line: gone; towards the land's own sides and front: soft, never a cut edge
-          sh.fragmentShader = `uniform float uBase;\nuniform float uFade;\nuniform float uDepth;\nvarying float vLandY;\nvarying vec2 vLandXZ;\n${sh.fragmentShader}`.replace('#include <dithering_fragment>', `#include <dithering_fragment>
+          sh.fragmentShader = `uniform float uBase;\nuniform float uFade;\nuniform float uDepth;\nuniform float uBaseX;\nuniform float uSide;\nvarying float vLandX;\nvarying float vLandY;\nvarying vec2 vLandXZ;\n${sh.fragmentShader}`.replace('#include <dithering_fragment>', `#include <dithering_fragment>
             gl_FragColor.a *= (1.0 - smoothstep(uBase - uFade, uBase, vLandY))
               * smoothstep(uBase - uDepth, uBase - uDepth * 0.45, vLandY)
+              * (1.0 - smoothstep(uSide * 0.5, uSide, abs(vLandX - uBaseX)))
               * (1.0 - smoothstep(10.0, 20.0, abs(vLandXZ.x)))
               * (1.0 - smoothstep(1.8, 3.8, vLandXZ.y));`);
         };
@@ -361,6 +368,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     if (!model) return;
     landBase.set(0, 0, 0).applyMatrix4(model.matrixWorld);   // the pole's base (model origin)
     landFade.uBase.value = landBase.y;
+    landFade.uBaseX.value = landBase.x;
     landFade.uFade.value = 0.35 * lightPivot.scale.y;   // fades in over 0.35 m below the base line…
     landFade.uDepth.value = 1.0 * lightPivot.scale.y;   // …and out again by 1 m below it, before the hero ends
   }
@@ -665,6 +673,9 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     lightTilt.rotation.set(LIGHT_TILT, LIGHT_YAW, 0);
     lightPivot.updateMatrixWorld(true);
     updateLandFade();
+    // the picture has edges the live hero doesn't: fade the ground out before the frame's sides and bottom
+    landFade.uSide.value = vH * (w / h) * 0.48;
+    landFade.uDepth.value = 0.55 * lightPivot.scale.y;
     mTmp.multiplyMatrices(model.matrixWorld, rigRest).decompose(panelRig.position, panelRig.quaternion, panelRig.scale);
     model.visible = panelRig.visible = true;
     if (ledMat) ledMat.emissiveIntensity = LED_ON;
@@ -676,6 +687,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     const comp = makeBloomComposer(libs, rt, scene, cam, w, h);
     comp.render();
     const blob = await new Promise((r) => rt.domElement.toBlob(r, 'image/webp', 0.92));
+    landFade.uSide.value = 1e6;   // back to the live hero's fade (uDepth is reset by the next frame)
     lightPivot.position.copy(saved.p);
     lightPivot.scale.copy(saved.s);
     lightTilt.rotation.copy(saved.r);
