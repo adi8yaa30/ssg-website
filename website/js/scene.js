@@ -313,8 +313,22 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     api.ready = true;
     resize();
     // parallel compile where supported, so a hero that finishes loading during the intro doesn't stall it
-    if (renderer.compileAsync) renderer.compileAsync(scene, camera).catch(() => {});
-    else renderer.compile(scene, camera);
+    precompile().catch(() => {});
+  }
+
+  // Shader programs are keyed on the render target they draw into: the hero draws into the bloom
+  // composer's HDR target (no tone mapping, linear), so compile against that target, not the screen,
+  // or every program is rebuilt on the hero's first frame (seconds of black after the store intro)
+  function precompile() {
+    const prev = renderer.getRenderTarget();
+    if (composer) renderer.setRenderTarget(composer.renderTarget1);
+    try {
+      if (renderer.compileAsync) return renderer.compileAsync(scene, camera);
+      renderer.compile(scene, camera);
+      return Promise.resolve();
+    } finally {
+      renderer.setRenderTarget(prev);
+    }
   }
 
   // The landscape must never cover the hero's text: on screen it is kept below the light's base line.
@@ -710,6 +724,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
   // Upload the model's textures to the GPU ahead of its first visible frame. `budgetMs` spreads the
   // uploads over frames (the store intro calls this while its camera is idle); resolves when done.
   function warm(budgetMs = Infinity) {
+    const compiled = api.ready ? precompile().catch(() => {}) : Promise.resolve();
     const textures = new Set();
     scene.traverse((o) => {
       const list = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
@@ -721,7 +736,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
         const t0 = performance.now();
         while (queue.length && performance.now() - t0 < budgetMs) renderer.initTexture(queue.shift());
         if (queue.length) requestAnimationFrame(step);
-        else resolve();
+        else compiled.then(resolve);
       };
       step();
     });

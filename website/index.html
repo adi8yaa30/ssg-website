@@ -42,7 +42,7 @@
       var http = location.protocol !== 'file:';
       var desktop = matchMedia('(min-width: 768px)').matches;
       var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var href = intro ? (desktop && !still ? 'assets/00-intro/ssg-store.glb?v=store-5' : '') : 'assets/01-hero/model/ssg-streetlight.web.glb?v=land-1';
+      var href = intro ? (desktop && !still ? 'assets/00-intro/ssg-store.glb?v=store-6' : '') : 'assets/01-hero/model/ssg-streetlight.web.glb?v=land-1';
       if (http && desktop && href) {
         var l = document.createElement('link');
         l.rel = 'preload'; l.as = 'fetch'; l.crossOrigin = 'anonymous';
@@ -124,8 +124,8 @@
 <!-- ============ STORE INTRO (removed from the DOM once entered) ============ -->
 <section class="intro" id="intro" aria-label="Intro: the SSG store at dusk">
   <div class="intro__stage">
-    <img class="intro__poster" alt="The SSG store at dusk: a glass storefront with a glowing sign, stone paving across the lawn and trees on either side" data-landscape="assets/00-intro/store-poster-landscape.webp?v=store-1" data-portrait="assets/00-intro/store-poster-portrait.webp?v=store-1" decoding="async">
-    <video class="intro__video" muted playsinline preload="none" aria-hidden="true" data-landscape="assets/00-intro/store-flyin-landscape.mp4?v=store-1" data-portrait="assets/00-intro/store-flyin-portrait.mp4?v=store-1"></video>
+    <img class="intro__poster" alt="The SSG store at dusk: a glass storefront with a glowing sign, stone paving across the lawn and trees on either side" data-landscape="assets/00-intro/store-poster-landscape.webp?v=store-2" data-portrait="assets/00-intro/store-poster-portrait.webp?v=store-2" decoding="async">
+    <video class="intro__video" muted playsinline preload="none" aria-hidden="true" data-landscape="assets/00-intro/store-flyin-landscape.mp4?v=store-2" data-portrait="assets/00-intro/store-flyin-portrait.mp4?v=store-2"></video>
     <p class="intro__label mono">// SHREE SHYAM GROUP — GUWAHATI</p>
     <button class="btn btn--solid intro__enter" type="button"><span class="btn__label">Enter SSG</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></button>
     <button class="intro__skip mono" type="button">SKIP INTRO</button>
