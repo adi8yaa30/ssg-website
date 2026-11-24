@@ -62,7 +62,13 @@ function hasWebGL() {
     return true;
   } catch { return false; }
 }
-const use3D = !mobile && hasWebGL();
+// Phones get the live street light too, unless the device is low-end, saving data or
+// rendering WebGL in software: those keep the static images (same layout, no GPU cost)
+const lowEndPhone = mobile && (
+  (navigator.deviceMemory && navigator.deviceMemory < 4) ||
+  (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) ||
+  navigator.connection?.saveData);
+const use3D = !lowEndPhone && hasWebGL() && !(mobile && softwareGL);
 if (!use3D) root.classList.add('no-webgl');
 if (reduced || !use3D) root.classList.add('static-panels');
 
@@ -221,7 +227,24 @@ function buildChoreography() {
   if (reduced) return;
   if (!desktopMotion) {
     gsap.from(cards, { y: 30, opacity: 0, duration: 0.8, stagger: 0.1, scrollTrigger: { trigger: '.why__cards', start: 'top 85%' } });
-    gsap.from('.anchor--panel .anchor__fallback', { opacity: 0, y: 30, duration: 1, stagger: 0.2, scrollTrigger: { trigger: '.anchor--panel-why', start: 'top 85%' } });
+    if (!sceneApi) {
+      gsap.from('.anchor--panel .anchor__fallback', { opacity: 0, y: 30, duration: 1, stagger: 0.2, scrollTrigger: { trigger: '.anchor--panel-why', start: 'top 85%' } });
+      return;
+    }
+    // phones with 3D: the same flight as desktop, without the pin. The panel lifts off the
+    // street light as the page starts to scroll and lands in Why SSG as its slot reaches mid-screen…
+    gsap.to(sceneApi.state, {
+      detach: 1, ease: 'none',
+      scrollTrigger: { trigger: '.anchor--panel-why', start: 0, end: 'center 55%', scrub: 0.6 },
+    });
+    // …and later rises into Powered by the Sun
+    const sunAnchor = $('.anchor--panel-sun');
+    ScrollTrigger.create({
+      trigger: sunAnchor, start: 'top bottom',
+      onEnter: () => { sceneApi.state.sunMode = true; },
+      onLeaveBack: () => { sceneApi.state.sunMode = false; },
+    });
+    gsap.to(sceneApi.state, { sun: 1, ease: 'none', scrollTrigger: { trigger: sunAnchor, start: 'top bottom', end: 'center 55%', scrub: 0.6 } });
     return;
   }
 
@@ -585,7 +608,7 @@ async function runIntro(mode) {
     onStart: () => {
       intro.start();
       // …and its textures go up to the GPU a few ms per frame, so its first frame after the intro is cheap
-      heroReady = load3D({ quiet: true }).then(() => sceneApi?.warm(4));
+      heroReady = load3D({ quiet: true }).then(() => sceneApi?.warm(4)).then(() => { if (mode !== '3d') sceneApi?.warmFrame(); });
     },
   });
 
@@ -624,7 +647,7 @@ async function runIntro(mode) {
     const settle = (t) => {
       const calm = t - prev < 34 && t - t0 > 50;
       prev = t;
-      if (calm || t - t0 > 1000) resolve(); else requestAnimationFrame(settle);
+      if (calm || t - t0 > 600) resolve(); else requestAnimationFrame(settle);
     };
     requestAnimationFrame(settle);
   });

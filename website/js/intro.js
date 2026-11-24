@@ -437,6 +437,10 @@ async function createStoreScene({ canvas, onProgress = () => {}, debug = false }
     // walking in, the eye drifts across the showroom (a glance right, then back to the wall)
     look.x += Math.sin(range(p, 0.58, 0.88) * Math.PI) * 0.9;
     look.x += Math.sin(t * 0.19 + 0.6) * 0.03 * drift;
+    // portrait (phones, the portrait fly-in video): the frame is tall and narrow, so looking at
+    // door height crops the sign off the top as the camera nears it; aim higher on the approach
+    // and settle back to eye level as the doors open
+    if (camera.aspect < 0.8) look.y += 1.6 * (1 - sineInOut(range(p, 0.36, 0.56)));
     camera.position.copy(camPos);
     camera.lookAt(look);
     camera.fov = fovBase + (FOV_INSIDE - FOV) * sineInOut(range(p, 0.55, 0.85)) + (FOV_FAST - FOV_INSIDE) * Math.pow(range(p, ENTER_AT, 1), 1.6);
@@ -684,7 +688,9 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
     lenis?.stop();
     const tl = gsap.timeline({ onComplete: () => resolveEntered() });
     visit?.kill();
-    tl.to([label, enterBtn, skipBtn], { opacity: 0, duration: 0.3, ease: 'power1.out', overwrite: true }, 0);
+    // (after a natural video end the label and Enter are long gone: no need to wait on this fade)
+    const quick = mode === 'video' && !skipped;
+    tl.to([label, enterBtn, skipBtn], { opacity: 0, duration: quick ? 0.05 : 0.3, ease: 'power1.out', overwrite: true }, 0);
     if (mode === 'static') {
       // reduced motion: no flight; the poster simply fades once the hero is underneath
       tl.to({}, { duration: 0.01 });
@@ -694,6 +700,9 @@ function createIntro({ mode, gsap, lenis, canvas, onProgress = () => {}, debug =
       // keep moving forward while the view fades to night (faster when skipped from the establishing shot)
       tl.to(store.state, { p: 1, duration: skipped ? 1.1 : 1.2, ease: skipped ? 'power2.inOut' : 'power1.in' }, 0);
       tl.to(veil, { opacity: 1, duration: 0.8, ease: 'power1.in' }, skipped ? 0.3 : 0.4);
+    } else if (mode === 'video' && !skipped) {
+      // the fly-in video already ends on the night colour: cover it at once, no second fade
+      tl.set(veil, { opacity: 1 }, 0).to({}, { duration: 0.05 });
     } else {
       tl.to(veil, { opacity: 1, duration: skipped ? 0.5 : 0.4, ease: 'power1.in' }, 0);
     }

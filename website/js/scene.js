@@ -63,7 +63,8 @@ function loadThree() {
 
 // The page's one WebGL renderer (on #scene). Defaults are the hero's; the intro overrides
 // exposure / pixel ratio while it runs and restores them when it is disposed.
-const PIXEL_RATIO = 1.75;
+// phones draw at 1.5× (their screens are 2–3×): sharp enough on a small screen, far less GPU work
+const PIXEL_RATIO = matchMedia('(max-width: 767px)').matches ? 1.5 : 1.75;
 let sharedRenderer = null;
 function createRenderer(THREE, canvas) {
   if (sharedRenderer) return sharedRenderer;
@@ -183,6 +184,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     capturePanel,
     captureStreetlight,
     warm,
+    warmFrame,
     dispose,
   };
 
@@ -517,7 +519,8 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
       toWorld(rS.left + rS.width / 2, rS.top + rS.height / 2 + offsetPx, pS);
       const roll = lerp(-25 * DEG, SUN_ROLL, clamp01(s.sun));
       qS.setFromEuler(eTmp.set(0, 0, roll)).multiply(faceQ);
-      const scaleS = (rS.width * worldPerPx) / panelWidth;
+      // on phones the tilted panel would overhang its slot onto the title: a touch smaller
+      const scaleS = (rS.width * worldPerPx) / panelWidth * (vw < 768 ? 0.84 : 1);
       panelRig.position.copy(pS);
       panelRig.quaternion.copy(qS);
       panelRig.scale.setScalar(scaleS);
@@ -547,7 +550,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
         pT.lerpVectors(fromP, pre, t);
         // a little arc: swing out to the right and towards the camera mid-flight
         pT.x += Math.sin(t * Math.PI) * visW * 0.06;
-        pT.z += Math.sin(t * Math.PI) * 3;
+        pT.z += Math.sin(t * Math.PI) * (vw < 768 ? 0.8 : 3);   // a smaller swing on phones, where it would fill the screen
         qT.slerp(qPre, t);
         sc = lerp(sA.x, scaleW * 1.06, t);
         sweepK = Math.sin(t * Math.PI);
@@ -740,6 +743,20 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
       };
       step();
     });
+  }
+
+  // One full frame, drawn and cleared straight away: the first real frame then finds its
+  // render targets, bloom passes and GPU uploads ready. Only while something else covers the
+  // canvas (the phone intro's video or poster); the 3D intro draws on this canvas itself.
+  function warmFrame() {
+    if (!api.ready) return;
+    const mv = model.visible, pv = panelRig.visible;
+    model.visible = panelRig.visible = true;
+    if (composer) composer.render(0); else renderer.render(scene, camera);
+    model.visible = mv; panelRig.visible = pv;
+    renderer.setRenderTarget(null);
+    renderer.clear();
+    needsRender = true;
   }
 
   function dispose() {

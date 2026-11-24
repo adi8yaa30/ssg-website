@@ -37,6 +37,23 @@ async function inline(container) {
   return node;
 }
 
+// Touch devices: the artwork as one image instead of ~1,000 live paths. Inlined, every
+// scroll frame on a phone pays for those paths (~50 ms a frame on a mid-range phone);
+// as an image it costs nothing. Returns the artwork's viewBox for the overlays.
+async function asImage(container) {
+  const src = container.dataset.svgSrc;
+  const img = document.createElement('img');
+  img.alt = '';
+  img.decoding = 'async';
+  img.style.objectFit = 'contain';
+  img.style.objectPosition = '50% 100%';
+  img.src = src;
+  container.replaceChildren(img);
+  await img.decode().catch(() => {});
+  const w = img.naturalWidth || 1, h = img.naturalHeight || 1;
+  return { img, vb: { width: w, height: h } };
+}
+
 // If the SVG cannot be inlined, still show the artwork as a plain image
 function showImage(container) {
   const img = document.createElement('img');
@@ -101,10 +118,14 @@ async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, while
   const section = document.querySelector('.cta');
   const container = section?.querySelector('.cta__skyline');
   if (!container) return null;
-  let svg;
-  try { svg = await inline(container); } catch (e) { console.warn(e); showImage(container); return null; }
-  const vb = svg.viewBox.baseVal;
-  const items = measure([...svg.querySelectorAll('path')]);
+  const raster = !finePointer;
+  let svg, vb, img;
+  if (raster) ({ img, vb } = await asImage(container));
+  else {
+    try { svg = await inline(container); } catch (e) { console.warn(e); showImage(container); return null; }
+    vb = svg.viewBox.baseVal;
+  }
+  const items = raster ? [] : measure([...svg.querySelectorAll('path')]);
   const half = vb.width / 2;
 
   // glow dots + shimmer overlay
@@ -141,6 +162,22 @@ async function initCtaSkyline({ gsap, ScrollTrigger, reduced, finePointer, while
     return api;
   }
 
+  if (raster) {
+    // the skyline rises out of the ground, then the lamps switch on and the shimmer starts
+    gsap.set(img, { clipPath: 'inset(100% 0% 0% 0%)' });
+    const tlR = gsap.timeline({ paused: true })
+      .to(img, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.6, ease: 'power2.out' });
+    if (lamps === 'auto') tlR.add(() => { lit = true; }, '-=0.3').to(glows, { opacity: 1, scale: 1, duration: 0.45, stagger: 0.06 }, '<');
+    tlR.to(shimmer, { opacity: 1, duration: 0.6 }, '-=0.4')
+      .add(() => {
+        whileVisible(section, gsap.fromTo(shimmer, { xPercent: -160 }, { xPercent: 260, duration: 5, ease: 'sine.inOut', repeat: -1, repeatDelay: 1.5, force3D: true }));
+        if (lamps === 'auto') glowLoop();
+        gsap.set(img, { clearProps: 'clipPath' });
+      });
+    ScrollTrigger.create({ trigger: section, start: 'top 55%', once: true, onEnter: () => tlR.play() });
+    return api;
+  }
+
   // rows draw in from both outer edges towards the centre, bottom rows first
   const order = [...items].sort((a, b) => b.cy - a.cy || Math.abs(a.cx - half) - Math.abs(b.cx - half));
   gsap.set(order.map((o) => o.el), { scaleX: 0, transformOrigin: (i) => (order[i].cx < half ? '0% 50%' : '100% 50%') });
@@ -171,6 +208,7 @@ async function initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer, 
   const footer = document.querySelector('.footer');
   const container = footer?.querySelector('.footer__landscape');
   if (!container) return;
+  if (!finePointer) return footerAsImage({ gsap, ScrollTrigger, reduced, footer, container });
   let svg;
   try { svg = await inline(container); } catch (e) { console.warn(e); showImage(container); return; }
   const vb = svg.viewBox.baseVal;
@@ -221,6 +259,28 @@ async function initFooterLandscape({ gsap, ScrollTrigger, reduced, finePointer, 
   whileVisible(footer, gsap.to(clouds, { xPercent: (26 / vb.width) * 100, duration: 9, ease: 'sine.inOut', repeat: -1, yoyo: true, force3D: true }));
 
   if (finePointer) ripple({ gsap, section: footer, svg, rows: groups, viewH: vb.height, amount: 5, radius: 45 });
+}
+
+// Touch devices: the landscape as one image that rises into place, with its two lamps glowing
+async function footerAsImage({ gsap, ScrollTrigger, reduced, footer, container }) {
+  const { img, vb } = await asImage(container);
+  const lampLayer = document.createElement('span');
+  lampLayer.style.cssText = `position:absolute;left:0;bottom:0;width:100%;aspect-ratio:${vb.width}/${vb.height};pointer-events:none`;
+  const lamps = FOOTER_LAMPS.map(([x, y]) => {
+    const d = document.createElement('span');
+    d.className = 'cta__glow';
+    d.style.left = `${(x / vb.width) * 100}%`;
+    d.style.top = `${(y / vb.height) * 100}%`;
+    lampLayer.appendChild(d);
+    return d;
+  });
+  container.appendChild(lampLayer);
+  if (reduced) { gsap.set(lamps, { opacity: 1, scale: 1 }); return; }
+  gsap.set(img, { opacity: 0, y: 14 });
+  const tl = gsap.timeline({ paused: true })
+    .to(img, { opacity: 1, y: 0, duration: 1.6, clearProps: 'transform' })
+    .to(lamps, { opacity: 1, scale: 1, duration: 0.45, stagger: 0.2 }, '-=0.8');
+  ScrollTrigger.create({ trigger: container, start: 'top 85%', once: true, onEnter: () => tl.play() });
 }
 
 window.SSG = window.SSG || {};

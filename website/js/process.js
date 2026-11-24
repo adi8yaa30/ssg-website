@@ -227,6 +227,17 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
       const { w, dx } = s.fit;
       const k = w / bb.width;
       node.setAttribute('transform', `translate(${(C - w / 2 + dx - bb.x * k).toFixed(2)} ${(ART_TOP - bb.y * k).toFixed(2)}) scale(${k.toFixed(5)})`);
+      if (touch) {
+        // phones: the line art as one image rather than hundreds of live paths, which made every
+        // scroll frame near this section cost ~50 ms. It still fades in and drifts.
+        const fill = getComputedStyle(node.querySelector('path') || node).fill;
+        const pad = 2;
+        const box = [bb.x - pad, bb.y - pad, bb.width + pad * 2, bb.height + pad * 2];
+        const markup = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${box.join(' ')}" width="${Math.round(box[2] * 2)}" height="${Math.round(box[3] * 2)}"><g fill="${fill}" fill-rule="evenodd">${node.innerHTML}</g></svg>`;
+        const url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml' }));
+        node.replaceChildren();
+        el('image', { href: url, x: box[0], y: box[1], width: box[2], height: box[3], preserveAspectRatio: 'none' }, node);
+      }
       if (!reduced) {
         // the scene's moment sits under the line work
         const under = el('g', {});
@@ -238,7 +249,7 @@ function initProcess({ gsap, ScrollTrigger, reduced, touch, whileVisible = (el, 
         });
       }
       // strokes sorted top to bottom, so the drawing sketches itself downwards
-      artPaths[i] = [...node.querySelectorAll('path')]
+      artPaths[i] = [...node.querySelectorAll('path, image')]
         .map((p) => ({ p, y: p.getBBox().y }))
         .sort((a, b) => a.y - b.y)
         .map((o) => o.p);
