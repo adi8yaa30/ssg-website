@@ -64,9 +64,9 @@ function hasWebGL() {
 }
 // Phones get the live street light too, unless the device is low-end, saving data or
 // rendering WebGL in software: those keep the static images (same layout, no GPU cost)
+// (no CPU-core check: Brave and other privacy browsers report a fake, often low, core count)
 const lowEndPhone = mobile && (
-  (navigator.deviceMemory && navigator.deviceMemory < 4) ||
-  (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) ||
+  (navigator.deviceMemory && navigator.deviceMemory < 3) ||
   navigator.connection?.saveData);
 const use3D = !lowEndPhone && hasWebGL() && !(mobile && softwareGL);
 if (!use3D) root.classList.add('no-webgl');

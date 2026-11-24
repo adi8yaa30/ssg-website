@@ -685,8 +685,10 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
       rp: panelRig.position.clone(), rq: panelRig.quaternion.clone(), rs: panelRig.scale.clone(),
     };
     // the rest pose the hero shows once the load-in has finished
-    lightPivot.position.set(0, 0, 0);
-    lightPivot.scale.setScalar(vH / modelSize.y);
+    // a little smaller than the frame and nudged down: the light leans back, so at full height
+    // the solar panel's top edge would be cut off by the top of the picture
+    lightPivot.position.set(0, -vH * 0.035, 0);
+    lightPivot.scale.setScalar((vH / modelSize.y) * 0.9);
     lightTilt.rotation.set(LIGHT_TILT, LIGHT_YAW, 0);
     lightPivot.updateMatrixWorld(true);
     updateLandFade();
