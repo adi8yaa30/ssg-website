@@ -221,7 +221,9 @@ html:not(.js) .preloader { display: none; }
 
 /* ---------- 3D canvas --------------------------------------------------- */
 .scene {
-  position: fixed; inset: 0; width: 100vw; height: 100vh;
+  /* exactly the visible viewport (scene.js also sets it in px): not 100vh, which on phones is the
+     toolbar-hidden height and stretched the 3D out of line with the page */
+  position: fixed; left: 0; top: 0; width: 100%; height: 100%;
   z-index: var(--z-canvas);
   pointer-events: none;
 }

@@ -422,7 +422,10 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
   function resize() {
     vw = window.innerWidth;
     vh = window.innerHeight;
-    renderer.setSize(vw, vh, false);
+    // `true`: the canvas's CSS size is set to the same px, so the picture is shown 1:1. (With CSS
+    // 100vh, phones stretched it to the toolbar-hidden height: the 3D was taller and lower than
+    // the page it lines up with, so the panel looked too big and missed its slots)
+    renderer.setSize(vw, vh, true);
     composer?.setPixelRatio(renderer.getPixelRatio());
     composer?.setSize(vw, vh);
     camera.aspect = vw / vh;
@@ -786,6 +789,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
   }
 
   window.addEventListener('resize', resize);
+  window.visualViewport?.addEventListener('resize', () => { if (window.innerHeight !== vh || window.innerWidth !== vw) resize(); });
   resize();
 
   return { api, loaded, frame, resize };
