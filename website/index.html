@@ -3,10 +3,82 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>SSG | Solar Street Lights &amp; Public Infrastructure, Guwahati</title>
-  <meta name="description" content="Shree Shyam Group supplies and installs solar street lights, high masts, flag poles and public infrastructure across the Northeast. ISO 9001:2015 certified.">
+  <title>Solar Street Lights &amp; High Masts in Guwahati, Assam | Shree Shyam Group (SSG)</title>
+  <meta name="description" content="Shree Shyam Group (SSG) supplies and installs solar street lights, high mast lights, flag poles and public infrastructure across Assam and Northeast India. ISO 9001:2015 certified, Guwahati.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://ssgofficial.com/">
   <meta name="theme-color" content="#12171E">
-  <link rel="icon" href="assets/logo-new.webp" type="image/webp">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+
+  <!-- Social sharing (WhatsApp, LinkedIn, Facebook, X) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Shree Shyam Group (SSG)">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:url" content="https://ssgofficial.com/">
+  <meta property="og:title" content="Shree Shyam Group: Solar Street Lights &amp; Public Infrastructure, Guwahati">
+  <meta property="og:description" content="Solar street lights, high masts, flag poles and public infrastructure across Assam and the Northeast. ISO 9001:2015 certified.">
+  <meta property="og:image" content="https://ssgofficial.com/assets/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The SSG solar showroom at dusk, with its glowing Shree Shyam Group sign">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Shree Shyam Group: Solar Street Lights &amp; Public Infrastructure">
+  <meta name="twitter:description" content="Solar street lights, high masts and public infrastructure across Assam and the Northeast.">
+  <meta name="twitter:image" content="https://ssgofficial.com/assets/og-image.jpg">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://ssgofficial.com/#org",
+        "name": "Shree Shyam Group",
+        "alternateName": ["SSG", "Shyam Infratech"],
+        "url": "https://ssgofficial.com/",
+        "logo": "https://ssgofficial.com/assets/icons/icon-512.png",
+        "image": "https://ssgofficial.com/assets/og-image.jpg",
+        "email": "shyaminfratech.co.in@gmail.com",
+        "telephone": "+91-95599-93505",
+        "foundingDate": "2021"
+      },
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://ssgofficial.com/#business",
+        "name": "Shree Shyam Group (SSG)",
+        "description": "Supplier and installer of solar street lights, high mast lights, flag poles and public infrastructure for panchayats, municipalities, schools and government departments.",
+        "url": "https://ssgofficial.com/",
+        "image": "https://ssgofficial.com/assets/og-image.jpg",
+        "logo": "https://ssgofficial.com/assets/icons/icon-512.png",
+        "parentOrganization": { "@id": "https://ssgofficial.com/#org" },
+        "telephone": ["+91-95599-93505", "+91-92071-31170"],
+        "email": "shyaminfratech.co.in@gmail.com",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Jyotikuchi",
+          "addressLocality": "Guwahati",
+          "addressRegion": "Assam",
+          "postalCode": "781034",
+          "addressCountry": "IN"
+        },
+        "areaServed": ["Assam", "Northeast India", "India"],
+        "knowsAbout": ["Solar street lights", "All-in-one solar street lights", "Semi-integrated solar street lights", "Hybrid street lights", "High mast lighting", "Flood lights", "Flag poles", "Public infrastructure"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://ssgofficial.com/#website",
+        "url": "https://ssgofficial.com/",
+        "name": "Shree Shyam Group (SSG)",
+        "inLanguage": "en-IN",
+        "publisher": { "@id": "https://ssgofficial.com/#org" }
+      }
+    ]
+  }
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,6 +120,15 @@
         l.rel = 'preload'; l.as = 'fetch'; l.crossOrigin = 'anonymous';
         l.href = href;
         document.head.appendChild(l);
+      }
+      // phones / reduced motion open on the store poster: fetch it with the HTML, not after the scripts
+      if (intro && (!desktop || still)) {
+        var p = document.createElement('link');
+        p.rel = 'preload'; p.as = 'image'; p.setAttribute('fetchpriority', 'high');
+        p.href = innerHeight > innerWidth * 1.1   // the same test as intro.js
+          ? 'assets/00-intro/store-poster-portrait.webp?v=store-2'
+          : 'assets/00-intro/store-poster-landscape.webp?v=store-2';
+        document.head.appendChild(p);
       }
     })();
   </script>
@@ -142,7 +223,7 @@
   <nav class="nav__inner" aria-label="Primary">
     <ul class="nav__list nav__list--l">
       <li><a class="nav__link" href="#home">Home</a></li>
-      <li><a class="nav__link" href="about.html">About Us</a></li>
+      <li><a class="nav__link" href="coming-soon.html#about">About Us</a></li>
       <li><a class="nav__link" href="#ssg">SSG</a></li>
     </ul>
     <a class="nav__logo" href="#home" aria-label="SSG home">
@@ -156,7 +237,7 @@
   </nav>
   <button class="nav__burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><span></span><span></span></button>
   <div class="nav__mobile" id="mobile-menu" hidden>
-    <a href="#home">Home</a><a href="about.html">About Us</a><a href="#ssg">SSG</a>
+    <a href="#home">Home</a><a href="coming-soon.html#about">About Us</a><a href="#ssg">SSG</a>
     <a href="#divisions">Divisions</a><a href="#products">Products</a><a href="#contact">Contact Us</a>
   </div>
 </header>
@@ -568,13 +649,13 @@
     <h2 class="logos__title display" id="logos-title" data-split>PROUDLY ASSOCIATED WITH</h2>
     <div class="logos__viewport">
       <ul class="logos__row" role="list">
-        <li class="logo"><img src="assets/06-logos/10-nrl.webp" width="440" height="440" alt="NRL, Numaligarh Refinery Limited" decoding="async"></li>
-        <li class="logo"><img src="assets/06-logos/11-gov-assam.webp" width="440" height="440" alt="Government of Assam" decoding="async"></li>
-        <li class="logo"><img src="assets/06-logos/12-gem.webp" width="440" height="440" alt="GeM, Government e Marketplace" decoding="async"></li>
-        <li class="logo"><img src="assets/06-logos/13-indian-army.webp" width="440" height="440" alt="Indian Army" decoding="async"></li>
-        <li class="logo"><img src="assets/06-logos/14-mplads.webp" width="440" height="440" alt="MPLADS, Members of Parliament Local Area Development Scheme" decoding="async"></li>
-        <li class="logo"><img src="assets/06-logos/15-dept-rural-dev.webp" width="440" height="440" alt="Department of Rural Development" decoding="async"></li>
-        <li class="logo"><img src="assets/06-logos/16-panchayat-rural-dev-assam.webp" width="440" height="440" alt="Panchayat and Rural Development Department, Assam" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/10-nrl.webp" width="440" height="440" alt="NRL, Numaligarh Refinery Limited" loading="lazy" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/11-gov-assam.webp" width="440" height="440" alt="Government of Assam" loading="lazy" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/12-gem.webp" width="440" height="440" alt="GeM, Government e Marketplace" loading="lazy" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/13-indian-army.webp" width="440" height="440" alt="Indian Army" loading="lazy" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/14-mplads.webp" width="440" height="440" alt="MPLADS, Members of Parliament Local Area Development Scheme" loading="lazy" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/15-dept-rural-dev.webp" width="440" height="440" alt="Department of Rural Development" loading="lazy" decoding="async"></li>
+        <li class="logo"><img src="assets/06-logos/16-panchayat-rural-dev-assam.webp" width="440" height="440" alt="Panchayat and Rural Development Department, Assam" loading="lazy" decoding="async"></li>
       </ul>
     </div>
   </section>
@@ -611,7 +692,7 @@
     </div>
 
     <p class="process__body" data-fade>From panel wattage to battery capacity and pole height, each light is configured for the road it will stand on.</p>
-    <a class="btn btn--outline-light process__cta" href="about.html"><span class="btn__label">About SSG</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    <a class="btn btn--outline-light process__cta" href="coming-soon.html#about"><span class="btn__label">About SSG</span><svg class="btn__arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a>
   </section>
 
   <!-- ====== CTA ====== -->
@@ -637,9 +718,9 @@
       <h3 class="footer__heading">Overview</h3>
       <ul role="list">
         <li><a class="footer__link" href="#home">Home</a></li>
-        <li><a class="footer__link" href="about.html">About SSG</a></li>
+        <li><a class="footer__link" href="coming-soon.html#about">About SSG</a></li>
         <li><a class="footer__link" href="#products">Products</a></li>
-        <li><a class="footer__link" href="#" data-todo="careers">Careers</a></li>
+        <li><a class="footer__link" href="coming-soon.html#careers">Careers</a></li>
         <li><a class="footer__link" href="#contact">Contact Us</a></li>
       </ul>
     </nav>
@@ -666,7 +747,7 @@
   </div>
   <div class="footer__legal">
     <p>© 2026 Shree Shyam Group, a unit of Shyam Infratech. All rights reserved.</p>
-    <p><a href="#" data-todo="terms">Terms</a><span aria-hidden="true"> · </span><a href="#" data-todo="privacy">Privacy</a></p>
+    <p><a href="coming-soon.html#terms">Terms</a><span aria-hidden="true"> · </span><a href="coming-soon.html#privacy">Privacy</a></p>
   </div>
 </footer>
 
