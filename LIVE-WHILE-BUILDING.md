@@ -1,6 +1,6 @@
 # SSG website: live while we build
 
-**Domain:** https://ssgoffical.com (spelled "offical", as registered at Hostinger; DNS is managed there)
+**Domain:** https://ssgofficial.com (DNS at Hostinger). The misspelled ssgoffical.com is also owned and should redirect here.
 **Hosting:** GitHub Pages. The `website/` folder of `main` auto-deploys on every push (`.github/workflows/pages.yml`).
 **Status (24 Nov 2026):** the home page is live and finished. Every other page shows an "under construction" screen until its real version is ready.
 
@@ -38,7 +38,7 @@ Do this for each page (About, Careers, Divisions, etc.) once the client has appr
 2. **SEO head**, copied from `index.html` and adapted:
    - a unique `<title>` of 50–60 characters, with the main keyword first and "Shree Shyam Group (SSG)" at the end
    - a unique `<meta name="description">` of 140–160 characters
-   - `<link rel="canonical" href="https://ssgoffical.com/<page>.html">`
+   - `<link rel="canonical" href="https://ssgofficial.com/<page>.html">`
    - `og:url`, `og:title`, `og:description`, `og:image` (1200×630)
    - change `noindex, follow` to `index, follow`
    - exactly one `<h1>`, and meaningful `alt` text on every image
@@ -55,7 +55,7 @@ When there are no under-construction pages left, delete `coming-soon.html`.
 ## 3. SEO: what's done
 
 - **Title and description** target the searches the client wants to win: *solar street lights Guwahati / Assam*, *high mast lights*, *Northeast India*.
-- **Canonical URL** set to `https://ssgoffical.com/`. Copies on other addresses (for example `adi8yaa30.github.io`) all point Google to the real domain.
+- **Canonical URL** set to `https://ssgofficial.com/`. Copies on other addresses (for example `adi8yaa30.github.io`) all point Google to the real domain.
 - **Structured data (JSON-LD):** `Organization`, `LocalBusiness` (address, both phone numbers, email, areas served, product types) and `WebSite`. This makes the business eligible for Google's knowledge panel and local results.
 - **Social previews:** Open Graph and Twitter tags with a 1200×630 image of the showroom (`assets/og-image.jpg`), for WhatsApp, LinkedIn, Facebook and X.
 - **Icons:** `favicon.ico`, 192/512 px PNGs, `apple-touch-icon.png` and `site.webmanifest`.
@@ -68,14 +68,14 @@ When there are no under-construction pages left, delete `coming-soon.html`.
 
 | # | Task | Who | Notes |
 |---|---|---|---|
-| 1 | **Point ssgoffical.com at GitHub Pages** | Whoever controls the domain | See section 6 |
+| 1 | **Point ssgofficial.com at GitHub Pages** | Whoever controls the domain | See section 6 |
 | 2 | Set the custom domain in GitHub → Settings → Pages, then tick **Enforce HTTPS** | Us | Only once DNS is live |
-| 3 | **Google Search Console**: verify `ssgoffical.com` (DNS TXT record) and submit `https://ssgoffical.com/sitemap.xml` | Us + domain owner | |
+| 3 | **Google Search Console**: verify `ssgofficial.com` (DNS TXT record) and submit `https://ssgofficial.com/sitemap.xml` | Us + domain owner | |
 | 4 | **Bing Webmaster Tools**: import the site from Search Console | Us | 5 minutes |
-| 5 | **Google Business Profile** for "Shree Shyam Group", Jyotikuchi, Guwahati, with the website set to ssgoffical.com | Client | Matters most for local searches like "solar street light near me" |
+| 5 | **Google Business Profile** for "Shree Shyam Group", Jyotikuchi, Guwahati, with the website set to ssgofficial.com | Client | Matters most for local searches like "solar street light near me" |
 | 6 | Real Instagram / Facebook / LinkedIn URLs | Client | Then add them to the footer and as `sameAs` in the JSON-LD |
 | 7 | Brochure PDF | Client | Then remove `data-brochure` and link the file |
-| 8 | **The footer says `www.ssginfo.com`**. Should it be ssgoffical.com, or is ssginfo.com an older site? | Client | If it's an old site, redirect it (301) to ssgoffical.com so its Google ranking carries over |
+| 8 | **The footer says `www.ssginfo.com`**. Should it be ssgofficial.com, or is ssginfo.com an older site? | Client | If it's an old site, redirect it (301) to ssgofficial.com so its Google ranking carries over |
 | 9 | Google Analytics 4 or Plausible | Client decision | Needs a privacy note once Privacy is built |
 
 ## 5. Performance and browsers
@@ -104,7 +104,7 @@ How each device gets the site:
 
 Before each launch, retest with Chrome DevTools → Lighthouse (Mobile), and on a real iPhone in Safari.
 
-## 6. Connecting ssgoffical.com (one-time, at the domain registrar)
+## 6. Connecting ssgofficial.com (one-time, at the domain registrar)
 
 Add these DNS records:
 
@@ -120,9 +120,9 @@ Add these DNS records:
 | AAAA | @ | 2606:50c0:8003::153 |
 | CNAME | www | adi8yaa30.github.io |
 
-Then in GitHub, go to repo **Settings → Pages → Custom domain**, enter `ssgoffical.com` and save. When the DNS check turns green, tick **Enforce HTTPS**. Also verify the domain under your GitHub account (Settings → Pages → Verified domains) so no one else can claim it.
+Then in GitHub, go to repo **Settings → Pages → Custom domain**, enter `ssgofficial.com` and save. When the DNS check turns green, tick **Enforce HTTPS**. Also verify the domain under your GitHub account (Settings → Pages → Verified domains) so no one else can claim it.
 
-`404.html` uses root paths (`/css/…`), so it shows correctly once the site is on ssgoffical.com. On the temporary `github.io/ssg-website/` address it shows unstyled.
+`404.html` uses root paths (`/css/…`), so it shows correctly once the site is on ssgofficial.com. On the temporary `github.io/ssg-website/` address it shows unstyled.
 
 ## 7. Build order (suggested)
 
