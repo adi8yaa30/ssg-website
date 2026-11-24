@@ -2,10 +2,10 @@
 <!-- Add each page here as it goes live (see LIVE-WHILE-BUILDING.md). Under-construction pages stay out. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://ssgofficial.com/</loc>
+    <loc>https://ssgoffical.com/</loc>
     <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
-    <image:image><image:loc>https://ssgofficial.com/assets/og-image.jpg</image:loc></image:image>
+    <image:image><image:loc>https://ssgoffical.com/assets/og-image.jpg</image:loc></image:image>
   </url>
 </urlset>

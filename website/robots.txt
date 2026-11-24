@@ -1,8 +1,8 @@
-# Shree Shyam Group: https://ssgofficial.com
+# Shree Shyam Group: https://ssgoffical.com
 User-agent: *
 Allow: /
 # pages still being built (they are also marked noindex)
 Disallow: /about.html
 Disallow: /tools/
 
-Sitemap: https://ssgofficial.com/sitemap.xml
+Sitemap: https://ssgoffical.com/sitemap.xml
