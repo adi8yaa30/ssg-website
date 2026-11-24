@@ -194,6 +194,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
   const modelSize = new THREE.Vector3();
   const modelCenter = new THREE.Vector3();
   let panelWidth = 2;
+  let panelHeight = 1.3;   // the face's short side (the panel lies tilted in the model: its y/z extent)
   const polePoint = new THREE.Vector3();
   const ledPoint = new THREE.Vector3();
 
@@ -274,6 +275,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     model.traverse((o) => { if (/^Panel_?frame_?corner_?fixing/i.test(o.name)) fixings.push(o); });
     const pBox = new THREE.Box3().setFromObject(panel);
     panelWidth = pBox.max.x - pBox.min.x;
+    panelHeight = Math.hypot(pBox.max.y - pBox.min.y, pBox.max.z - pBox.min.z);
     panelRig = new THREE.Group();
     panelRig.name = 'panelRig';
     panelRig.position.copy(panel.position); // Panel's origin is its centre
@@ -457,6 +459,16 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
   let time = 0;
 
   function rectOf(el) { return el.getBoundingClientRect(); }
+  // Scale that fits the panel, rolled by `roll`, inside a slot. Desktop matches the slot's width
+  // (the design's slots are drawn around the panel); on phones the slot is a full-width box in the
+  // page, so the rolled panel must fit its height too or it spills onto the title and cards.
+  function slotScale(r, roll) {
+    const byWidth = (r.width * worldPerPx) / panelWidth;
+    if (vw >= 768) return byWidth;
+    const c = Math.abs(Math.cos(roll)), sn = Math.abs(Math.sin(roll));
+    const w = panelWidth * c + panelHeight * sn, h = panelWidth * sn + panelHeight * c;
+    return Math.min((r.width * worldPerPx) / w, (r.height * worldPerPx) / h) * 0.94;
+  }
   const onScreen = (r, pad = 0) => r.bottom > -pad && r.top < vh + pad && r.right > -pad && r.left < vw + pad;
 
   // Whether any anchor is within a screen of the viewport. Once the hero, Why SSG and
@@ -505,7 +517,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
     // --- why pose
     const rW = rectOf(anchors.why);
     toWorld(rW.left + rW.width / 2, rW.top + rW.height / 2, pW);
-    const scaleW = (rW.width * worldPerPx) / panelWidth;
+    const scaleW = slotScale(rW, WHY_ROLL);
     qW.setFromEuler(eTmp.set(0, 0, WHY_ROLL)).multiply(faceQ);
 
     let visible = lightVisible;
@@ -515,12 +527,14 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
       // --- state E: returns from behind the flag
       const rS = rectOf(anchors.sun);
       const t = backOut(clamp01(s.sun), 0.9);
-      const offsetPx = lerp(-0.6 * vh, 0, Math.min(1, t));
+      // desktop: it drops back in from behind the flag above. Phones: it grows and turns into
+      // place inside its own slot, so it never crosses the flag section or the title
+      const small = vw < 768;
+      const offsetPx = small ? 0 : lerp(-0.6 * vh, 0, Math.min(1, t));
       toWorld(rS.left + rS.width / 2, rS.top + rS.height / 2 + offsetPx, pS);
       const roll = lerp(-25 * DEG, SUN_ROLL, clamp01(s.sun));
       qS.setFromEuler(eTmp.set(0, 0, roll)).multiply(faceQ);
-      // on phones the tilted panel would overhang its slot onto the title: a touch smaller
-      const scaleS = (rS.width * worldPerPx) / panelWidth * (vw < 768 ? 0.84 : 1);
+      const scaleS = slotScale(rS, SUN_ROLL) * (small ? 0.3 + 0.7 * Math.min(1, t) : 1);
       panelRig.position.copy(pS);
       panelRig.quaternion.copy(qS);
       panelRig.scale.setScalar(scaleS);
@@ -543,7 +557,7 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
 
       if (p > 0.15) {
         // travel (15–70%) to a hover point just above the anchor, then land (70–100%)
-        const pre = pW.clone().add(new THREE.Vector3(0, rW.height * worldPerPx * 0.35, 1.2));
+        const pre = pW.clone().add(new THREE.Vector3(0, rW.height * worldPerPx * 0.35, vw < 768 ? 0.3 : 1.2));
         const qPre = qW.clone().multiply(qTmp.setFromEuler(eTmp.set(0, 0, -4 * DEG)));
         const t = inOut(clamp01((p - 0.15) / 0.55));
         const fromP = pT.clone();
@@ -554,6 +568,11 @@ function buildScene(libs, { canvas, anchors, reducedMotion = false, onProgress =
         qT.slerp(qPre, t);
         sc = lerp(sA.x, scaleW * 1.06, t);
         sweepK = Math.sin(t * Math.PI);
+        if (vw < 768) {
+          // phones: smaller and dimmer mid-air, so it crosses the callouts quickly and lightly
+          sc *= 1 - 0.4 * Math.sin(t * Math.PI);
+          sweepK *= 0.35;
+        }
         if (p > 0.7) {
           const k = backOut(clamp01((p - 0.7) / 0.3), 1.3);
           pT.lerpVectors(pre, pW, k);

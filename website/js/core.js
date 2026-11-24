@@ -93,7 +93,10 @@ function initCore({ page = 'home' } = {}) {
   // ---- Smooth scroll (Lenis, synced with ScrollTrigger)
   let lenis = null;
   if (!reduced && Lenis) {
-    lenis = new Lenis({ lerp: 0.1, smoothWheel: true, autoRaf: false });
+    // phones: Lenis drives touch scrolling too (syncTouch). Native iOS scrolling moves the page on
+    // its own thread while the 3D canvas redraws a frame later, so the panel jittered against the
+    // page; driven from the same frame, the page and the 3D move together
+    lenis = new Lenis({ lerp: 0.1, smoothWheel: true, autoRaf: false, syncTouch: mobile, syncTouchLerp: 0.09 });
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);

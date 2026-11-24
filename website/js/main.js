@@ -235,7 +235,12 @@ function buildChoreography() {
     // street light as the page starts to scroll and lands in Why SSG as its slot reaches mid-screen…
     gsap.to(sceneApi.state, {
       detach: 1, ease: 'none',
-      scrollTrigger: { trigger: '.anchor--panel-why', start: 0, end: 'center 55%', scrub: 0.6 },
+      // lift-off once the street light's head nears the top of the screen, landing as the slot
+      // reaches mid-screen: a short, quick flight
+      scrollTrigger: {
+        trigger: '.anchor--panel-why', end: 'center 55%', scrub: 0.4,
+        start: () => Math.max(0, $('.anchor--streetlight').getBoundingClientRect().top + scrollY - innerHeight * 0.15),
+      },
     });
     // …and later rises into Powered by the Sun
     const sunAnchor = $('.anchor--panel-sun');
@@ -244,7 +249,7 @@ function buildChoreography() {
       onEnter: () => { sceneApi.state.sunMode = true; },
       onLeaveBack: () => { sceneApi.state.sunMode = false; },
     });
-    gsap.to(sceneApi.state, { sun: 1, ease: 'none', scrollTrigger: { trigger: sunAnchor, start: 'top bottom', end: 'center 55%', scrub: 0.6 } });
+    gsap.to(sceneApi.state, { sun: 1, ease: 'none', scrollTrigger: { trigger: sunAnchor, start: 'top 90%', end: 'center 60%', scrub: 0.4 } });
     return;
   }
 
